@@ -471,6 +471,9 @@ html[data-theme="light"] video,
 html[data-theme="light"] .no-invert{filter:invert(1.0638) hue-rotate(180deg)}
 
 /* ── Toast (non-blocking messages) ── */
+/* Offline notice — sits under the status bar, never blocks the UI */
+#offline-bar{position:fixed;top:0;left:0;right:0;background:#5a3a24;color:#f5e6d6;font-family:'Lato',sans-serif;font-size:.74rem;text-align:center;padding:.42rem .8rem;z-index:9997;transform:translateY(-110%);transition:transform .25s ease;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+#offline-bar.show{transform:translateY(0)}
 #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:#00302e;color:#F0EDE5;border:1px solid rgba(0,143,135,.4);padding:.6rem 1rem;border-radius:10px;font-size:.8rem;font-family:'Lato',sans-serif;opacity:0;pointer-events:none;transition:all .25s ease;z-index:9999;max-width:86vw;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.45);line-height:1.5}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -1000,6 +1003,50 @@ function toast(msg, ms) {
     el.classList.remove('show');
   }, ms || 3200);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CONNECTION AWARENESS
+   ──────────────────────────────────────────────────────────────
+   The AI needs the network, but the rest of the app (exercises,
+   check-ins, history, breathing) works offline. So we never block
+   the UI — we just tell the truth about the connection and let the
+   chat retry itself the moment it returns.
+   ══════════════════════════════════════════════════════════════ */
+function isOffline() {
+  try { return navigator.onLine === false; } catch (_) { return false; }
+}
+function _offlineBanner(show) {
+  var el = document.getElementById('offline-bar');
+  if (show) {
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'offline-bar';
+      el.textContent = "You're offline — LEWA will reply as soon as you're back.";
+      document.body.appendChild(el);
+    }
+    el.classList.add('show');
+  } else if (el) {
+    el.classList.remove('show');
+  }
+}
+/* Anything waiting on the network registers here; it runs on reconnect. */
+var _pendingOnline = [];
+function whenOnline(fn) {
+  if (!isOffline()) { fn(); return; }
+  _pendingOnline.push(fn);
+  _offlineBanner(true);
+}
+try {
+  window.addEventListener('offline', function () { _offlineBanner(true); });
+  window.addEventListener('online', function () {
+    _offlineBanner(false);
+    var q = _pendingOnline.splice(0, _pendingOnline.length);
+    if (q.length) toast('Back online — sending your message…');
+    q.forEach(function (fn) { try { fn(); } catch (_) {} });
+    window.dispatchEvent(new Event('lewa-online'));
+  });
+  if (isOffline()) _offlineBanner(true);
+} catch (_) {}
 
 /* ══════════════════════════════════════════════════════════════
    OVER-THE-AIR UPDATES — "update as we go"
@@ -2876,7 +2923,7 @@ const KeyVault = {
    MODEL         : The AI model used via OpenRouter.
    ════════════════════════════════════════════════════════════ */
 const CFG = {
-  MAX_TOKENS: 400,
+  MAX_TOKENS: 700,
   CONTEXT_LIMIT: 12,
   MODEL: "nvidia/nemotron-3-super-120b-a12b:free"
 };
@@ -3522,6 +3569,74 @@ function reasoningControl(sysText, model) {
   if (/nemotron/i.test(String(model || ''))) return sysText + '\n\ndetailed thinking off';
   return sysText;
 }
+
+/* ════════════════════════════════════════════════════════════
+   API RESILIENCE LAYER
+   ────────────────────────────────────────────────────────────
+   Turns a provider failure into a clear, human sentence the
+   patient can actually act on, instead of raw provider JSON.
+   Also handles OpenRouter's up-front balance reservation, which
+   is the single most common failure for people on free credit.
+   ════════════════════════════════════════════════════════════ */
+const PROVIDER_NAMES = { anthropic: 'Anthropic', openai: 'OpenAI', gemini: 'Google Gemini', openrouter: 'OpenRouter', custom: 'The API' };
+function apiErrorMessage(provider, status, body) {
+  const name = PROVIDER_NAMES[provider] || 'The API';
+  let raw = '';
+  try { raw = (body && (body.error && (body.error.message || body.error) || body.message)) || ''; } catch (_) {}
+  if (typeof raw !== 'string') raw = '';
+  const detail = raw ? ` — ${String(raw).slice(0, 240)}` : '';
+  const byCode = {
+    400: `${name} rejected the request (400)${detail}. The model name or a setting may be off — try a different model.`,
+    401: `${name} says your API key is invalid or missing (401). Re-check the key under "Change provider".`,
+    402: /afford/i.test(raw)
+      ? `${name} doesn't have enough credit for this reply (402). Your message was long, so the model reserved more credit than your balance. Try a shorter message, or add credits.`
+      : `${name} needs credit (402). Add credits to your ${name} account.${detail}`,
+    403: `${name} refused access (403)${detail}. The key may lack permission for this model, or your region is blocked.`,
+    404: `${name} couldn't find that model (404). Pick a different model — the id may be retired.`,
+    408: `${name} timed out (408). Please try again.`,
+    413: `That was too large for ${name} (413). Try a shorter message or fewer attachments.`,
+    422: `${name} couldn't process the request (422)${detail}.`,
+    429: `${name} is rate-limiting you (429) — or the free quota is used up. Wait a moment, or switch model/provider.`,
+    500: `${name} had an internal error (500). Not your fault — try again shortly.`,
+    502: `${name} is unreachable right now (502). Try again in a moment.`,
+    503: `${name} is temporarily overloaded (503). Give it a few seconds.`,
+    529: `${name} is overloaded (529). Wait a few seconds and try again.`
+  };
+  return byCode[status] || `${name} error ${status}${detail}.`;
+}
+/* Build an Error from a failed Response (reads the body once). */
+async function apiError(provider, res) {
+  const body = await res.json().catch(() => ({}));
+  const err = new Error(apiErrorMessage(provider, res.status, body));
+  err.status = res.status;
+  err.body = body;
+  return err;
+}
+/* OpenRouter reserves a model's ENTIRE max output against your balance up
+   front, so a large input can fail even when the reply would be short. The
+   error names what you CAN afford — retry with that. */
+function affordFromError(msg) {
+  const m = /afford\s+(\d+)/i.exec(String(msg || ''));
+  return m ? parseInt(m[1], 10) : 0;
+}
+/* Which provider a base URL belongs to (for error wording). */
+function provOfUrl(url) {
+  if (url.includes('openrouter')) return 'openrouter';
+  if (url.includes('api.openai.com')) return 'openai';
+  if (url.includes('anthropic')) return 'anthropic';
+  if (url.includes('googleapis')) return 'gemini';
+  return 'custom';
+}
+/* PROMPT CACHING — the therapeutic system prompt is large and barely changes
+   between turns. Anthropic can reuse it (5-min window) instead of re-reading
+   it every message: noticeably cheaper and faster. */
+function anthropicSystem(sys) {
+  return [{ type: 'text', text: String(sys || ''), cache_control: { type: 'ephemeral' } }];
+}
+/* Ceilings. Anthropic REQUIRES max_tokens; OpenRouter needs a sane cap (see
+   affordFromError). Replies auto-continue when they hit the cap, so these
+   never truncate what the patient actually reads. */
+const LIMITS = { ANTHROPIC_MAX: 4096, ANTHROPIC_FALLBACK: 2048, OR_MAX: 2048, CONTINUE_ROUNDS: 2 };
 async function callGemini(msgs, profile, key, ctx, maxT, model, opts = {}) {
   var _data$candidates;
   const sysText = buildPrompt(profile, ctx);
@@ -3581,9 +3696,7 @@ async function callGemini(msgs, profile, key, ctx, maxT, model, opts = {}) {
     })
   });
   if (!res.ok) {
-    var _e$error2;
-    const e = await res.json().catch(() => ({}));
-    throw new Error(((_e$error2 = e.error) == null ? void 0 : _e$error2.message) || `Gemini error ${res.status}`);
+    throw await apiError('gemini', res);
   }
   const data = await res.json();
   return cleanModelOutput((_data$candidates = data.candidates) == null || (_data$candidates = _data$candidates[0]) == null || (_data$candidates = _data$candidates.content) == null || (_data$candidates = _data$candidates.parts) == null ? void 0 : _data$candidates.filter(p => !p.thought).map(p => p.text || '').join('')) || "I'm having trouble responding. Please try again.";
@@ -3604,14 +3717,16 @@ async function callOpenAICompat(msgs, profile, key, ctx, maxT, ctxLimit, model, 
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${key}`
   }, extraHeaders);
+  const isOR = baseURL.includes('openrouter');
+  const cap = maxT || CFG.MAX_TOKENS;
   const res = await fetch(baseURL, {
     method: 'POST',
     headers,
     body: JSON.stringify(_extends({
       model,
-      max_tokens: maxT || CFG.MAX_TOKENS,
+      max_tokens: cap,
       messages: [sysPart, ...trimmed]
-    }, baseURL.includes('openrouter') ? {
+    }, isOR ? {
       reasoning: {
         effort: 'low',
         exclude: true
@@ -3619,9 +3734,15 @@ async function callOpenAICompat(msgs, profile, key, ctx, maxT, ctxLimit, model, 
     } : {}))
   });
   if (!res.ok) {
-    var _e$error3;
-    const e = await res.json().catch(() => ({}));
-    throw new Error(((_e$error3 = e.error) == null ? void 0 : _e$error3.message) || `API error ${res.status}`);
+    /* OpenRouter reserves the full output cap against the balance up front.
+       When that's more than the account can afford, the error says what IS
+       affordable — retry once with that instead of just failing. */
+    const rawBody = await res.clone().json().catch(() => ({}));
+    const afford = affordFromError(rawBody && (rawBody.error && rawBody.error.message || rawBody.message));
+    if (afford > 256 && !maxT) {
+      return callOpenAICompat(msgs, profile, key, ctx, Math.floor(afford * 0.9), ctxLimit, model, baseURL, extraHeaders, opts);
+    }
+    throw await apiError(provOfUrl(baseURL), res);
   }
   const data = await res.json();
   const _msg = ((_data$choices = data.choices) == null || (_data$choices = _data$choices[0]) == null ? void 0 : _data$choices.message) || {};
@@ -3658,7 +3779,10 @@ async function callAnthropicDirect(msgs, profile, key, ctx, maxT, ctxLimit, mode
       return c;
     }) : m.display || m.content
   }));
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  /* Anthropic requires max_tokens. Some models cap lower than our ceiling and
+     reject it, so retry once at a safe fallback. The system prompt is sent as
+     a cacheable block (see anthropicSystem) to cut cost and latency. */
+  const sendAnthropic = mt => fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -3668,15 +3792,19 @@ async function callAnthropicDirect(msgs, profile, key, ctx, maxT, ctxLimit, mode
     },
     body: JSON.stringify({
       model,
-      max_tokens: maxT || CFG.MAX_TOKENS,
-      system: buildPrompt(profile, ctx),
+      max_tokens: mt,
+      system: anthropicSystem(buildPrompt(profile, ctx)),
       messages: trimmed
     })
   });
+  let res = await sendAnthropic(maxT || LIMITS.ANTHROPIC_MAX);
+  if (!res.ok && !maxT) {
+    const probe = await res.clone().json().catch(() => ({}));
+    const pm = probe && probe.error && probe.error.message || '';
+    if (/max_tokens/i.test(pm)) res = await sendAnthropic(LIMITS.ANTHROPIC_FALLBACK);
+  }
   if (!res.ok) {
-    var _e$error4;
-    const e = await res.json().catch(() => ({}));
-    throw new Error(((_e$error4 = e.error) == null ? void 0 : _e$error4.message) || `Anthropic error ${res.status}`);
+    throw await apiError('anthropic', res);
   }
   const data = await res.json();
   return cleanModelOutput((_data$content = data.content) == null ? void 0 : _data$content.map(b => b.text || '').join('')) || "I'm having trouble responding. Please try again.";
@@ -4001,11 +4129,10 @@ async function streamGeminiT(msgs, profile, key, ctx, maxT, model, signal, onDel
     })
   });
   if (!r.ok || !r.body) {
-    var _e$error5;
-    const e = await r.json().catch(() => ({}));
-    throw new Error(((_e$error5 = e.error) == null ? void 0 : _e$error5.message) || `Gemini error ${r.status}`);
+    throw await apiError('gemini', r);
   }
   let text = '',
+    gfinish = '',
     usage = {
       tin: 0,
       tout: 0
@@ -4022,6 +4149,7 @@ async function streamGeminiT(msgs, profile, key, ctx, maxT, model, signal, onDel
       return;
     }
     const cand = ((_j$candidates = j.candidates) == null ? void 0 : _j$candidates[0]) || {};
+    if (cand.finishReason) gfinish = cand.finishReason;
     (((_cand$content = cand.content) == null ? void 0 : _cand$content.parts) || []).forEach(pt => {
       if (!pt.text) return;
       if (pt.thought) {
@@ -4038,7 +4166,8 @@ async function streamGeminiT(msgs, profile, key, ctx, maxT, model, signal, onDel
   });
   return {
     text: cleanModelOutput(text) || text,
-    usage
+    usage,
+    truncated: gfinish === 'MAX_TOKENS'
   };
 }
 async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, model, baseURL, extraHeaders, signal, onDelta) {
@@ -4076,11 +4205,16 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
     body: JSON.stringify(body)
   });
   if (!r.ok || !r.body) {
-    var _e$error6;
-    const e = await r.json().catch(() => ({}));
-    throw new Error(((_e$error6 = e.error) == null ? void 0 : _e$error6.message) || `API error ${r.status}`);
+    /* Same up-front-reservation retry as the non-streaming path. */
+    const rawBody = await r.clone().json().catch(() => ({}));
+    const afford = affordFromError(rawBody && (rawBody.error && rawBody.error.message || rawBody.message));
+    if (afford > 256 && !maxT) {
+      return streamOpenAICompatT(msgs, profile, key, ctx, Math.floor(afford * 0.9), ctxLimit, model, baseURL, extraHeaders, signal, onDelta);
+    }
+    throw await apiError(provOfUrl(baseURL), r);
   }
   let text = '',
+    finish = '',
     usage = {
       tin: 0,
       tout: 0
@@ -4100,7 +4234,9 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
       tin: j.usage.prompt_tokens || 0,
       tout: j.usage.completion_tokens || 0
     };
-    const d = ((_j$choices = j.choices) == null || (_j$choices = _j$choices[0]) == null ? void 0 : _j$choices.delta) || {};
+    const ch = ((_j$choices = j.choices) == null || (_j$choices = _j$choices[0])) || {};
+    if (ch.finish_reason) finish = ch.finish_reason;
+    const d = ch.delta || {};
     const rc = d.reasoning || d.reasoning_content;
     if (rc) onDelta && onDelta('reasoning', rc);
     if (d.content) {
@@ -4110,7 +4246,8 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
   });
   return {
     text: cleanModelOutput(text) || text,
-    usage
+    usage,
+    truncated: finish === 'length'
   };
 }
 async function streamAnthropicT(msgs, profile, key, ctx, maxT, ctxLimit, model, signal, onDelta) {
@@ -4142,18 +4279,17 @@ async function streamAnthropicT(msgs, profile, key, ctx, maxT, ctxLimit, model, 
     },
     body: JSON.stringify({
       model,
-      max_tokens: maxT || CFG.MAX_TOKENS,
-      system: buildPrompt(profile, ctx),
+      max_tokens: maxT || LIMITS.ANTHROPIC_MAX,
+      system: anthropicSystem(buildPrompt(profile, ctx)),
       stream: true,
       messages: trimmed
     })
   });
   if (!r.ok || !r.body) {
-    var _e$error7;
-    const e = await r.json().catch(() => ({}));
-    throw new Error(((_e$error7 = e.error) == null ? void 0 : _e$error7.message) || `Anthropic error ${r.status}`);
+    throw await apiError('anthropic', r);
   }
   let text = '',
+    stop = '',
     usage = {
       tin: 0,
       tout: 0
@@ -4178,11 +4314,15 @@ async function streamAnthropicT(msgs, profile, key, ctx, maxT, ctxLimit, model, 
       }
       if (dl.type === 'thinking_delta' && dl.thinking) onDelta && onDelta('reasoning', dl.thinking);
     }
-    if (j.type === 'message_delta' && j.usage) usage.tout = j.usage.output_tokens || usage.tout;
+    if (j.type === 'message_delta') {
+      if (j.delta && j.delta.stop_reason) stop = j.delta.stop_reason;
+      if (j.usage) usage.tout = j.usage.output_tokens || usage.tout;
+    }
   });
   return {
     text: cleanModelOutput(text) || text,
-    usage
+    usage,
+    truncated: stop === 'max_tokens'
   };
 }
 /* Streaming router — same shape as callLEWA plus {signal, onDelta}. */
@@ -6791,6 +6931,55 @@ function nsKey(ns, k) {
   return `lewa-${ns}-${k}`;
 } // namespaced storage
 
+/* ══════════════════════════════════════════════════════════════
+   STORAGE SCHEMA + MIGRATIONS
+   ──────────────────────────────────────────────────────────────
+   Every account's data is versioned. Migrations run once, in
+   order, and are written to be idempotent and non-destructive —
+   an account created by any earlier build stays readable, and a
+   failed migration never wipes anything.
+   ══════════════════════════════════════════════════════════════ */
+const STORAGE_VERSION = 2;
+const MIGRATIONS = {
+  /* v1 → v2: emotion log, goals and feedback became first-class. Older
+     accounts simply had none of these keys; seed empty containers so every
+     reader can assume they exist instead of guarding on every access. */
+  2: function (ns) {
+    const seed = { emolog: '[]', goals: '[]', feedback: '{"up":[],"down":[]}' };
+    Object.keys(seed).forEach(function (k) {
+      if (AccountStore.get(ns, k) == null) AccountStore.set(ns, k, seed[k]);
+    });
+    /* Legacy single-slot API key: mirror it into the per-provider slot so key
+       routing finds it (older builds only stored the one key). */
+    try {
+      const prov = localStorage.getItem('lewa-provider');
+      const legacy = localStorage.getItem('lewa-x9q2');
+      if (prov && legacy && localStorage.getItem('lewa-x9q2::' + prov) == null) {
+        localStorage.setItem('lewa-x9q2::' + prov, legacy);
+      }
+    } catch (_) {}
+  }
+};
+function migrateAccount(ns) {
+  if (!ns) return;
+  let from = 0;
+  try { from = parseInt(AccountStore.get(ns, 'schema') || '1', 10) || 1; } catch (_) { from = 1; }
+  if (from >= STORAGE_VERSION) return;
+  for (let v = from + 1; v <= STORAGE_VERSION; v++) {
+    const step = MIGRATIONS[v];
+    if (!step) continue;
+    try {
+      step(ns);
+    } catch (err) {
+      /* Never let a migration break sign-in — leave the version alone so it
+         can be retried on the next launch, and carry on with existing data. */
+      try { console.warn('LEWA migration ' + v + ' skipped:', err && err.message); } catch (_) {}
+      return;
+    }
+  }
+  AccountStore.set(ns, 'schema', String(STORAGE_VERSION));
+}
+
 const AccountStore = {
   get: (ns, k) => {
     try {
@@ -7619,6 +7808,9 @@ function App() {
   /* Load user data after account login */
   const loadUserData = acc => {
     const un = acc.ns;
+    /* Bring this account's storage up to the current schema before reading it,
+       so accounts made by any earlier build open normally. */
+    migrateAccount(un);
     const rawIds = AccountStore.get(un, "session-ids");
     const ids = rawIds ? JSON.parse(rawIds) : [];
     const sid = ids[0] || "s_" + Date.now();
@@ -8145,7 +8337,7 @@ function App() {
       let reply,
         usage = null;
       try {
-        const res = await streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model, {
+        let res = await streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model, {
           signal: ctrl.signal,
           onDelta: (kind, chunk) => {
             if (kind === 'text') {
@@ -8157,6 +8349,44 @@ function App() {
 
         reply = res.text;
         usage = res.usage;
+
+        /* AUTO-CONTINUE — a reply cut off by the token cap used to just stop
+           mid-sentence, which is jarring in a therapy conversation. If the
+           model reports it was truncated, quietly ask it to carry on from
+           exactly where it stopped and stitch the pieces together. */
+        let rounds = 0;
+        while (res && res.truncated && rounds < LIMITS.CONTINUE_ROUNDS && !ctrl.signal.aborted) {
+          rounds++;
+          const soFar = reply;
+          const contMsgs = [...ctxMsgs, {
+            role: 'assistant',
+            content: soFar
+          }, {
+            role: 'user',
+            content: '(Continue your previous message from exactly where it stopped. Do not repeat anything you already said, do not restart, and do not add any preamble — just carry straight on.)'
+          }];
+          let cont;
+          try {
+            cont = await streamLEWA(contMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model, {
+              signal: ctrl.signal,
+              onDelta: (kind, chunk) => {
+                if (kind === 'text') {
+                  liveText += chunk;
+                  setStreamText(lwStripLiveThinking(liveText));
+                }
+              }
+            });
+          } catch (_contErr) {
+            break; // keep what we already have
+          }
+          if (!cont || !cont.text) break;
+          reply = (soFar + (/[\s]$/.test(soFar) ? '' : ' ') + cont.text.replace(/^\s+/, '')).trim();
+          if (cont.usage) usage = {
+            tin: (usage && usage.tin || 0) + (cont.usage.tin || 0),
+            tout: (usage && usage.tout || 0) + (cont.usage.tout || 0)
+          };
+          res = cont;
+        }
       } catch (streamErr) {
         if (ctrl.signal.aborted) {
           /* Stopped mid-reply — keep whatever was already said. */
@@ -8247,7 +8477,20 @@ function App() {
       stopRef.current = null;
       setStreamText("");
       setStreamThink(false);
-      setErrMsg(e.message);
+      /* A dropped connection is not an app error — say so plainly, and offer
+         to send it again the moment the network is back. */
+      const netDown = isOffline() || /failed to fetch|networkerror|load failed|network request failed/i.test(String(e && e.message));
+      if (netDown) {
+        /* Roll the unanswered message back out of the transcript and put the
+           words back in the box, so nothing is lost and nothing is duplicated
+           when they send again. */
+        setMessages(prev => (prev.length && prev[prev.length - 1].role === 'user') ? prev.slice(0, -1) : prev);
+        if (txt) setInput(cur => cur ? cur : txt);
+        setErrMsg("You're offline — your message is still here. It'll send once you're connected.");
+        whenOnline(() => { setErrMsg(""); toast("Back online — tap send when you're ready."); });
+      } else {
+        setErrMsg(e.message);
+      }
       SND.error();
       if (callRef.current && !mutedRef.current) {
         setCallState('listening');
@@ -9301,7 +9544,7 @@ function App() {
     }
   }), /*#__PURE__*/React.createElement("button", {
     onClick: saveEditedName,
-    title: "Save",
+    title: "Save", "aria-label": "Save name",
     style: {
       background: "var(--cy)",
       border: "none",
@@ -9459,7 +9702,7 @@ function App() {
       textAlign: "left"
     }
   }, "Change provider \u2192"), /*#__PURE__*/React.createElement("button", {
-    title: "Refresh this provider's model list (free \u2014 no tokens)",
+    title: "Refresh this provider's model list (free \u2014 no tokens)", "aria-label": "Refresh model list",
     onClick: () => {
       SND.tap();
       ensureModelsT(provider, apiKey, true);
@@ -10320,7 +10563,7 @@ function App() {
     onClick: () => {
       callActive ? endCall() : startCall();
     },
-    title: callActive ? "End the voice call" : "Talk with LEWA like a phone call",
+    title: callActive ? "End the voice call" : "Talk with LEWA like a phone call", "aria-label": callActive ? "End voice call" : "Start voice call",
     style: {
       padding: ".33rem .6rem",
       background: callActive ? "rgba(224,92,92,.14)" : "rgba(0,143,135,.12)",
@@ -10343,7 +10586,7 @@ function App() {
     onClick: () => {
       cameraOn ? stopCamera() : startCamera();
     },
-    title: cameraOn ? "Turn camera off" : "Let LEWA see how you're doing",
+    title: cameraOn ? "Turn camera off" : "Let LEWA see how you're doing", "aria-label": cameraOn ? "Turn camera off" : "Turn camera on",
     style: {
       padding: ".33rem .55rem",
       background: cameraOn ? "rgba(224,92,92,.14)" : "rgba(240,237,229,.06)",
@@ -10477,7 +10720,7 @@ function App() {
     }
   }, m.time ? fmtT(m.time) : "", m.role === "assistant" && TTS_SUPPORTED && /*#__PURE__*/React.createElement("button", {
     onClick: () => playMessage(i, m.content),
-    title: speakingId === i ? "Stop reading" : "Read aloud",
+    title: speakingId === i ? "Stop reading" : "Read aloud", "aria-label": speakingId === i ? "Stop reading aloud" : "Read this reply aloud",
     style: {
       background: "none",
       border: "none",
@@ -10502,7 +10745,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "fb-btn up" + (m.fb === 1 ? " on" : ""),
-    title: "This helped",
+    title: "This helped", "aria-label": "Mark this reply helpful",
     onClick: () => {
       rateReply(m, 1);
       const nm = [...messages];
@@ -10517,7 +10760,7 @@ function App() {
     size: 13
   })), /*#__PURE__*/React.createElement("button", {
     className: "fb-btn down" + (m.fb === -1 ? " on" : ""),
-    title: "This didn't land",
+    title: "This didn't land", "aria-label": "Mark this reply unhelpful",
     onClick: () => {
       rateReply(m, -1);
       const nm = [...messages];
@@ -10570,7 +10813,7 @@ function App() {
     ref: bottomRef
   })), showJump && /*#__PURE__*/React.createElement("button", {
     className: "scroll-latest",
-    title: "Jump to the latest message",
+    title: "Jump to the latest message", "aria-label": "Jump to latest message",
     onClick: () => {
       var _bottomRef$current3;
       SND.tap();
@@ -10653,7 +10896,7 @@ function App() {
       var _fileRef$current;
       return (_fileRef$current = fileRef.current) == null ? void 0 : _fileRef$current.click();
     },
-    title: "Attach image, PDF, or document",
+    title: "Attach image, PDF, or document", "aria-label": "Attach a file",
     style: {
       width: 40,
       height: 40,
@@ -10688,7 +10931,7 @@ function App() {
     onClick: () => {
       listening ? stopListening() : startListening();
     },
-    title: listening ? "Stop listening" : "Speak your message instead of typing",
+    title: listening ? "Stop listening" : "Speak your message instead of typing", "aria-label": listening ? "Stop voice input" : "Start voice input",
     style: {
       width: 40,
       height: 40,
@@ -10739,7 +10982,7 @@ function App() {
     size: 13
   }), " Stop"), /*#__PURE__*/React.createElement("button", {
     className: "send-btn",
-    title: "Send message",
+    title: "Send message", "aria-label": "Send message",
     onClick: () => {
       SND.send();
       sendMsg();
@@ -11269,7 +11512,7 @@ function App() {
       cursor: "pointer",
       padding: ".1rem"
     },
-    title: "Add milestone"
+    title: "Add milestone", "aria-label": "Add milestone"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "plus",
     size: 14
@@ -11287,7 +11530,7 @@ function App() {
       cursor: "pointer",
       padding: ".1rem"
     },
-    title: "Remove"
+    title: "Remove", "aria-label": "Remove goal"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "trash",
     size: 13
@@ -11605,14 +11848,14 @@ function App() {
   }, /*#__PURE__*/React.createElement("button", {
     className: "call-btn" + (callMuted ? " muted" : ""),
     onClick: toggleCallMute,
-    title: callMuted ? "Unmute microphone" : "Mute microphone"
+    title: callMuted ? "Unmute microphone" : "Mute microphone", "aria-label": callMuted ? "Unmute microphone" : "Mute microphone"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: callMuted ? "micOff" : "mic",
     size: 22
   }), /*#__PURE__*/React.createElement("small", null, callMuted ? "Unmute" : "Mute")), /*#__PURE__*/React.createElement("button", {
     className: "call-btn end",
     onClick: () => endCall(),
-    title: "Hang up"
+    title: "Hang up", "aria-label": "Hang up"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "phoneOff",
     size: 22
