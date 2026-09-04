@@ -545,6 +545,337 @@ button .lu,a .lu{pointer-events:none}
 .goal-ms.done span{text-decoration:line-through;color:var(--t3)}
 .coping-card{display:flex;gap:.6rem;align-items:flex-start;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:.55rem .7rem;margin-bottom:.4rem}
 .coping-card .ci{color:var(--cy-ll);margin-top:1px}
+
+/* ══════════════════════════════════════════════════════════════
+   v1.1 — PREMIUM INTERFACE LAYER
+   ──────────────────────────────────────────────────────────────
+   Same palette, same typography, same warmth. What changes is
+   structure: a real home, real session management, a settings
+   system, and accessibility that actually works on an Android
+   phone held in one hand.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── ACCESSIBILITY: text scale ──
+   Everything in the app is already sized in rem, so one root
+   font-size drives the whole interface. */
+html{font-size:calc(16px * var(--ui-scale, 1))}
+
+/* ── ACCESSIBILITY: high contrast ──
+   Muted text is the first thing to fail on a bright phone screen
+   outdoors. High contrast lifts every tier and firms the borders. */
+html[data-contrast="high"]{
+  --t2:rgba(240,237,229,.92);
+  --t3:rgba(240,237,229,.78);
+  --t4:rgba(240,237,229,.6);
+  --sd-d:rgba(240,237,229,.96);
+  --sd-m:rgba(240,237,229,.8);
+  --bdr:rgba(240,237,229,.3);
+  --bact:rgba(240,237,229,.55);
+  --cy-ll:#39c9bf;
+  --warm-l:#e6c79b;
+}
+html[data-contrast="high"] .msg-bubble.ai{background:#00312f;border-color:rgba(240,237,229,.28)}
+html[data-contrast="high"] .msg-bubble.user{background:#00615c}
+html[data-contrast="high"] .aurora{opacity:.35}
+html[data-contrast="high"] :focus-visible{outline-width:3px;outline-color:#39c9bf}
+
+/* ── ACCESSIBILITY: reduced motion (explicit setting, not just OS) ── */
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after{
+  animation-duration:.01ms!important;animation-iteration-count:1!important;
+  transition-duration:.01ms!important;scroll-behavior:auto!important}
+html[data-motion="off"] .aurora{display:none}
+
+/* ── ACCESSIBILITY: touch targets ──
+   Anything tappable clears 44px on a touch screen without changing
+   how it looks on a mouse-driven desktop. */
+@media (pointer:coarse){
+  button,[role="button"],a.lw-tap,select,summary{min-height:44px}
+  .lw-icon-btn,.send-btn,.icon-btn,.hamburger-btn{min-width:44px;min-height:44px}
+  .fb-btn{min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center}
+  .mood-btn{min-height:56px}
+}
+
+/* ── SAFE AREA ── */
+.sidebar{padding-top:env(safe-area-inset-top,0px)}
+.content-header{padding-top:calc(.9rem + env(safe-area-inset-top,0px))}
+.lw-sheet-inner{padding-bottom:calc(1.1rem + env(safe-area-inset-bottom,0px))}
+.panel{padding-bottom:calc(1.25rem + env(safe-area-inset-bottom,0px))}
+
+/* ── SCREEN-READER ONLY ── */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:9999;background:var(--cy);color:var(--sd);padding:.6rem 1rem;border-radius:0 0 8px 0;font-weight:700;font-size:.85rem}
+.skip-link:focus{left:0}
+
+/* ── SURFACES ── */
+.lw-card{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:1rem 1.1rem;position:relative}
+.lw-card-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
+.lw-card-h .lu{color:var(--cy-ll)}
+.lw-card-t{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cy-ll);font-weight:700}
+.lw-card-a{margin-left:auto;background:none;border:none;color:var(--t3);font-size:.7rem;font-family:'Lato',sans-serif;cursor:pointer;font-weight:700;
+  display:inline-flex;align-items:center;gap:.2rem;padding:.2rem .3rem;border-radius:6px}
+.lw-card-a:hover{color:var(--cy-ll);background:rgba(240,237,229,.05)}
+
+/* ── HOME ── */
+.lw-home{display:flex;flex-direction:column;gap:.85rem}
+.lw-greet{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:400;color:var(--t1);line-height:1.15}
+.lw-greet em{font-style:italic;color:var(--cy-ll)}
+.lw-greet-sub{font-size:.8rem;color:var(--t3);margin-top:.3rem;line-height:1.6}
+.lw-hero{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.lw-tile{background:rgba(240,237,229,.04);border:1px solid var(--bdr);border-radius:14px;padding:.85rem .95rem;display:flex;flex-direction:column;gap:.2rem;
+  text-align:left;font-family:'Lato',sans-serif;transition:border-color .18s,background .18s}
+.lw-tile-k{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--t3);font-weight:700}
+.lw-tile-v{font-family:'Playfair Display',serif;font-size:1.55rem;line-height:1.1;color:var(--warm-l);font-weight:400;display:flex;align-items:baseline;gap:.3rem}
+.lw-tile-v small{font-family:'Lato',sans-serif;font-size:.62rem;color:var(--t3);font-weight:700;letter-spacing:.06em}
+.lw-tile-n{font-size:.68rem;color:var(--t3);line-height:1.45}
+button.lw-tile{cursor:pointer}
+button.lw-tile:hover{border-color:rgba(240,237,229,.18);background:rgba(240,237,229,.06)}
+button.lw-tile:active{transform:scale(.975);transition:transform .07s ease}
+
+/* Continue-conversation banner — the single most useful thing on the page */
+.lw-resume{display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;cursor:pointer;font-family:'Lato',sans-serif;
+  background:linear-gradient(135deg,rgba(0,70,67,.55),rgba(0,38,36,.75));border:1px solid rgba(0,143,135,.3);border-radius:16px;padding:.95rem 1.05rem;
+  transition:border-color .18s,box-shadow .18s}
+.lw-resume:hover{border-color:rgba(0,143,135,.55);box-shadow:0 8px 26px rgba(0,0,0,.28)}
+.lw-resume:active{transform:scale(.985);transition:transform .07s ease}
+.lw-resume-ic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--cy),var(--cy-ll));display:flex;align-items:center;justify-content:center;color:var(--sd);flex-shrink:0}
+.lw-resume-b{min-width:0;flex:1}
+.lw-resume-t{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--t1);font-weight:400}
+.lw-resume-s{font-size:.72rem;color:var(--t3);margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
+
+/* Quick actions */
+.lw-quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.55rem}
+.lw-qbtn{background:rgba(0,70,67,.22);border:1px solid var(--bdr);border-radius:13px;padding:.8rem .6rem;display:flex;flex-direction:column;align-items:center;
+  gap:.4rem;cursor:pointer;color:var(--t2);font-family:'Lato',sans-serif;font-size:.7rem;font-weight:700;text-align:center;line-height:1.3;
+  transition:border-color .18s,background .18s,transform .35s cubic-bezier(.34,1.56,.64,1)}
+.lw-qbtn .lu{color:var(--cy-ll)}
+.lw-qbtn:hover{border-color:rgba(0,143,135,.35);background:rgba(0,107,101,.28);color:var(--t1)}
+.lw-qbtn:active{transform:scale(.93);transition:transform .07s ease}
+
+/* Sparkline / trend */
+.lw-spark{display:flex;align-items:flex-end;gap:3px;height:44px;max-width:560px}
+.lw-spark i{flex:1;min-width:3px;max-width:34px;border-radius:3px 3px 1px 1px;opacity:.9;transition:height .3s ease}
+.lw-trend{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:20px;border:1px solid transparent}
+.lw-trend.up{color:#7fd8c8;background:rgba(0,143,135,.14);border-color:rgba(0,143,135,.3)}
+.lw-trend.flat{color:var(--t3);background:rgba(240,237,229,.05);border-color:var(--bdr)}
+.lw-trend.down{color:#e0b48a;background:rgba(184,149,106,.12);border-color:rgba(184,149,106,.28)}
+.lw-note{font-size:.68rem;color:var(--t4);line-height:1.55;margin-top:.55rem;font-style:italic}
+
+/* ── EMPTY STATES ── */
+.lw-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.55rem;padding:2.2rem 1.2rem;margin:auto 0}
+.lw-empty-ic{width:56px;height:56px;border-radius:18px;background:rgba(0,107,101,.16);border:1px solid rgba(0,143,135,.25);display:flex;align-items:center;justify-content:center;color:var(--cy-ll)}
+.lw-empty-t{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--t1);font-weight:400;font-style:italic}
+.lw-empty-s{font-size:.82rem;color:var(--t3);line-height:1.65;max-width:34ch}
+.lw-empty .btn-cont{margin-top:.4rem}
+
+/* ── SEARCH FIELD ── */
+.lw-search{display:flex;align-items:center;gap:.5rem;background:rgba(240,237,229,.05);border:1px solid var(--bdr);border-radius:11px;padding:.5rem .75rem;transition:border-color .18s}
+.lw-search:focus-within{border-color:var(--cy-l);box-shadow:0 0 0 3px rgba(0,107,101,.15)}
+.lw-search .lu{color:var(--t3);flex-shrink:0}
+.lw-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--t1);font-family:'Lato',sans-serif;font-size:.85rem}
+.lw-search input::placeholder{color:var(--t4)}
+.lw-search button{background:none;border:none;color:var(--t3);cursor:pointer;padding:2px;display:flex;border-radius:5px}
+.lw-search button:hover{color:var(--t1)}
+
+/* ── SESSION LIST ── */
+.lw-sess{background:rgba(240,237,229,.035);border:1px solid var(--bdr);border-radius:14px;padding:.85rem .95rem;display:flex;flex-direction:column;gap:.45rem;
+  transition:border-color .18s,background .18s}
+.lw-sess:hover{border-color:rgba(240,237,229,.16);background:rgba(240,237,229,.055)}
+.lw-sess.current{border-color:rgba(0,143,135,.42);background:rgba(0,107,101,.14)}
+.lw-sess-top{display:flex;align-items:flex-start;gap:.55rem}
+.lw-sess-main{flex:1;min-width:0;text-align:left;background:none;border:none;padding:0;cursor:pointer;font-family:'Lato',sans-serif;color:inherit}
+.lw-sess-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--t1);font-weight:400;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lw-sess-meta{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.63rem;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);font-weight:700;margin-top:.2rem}
+.lw-sess-prev{font-size:.78rem;color:var(--t3);line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lw-pill{font-size:.55rem;letter-spacing:.1em;padding:.14rem .42rem;border-radius:20px;font-weight:700;text-transform:uppercase}
+.lw-pill.live{background:rgba(0,143,135,.22);border:1px solid rgba(0,143,135,.45);color:#7fd8c8}
+.lw-sess-acts{display:flex;gap:.3rem;flex-shrink:0}
+.lw-icon-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;background:rgba(240,237,229,.05);border:1px solid var(--bdr);
+  border-radius:9px;color:var(--t3);cursor:pointer;transition:color .16s,border-color .16s,background .16s}
+.lw-icon-btn:hover{color:var(--t1);border-color:var(--bact);background:rgba(240,237,229,.09)}
+.lw-icon-btn:active{transform:scale(.9);transition:transform .07s ease}
+.lw-icon-btn.danger:hover{color:#f2a4a4;border-color:rgba(224,92,92,.4);background:rgba(224,92,92,.1)}
+.lw-rename{width:100%;background:rgba(240,237,229,.06);border:1px solid rgba(0,143,135,.4);border-radius:8px;padding:.42rem .6rem;color:var(--t1);
+  font-family:'Playfair Display',serif;font-size:1rem;outline:none}
+
+/* ── DAY GROUP HEADER ── */
+.lw-group{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--t4);font-weight:700;padding:.35rem .15rem .1rem;position:sticky;top:0;
+  background:linear-gradient(180deg,var(--bg) 55%,transparent);z-index:2}
+
+/* ── SEGMENTED CONTROL ── */
+.lw-seg{display:flex;gap:.22rem;background:rgba(240,237,229,.04);border:1px solid var(--bdr);border-radius:11px;padding:.22rem}
+.lw-seg button{flex:1;padding:.42rem .5rem;background:none;border:none;border-radius:8px;color:var(--t3);font-family:'Lato',sans-serif;font-size:.72rem;
+  font-weight:700;cursor:pointer;transition:background .16s,color .16s;white-space:nowrap}
+.lw-seg button.on{background:var(--cy);color:var(--sd)}
+.lw-seg button:not(.on):hover{color:var(--t1);background:rgba(240,237,229,.06)}
+
+/* ── SETTINGS ── */
+.lw-set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}
+.lw-set-card{background:rgba(240,237,229,.04);border:1px solid var(--bdr);border-radius:14px;padding:.95rem .85rem;display:flex;flex-direction:column;
+  align-items:flex-start;gap:.42rem;cursor:pointer;text-align:left;font-family:'Lato',sans-serif;transition:border-color .18s,background .18s,transform .35s cubic-bezier(.34,1.56,.64,1)}
+.lw-set-card:hover{border-color:rgba(0,143,135,.35);background:rgba(0,107,101,.16)}
+.lw-set-card:active{transform:scale(.96);transition:transform .07s ease}
+.lw-set-card .lu{color:var(--cy-ll)}
+.lw-set-n{font-family:'Playfair Display',serif;font-size:1rem;color:var(--t1);font-weight:400}
+.lw-set-d{font-size:.68rem;color:var(--t3);line-height:1.5}
+.lw-set-sec{display:flex;flex-direction:column;gap:.65rem}
+.lw-set-back{display:inline-flex;align-items:center;gap:.4rem;background:none;border:none;color:var(--t3);font-family:'Lato',sans-serif;font-size:.78rem;
+  font-weight:700;cursor:pointer;padding:.3rem .1rem;border-radius:7px}
+.lw-set-back:hover{color:var(--t1)}
+.lw-row{display:flex;align-items:center;justify-content:space-between;gap:.7rem;padding:.6rem 0;border-bottom:1px solid rgba(240,237,229,.06)}
+.lw-row:last-child{border-bottom:none}
+.lw-row-l{min-width:0;flex:1}
+.lw-row-t{font-size:.8rem;color:var(--t2);font-weight:700;line-height:1.4}
+.lw-row-s{font-size:.68rem;color:var(--t3);line-height:1.5;margin-top:.12rem}
+
+/* ── MEMORY ── */
+.lw-mem{background:rgba(240,237,229,.035);border:1px solid var(--bdr);border-radius:12px;padding:.7rem .8rem;display:flex;gap:.6rem;align-items:flex-start}
+.lw-mem-b{flex:1;min-width:0}
+.lw-mem-d{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);font-weight:700;margin-bottom:.25rem}
+.lw-mem-t{font-size:.78rem;color:var(--t2);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.lw-mem-t.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── BOTTOM SHEET / MODAL ── */
+.lw-sheet-bd{position:fixed;inset:0;z-index:340;background:rgba(0,10,10,.66);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:769px){.lw-sheet-bd{align-items:center}}
+.lw-sheet{background:rgba(0,34,33,.99);border:1px solid rgba(240,237,229,.12);border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:88dvh;
+  display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,.5);animation:sheetUp .26s cubic-bezier(.22,1,.36,1) both}
+@media(min-width:769px){.lw-sheet{border-radius:22px;animation:fadeUp .22s ease both}}
+@keyframes sheetUp{from{transform:translateY(18px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.lw-sheet-h{display:flex;align-items:center;gap:.6rem;padding:1rem 1.15rem .7rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.lw-sheet-t{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--t1);font-weight:400;font-style:italic;flex:1;min-width:0}
+.lw-sheet-inner{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1.1rem 1.15rem;display:flex;flex-direction:column;gap:.85rem}
+
+/* ── IMAGE LIGHTBOX ── */
+.lw-light{position:fixed;inset:0;z-index:360;background:rgba(0,6,6,.94);display:flex;align-items:center;justify-content:center;padding:1rem}
+.lw-light img{max-width:100%;max-height:88dvh;border-radius:12px;object-fit:contain}
+.lw-light-x{position:absolute;top:calc(1rem + env(safe-area-inset-top,0px));right:1rem;width:44px;height:44px;border-radius:50%;
+  background:rgba(0,0,0,.6);border:1px solid rgba(240,237,229,.2);color:var(--sd);display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── CHAT: richer message content ── */
+.msg-bubble p{margin:0 0 .6em}
+.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble ul,.msg-bubble ol{margin:.35em 0 .6em;padding-left:1.25em}
+.msg-bubble li{margin:.18em 0;line-height:1.7}
+.msg-bubble li::marker{color:var(--cy-ll)}
+.msg-bubble h3,.msg-bubble h4{font-family:'Playfair Display',serif;font-weight:400;font-size:1.02em;color:var(--t1);margin:.5em 0 .3em}
+.msg-bubble em{font-style:italic}
+.msg-bubble a{color:var(--cy-ll);text-decoration:underline;text-underline-offset:2px;word-break:break-word}
+.msg-bubble blockquote{margin:.45em 0;padding:.15em 0 .15em .8em;border-left:2px solid rgba(0,143,135,.45);color:var(--t3);font-style:italic}
+.msg-bubble hr{border:none;border-top:1px solid var(--bdr);margin:.7em 0}
+.lw-code-inline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:rgba(0,0,0,.3);
+  border:1px solid rgba(240,237,229,.1);border-radius:5px;padding:.1em .38em;word-break:break-word}
+.lw-pre{position:relative;margin:.55em 0;background:rgba(0,0,0,.34);border:1px solid rgba(240,237,229,.1);border-radius:11px;overflow:hidden}
+.lw-pre-h{display:flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-bottom:1px solid rgba(240,237,229,.08);background:rgba(0,0,0,.2)}
+.lw-pre-lang{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);font-weight:700}
+.lw-pre-copy{margin-left:auto;background:none;border:none;color:var(--t3);font-size:.65rem;font-family:'Lato',sans-serif;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .35rem;border-radius:6px}
+.lw-pre-copy:hover{color:var(--cy-ll);background:rgba(240,237,229,.06)}
+.lw-pre code{display:block;padding:.7rem .75rem;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.78rem;line-height:1.65;color:var(--sd-d);white-space:pre;-webkit-overflow-scrolling:touch}
+.msg-bubble table{width:100%;border-collapse:collapse;margin:.5em 0;font-size:.94em;display:block;overflow-x:auto}
+.msg-bubble th,.msg-bubble td{border:1px solid var(--bdr);padding:.35em .5em;text-align:left}
+.msg-bubble th{background:rgba(240,237,229,.05);font-weight:700;color:var(--t1)}
+
+/* Long messages fold instead of swallowing the screen */
+.lw-fold{position:relative;max-height:22em;overflow:hidden}
+.lw-fold::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4.5em;background:linear-gradient(180deg,transparent,rgba(0,38,36,.97))}
+.msg-bubble.user .lw-fold::after{background:linear-gradient(180deg,transparent,var(--cy))}
+.lw-fold-btn{display:inline-flex;align-items:center;gap:.3rem;margin-top:.5rem;background:rgba(240,237,229,.07);border:1px solid var(--bdr);
+  border-radius:20px;padding:.28rem .7rem;color:var(--t2);font-family:'Lato',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer}
+.lw-fold-btn:hover{color:var(--t1);border-color:var(--bact)}
+
+/* Message footer — timestamp and actions on one line, quiet until
+   you reach for them, but never hidden: read-aloud is a main feature,
+   not something to go hunting for. */
+.lw-msg-foot{display:flex;align-items:center;gap:.45rem;margin-top:.25rem}
+.msg-row.user .lw-msg-foot{justify-content:flex-end}
+.lw-msg-acts{display:flex;align-items:center;gap:.1rem;opacity:.55;transition:opacity .18s}
+.msg-row:hover .lw-msg-acts,.msg-row:focus-within .lw-msg-acts{opacity:1}
+.lw-msg-foot .msg-time{margin-top:0}
+
+/* Attachment previews inside a sent message */
+.lw-att-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
+.lw-att-img{width:84px;height:84px;border-radius:10px;object-fit:cover;border:1px solid rgba(240,237,229,.18);cursor:zoom-in;display:block}
+.lw-att-doc{display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,.22);border:1px solid rgba(240,237,229,.12);border-radius:10px;
+  padding:.4rem .6rem;font-size:.72rem;color:var(--t2);max-width:100%}
+.lw-att-doc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Retry / error recovery inside the conversation */
+.lw-retry{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.5rem}
+.lw-retry-btn{display:inline-flex;align-items:center;gap:.35rem;background:rgba(0,107,101,.2);border:1px solid rgba(0,143,135,.4);border-radius:9px;
+  padding:.4rem .8rem;color:#8fd8d0;font-family:'Lato',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer}
+.lw-retry-btn:hover{background:rgba(0,107,101,.32)}
+.lw-retry-btn:active{transform:scale(.95);transition:transform .07s ease}
+
+/* Loading skeleton for the first reply */
+.lw-thinking{display:flex;flex-direction:column;gap:.4rem;padding:.8rem 1.05rem;background:rgba(0,38,36,.92);border:1px solid rgba(240,237,229,.08);
+  border-radius:18px;border-top-left-radius:4px;min-width:190px}
+
+/* ── TABLET & DESKTOP ── */
+@media(min-width:900px){
+  .chat-messages{padding:1.5rem clamp(1.5rem,6vw,4rem)}
+  .msg-row{max-width:min(78%,760px)}
+  .chat-footer{padding:1rem clamp(1.5rem,6vw,4rem)}
+  .panel{padding:1.5rem clamp(1.5rem,6vw,4rem)}
+  .lw-hero{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:1400px){
+  .chat-messages,.chat-footer,.panel{padding-left:max(2rem,calc((100% - 1080px)/2));padding-right:max(2rem,calc((100% - 1080px)/2))}
+}
+/* Tablet portrait keeps the sidebar hidden but gives content real room */
+@media(min-width:600px) and (max-width:768px){
+  .lw-hero{grid-template-columns:repeat(4,1fr)}
+  .lw-quick{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .msg-row{max-width:80%}
+}
+/* Small Android phone */
+@media(max-width:400px){
+  .lw-hero{gap:.5rem}
+  .lw-tile{padding:.7rem .75rem}
+  .lw-tile-v{font-size:1.3rem}
+  .lw-greet{font-size:1.5rem}
+  .lw-quick{grid-template-columns:repeat(3,1fr);gap:.45rem}
+  .lw-qbtn{padding:.65rem .35rem;font-size:.63rem}
+  .mobile-tab{font-size:.55rem}
+}
+/* Landscape phone — vertical space is the scarce thing */
+@media(max-height:520px) and (orientation:landscape){
+  .lw-greet{font-size:1.25rem}
+  .lw-hero{grid-template-columns:repeat(4,1fr)}
+  .chat-messages{padding:.6rem}
+  .mobile-nav{padding:.3rem .6rem}
+  .mobile-tab .ti{margin-bottom:0}
+}
+
+/* ── ON-SCREEN KEYBOARD ──
+   --kb is set from visualViewport (see _kbSync). Where that API is
+   missing the variable stays 0 and nothing below has any effect. */
+.app{height:calc(100dvh - var(--kb, 0px));transition:height .12s ease}
+.main-layout{height:100%}
+html.kb-open .mobile-nav{display:none}
+html.kb-open .aurora{display:none}
+html[data-motion="off"] .app{transition:none}
+
+/* ── CHAT HEADER on a phone ──
+   The header carried five things at once and wrapped onto three
+   lines. On a narrow screen only the identity and the two controls
+   people actually reach for survive. */
+@media(max-width:600px){
+  .content-header{gap:.4rem;flex-wrap:nowrap}
+  .header-left{min-width:0;flex:1}
+  .header-title{font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chat-header-badges{flex-wrap:nowrap!important;gap:.3rem!important;flex-shrink:0}
+  .chat-header-badges .token-badge{display:none}
+}
+
+/* 6 tabs now that Home exists */
+.sidebar-tabs{grid-template-columns:repeat(3,1fr);gap:.3rem}
+.mobile-nav-grid{grid-template-columns:repeat(6,1fr);gap:.18rem}
+.mobile-tab{padding:.42rem .1rem;font-size:.57rem;letter-spacing:.02em}
+@media(max-width:360px){.mobile-tab span.tl{display:none}.mobile-tab{padding:.55rem .1rem}}
 </style>
 </head>
 <body>
@@ -947,6 +1278,53 @@ function getThemeMode() {
     return 'system';
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY PREFERENCES
+   ──────────────────────────────────────────────────────────────
+   Text size, contrast and motion are applied to <html> before
+   React mounts, so the very first paint is already correct — no
+   flash of small text for someone who needs it large. Reduced
+   motion starts from the operating system's own setting, which is
+   where most people have already said what they want.
+   ══════════════════════════════════════════════════════════════ */
+var A11Y_KEY = 'lewa-a11y';
+var TEXT_STEPS = { small: 0.92, normal: 1, large: 1.14, xlarge: 1.3 };
+function getA11y() {
+  var d = { text: 'normal', contrast: 'normal', motion: 'system' };
+  try {
+    var raw = JSON.parse(localStorage.getItem(A11Y_KEY) || 'null');
+    if (raw && typeof raw === 'object') {
+      if (TEXT_STEPS[raw.text]) d.text = raw.text;
+      if (raw.contrast === 'high') d.contrast = 'high';
+      if (raw.motion === 'off' || raw.motion === 'on') d.motion = raw.motion;
+    }
+  } catch (_) {}
+  return d;
+}
+function systemPrefersReducedMotion() {
+  try {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (_) {
+    return false;
+  }
+}
+function applyA11y(next) {
+  var a = next || getA11y();
+  try {
+    var el = document.documentElement;
+    el.style.setProperty('--ui-scale', String(TEXT_STEPS[a.text] || 1));
+    if (a.contrast === 'high') el.setAttribute('data-contrast', 'high');else el.removeAttribute('data-contrast');
+    var reduce = a.motion === 'off' || a.motion === 'system' && systemPrefersReducedMotion();
+    if (reduce) el.setAttribute('data-motion', 'off');else el.removeAttribute('data-motion');
+  } catch (_) {}
+  return a;
+}
+function saveA11y(a) {
+  try { localStorage.setItem(A11Y_KEY, JSON.stringify(a)); } catch (_) {}
+  return applyA11y(a);
+}
+try { applyA11y(); } catch (_) {}
 function systemPrefersDark() {
   try {
     if (window.LewaAndroid && typeof LewaAndroid.isSystemDark === 'function') return !!LewaAndroid.isSystemDark();
@@ -1012,6 +1390,39 @@ function toast(msg, ms) {
    the UI — we just tell the truth about the connection and let the
    chat retry itself the moment it returns.
    ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   ON-SCREEN KEYBOARD
+   ──────────────────────────────────────────────────────────────
+   Android WebViews differ in whether they resize the layout when
+   the keyboard opens. When they don't, the composer ends up behind
+   it. visualViewport reports the real visible area, so the app can
+   shrink itself by exactly the keyboard's height and keep the
+   input — and the last thing said — in view. Entirely feature
+   detected: where visualViewport is missing, nothing changes and
+   the native resize behaviour is left to do its job.
+   ══════════════════════════════════════════════════════════════ */
+function _kbSync() {
+  try {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const gap = Math.max(0, (window.innerHeight || 0) - vv.height - (vv.offsetTop || 0));
+    const open = gap > 90; // small deltas are toolbars, not a keyboard
+    const el = document.documentElement;
+    el.style.setProperty('--kb', open ? gap + 'px' : '0px');
+    if (open) el.classList.add('kb-open');else el.classList.remove('kb-open');
+    if (open) {
+      const list = document.querySelector('.chat-messages');
+      if (list) setTimeout(function () { list.scrollTop = list.scrollHeight; }, 60);
+    }
+  } catch (_) {}
+}
+try {
+  if (typeof window !== 'undefined' && window.visualViewport) {
+    window.visualViewport.addEventListener('resize', _kbSync);
+    window.visualViewport.addEventListener('scroll', _kbSync);
+  }
+} catch (_) {}
+
 function isOffline() {
   try { return navigator.onLine === false; } catch (_) { return false; }
 }
@@ -1058,7 +1469,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.0';
+var APP_VERSION = '1.1';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -2328,6 +2739,9 @@ if (window.pdfjsLib) {
    Lucide equivalent is drawn in the same 24×24 stroke style so the
    set stays visually consistent.
    ════════════════════════════════════════════════════════════ */
+/* Short alias — the interface layer below is written directly against
+   React.createElement, and `h(...)` keeps it readable. */
+const h = React.createElement;
 const ICONS = {
   leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
   user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
@@ -2377,7 +2791,33 @@ const ICONS = {
   wave: '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
   micOff: '<line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/>',
   volumeX: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/>',
-  edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>'
+  edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+  /* ── v1.1 interface icons (Lucide, MIT) ── */
+  home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  search: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
+  settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  brain: '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+  palette: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
+  accessibility: '<circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  chevronUp: '<path d="m18 15-6-6-6 6"/>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  type: '<path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6"/><path d="M12 4v16"/>',
+  contrast: '<circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12v12z" fill="currentColor"/>',
+  eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>',
+  more: '<circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>',
+  sliders: '<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>',
+  cpu: '<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/>',
+  compass: '<path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/>',
+  sprout: '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2"/>'
 };
 function Icon({
   name,
@@ -4917,61 +5357,50 @@ function QuranCard({
     }
   });
 }
+/* A message long enough to swallow the screen is folded, with the
+   choice to open it left to the reader. */
+const FOLD_CHARS = 1500;
 function Bubble({
   msg,
   mid
 }) {
-  var _msg$content, _msg$attachments;
+  var _msg$content;
+  const [open, setOpen] = React.useState(false);
   /* Prefer the display text for user messages with attachments */
   const text = msg.display || (typeof msg.content === "string" ? msg.content : ((_msg$content = msg.content) == null || (_msg$content = _msg$content.find(c => c.type === "text")) == null ? void 0 : _msg$content.text) || "");
-  const fmt = (t, kb) => t.split(/(\*\*[^*]+\*\*)/).map((p, i) => p.startsWith("**") ? /*#__PURE__*/React.createElement("strong", {
-    key: kb + "-" + i,
-    style: {
-      color: "#fbbf24",
-      fontWeight: 500
-    }
-  }, p.slice(2, -2)) : p);
+  const atts = msg.attachments || [];
+  const images = atts.filter(function (a) { return a && a.kind === 'image' && a.preview; });
+  const docs = atts.filter(function (a) { return a && a.kind !== 'image'; });
   /* ```quran directives become an authentic recitation player — but never
      while the reply is still streaming in (mid==="live"). */
   const segs = msg.role === "assistant" && mid !== "live" ? text.split(/```quran\s*([\s\S]*?)```/) : [text];
-  return /*#__PURE__*/React.createElement(React.Fragment, null, segs.map((seg, si) => si % 2 === 1 ? /*#__PURE__*/React.createElement(QuranCard, {
-    key: "q" + si,
-    spec: seg.trim(),
-    mid: mid != null ? mid : "x",
-    part: si
-  }) : /*#__PURE__*/React.createElement(React.Fragment, {
-    key: "t" + si
-  }, fmt(seg, si))), (_msg$attachments = msg.attachments) == null ? void 0 : _msg$attachments.map((a, i) => a.kind === "image" && a.preview ? /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      marginTop: ".6rem"
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: a.preview,
-    alt: a.name,
-    style: {
-      maxWidth: "100%",
-      maxHeight: 220,
-      borderRadius: 8,
-      display: "block"
-    }
-  })) : a.kind === "text" ? /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      marginTop: ".5rem",
-      fontSize: ".75rem",
-      color: "rgba(250,248,242,.55)",
-      background: "rgba(167,139,250,.06)",
-      borderRadius: 6,
-      padding: ".4rem .6rem",
-      display: "flex",
-      alignItems: "center",
-      gap: ".3rem"
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "file",
-    size: 13
-  }), " ", a.name) : null));
+  const body = h(React.Fragment, null, segs.map(function (seg, si) {
+    return si % 2 === 1
+      ? h(QuranCard, { key: 'q' + si, spec: seg.trim(), mid: mid == null ? 'x' : mid, part: si })
+      : h(RichText, { key: 't' + si, text: seg, kb: (mid == null ? 'x' : mid) + '-' + si });
+  }));
+  const long = text.length > FOLD_CHARS && mid !== 'live';
+  return h(React.Fragment, null,
+    images.length ? h('div', { className: 'lw-att-row' }, images.map(function (a, i) {
+      return h('img', {
+        key: 'i' + i, className: 'lw-att-img no-invert', src: a.preview,
+        alt: a.fromCamera ? 'Photo from your camera' : a.name || 'Attached image',
+        loading: 'lazy',
+        tabIndex: 0,
+        title: 'Open full size',
+        onClick: function () { openLightbox(a.preview, a.name); },
+        onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(a.preview, a.name); } }
+      });
+    })) : null,
+    docs.length ? h('div', { className: 'lw-att-row' }, docs.map(function (a, i) {
+      return h('span', { key: 'd' + i, className: 'lw-att-doc' }, h(Icon, { name: 'file', size: 13 }), h('span', null, a.name || 'Attached file'));
+    })) : null,
+    long && !open ? h('div', { className: 'lw-fold' }, body) : body,
+    long ? h('button', {
+      className: 'lw-fold-btn', type: 'button',
+      'aria-expanded': open,
+      onClick: function () { SND.tap(); setOpen(!open); }
+    }, h(Icon, { name: open ? 'chevronUp' : 'chevronDown', size: 12 }), open ? 'Show less' : 'Show the rest') : null);
 }
 
 /* ── BREATHING EXERCISE ── */
@@ -8023,6 +8452,353 @@ function AccountScreen({
 }
 
 /* ── TOGGLE SWITCH ── */
+/* ══════════════════════════════════════════════════════════════
+   v1.1 — SHARED INTERFACE PIECES
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Copy to clipboard, with a fallback for Android WebView ──
+   The async Clipboard API is missing or blocked in a lot of WebView
+   builds, so this always has somewhere to fall back to. */
+function copyText(s) {
+  const str = String(s == null ? '' : s);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(str).then(function () { return true; }, function () { return legacyCopy(str); });
+    }
+  } catch (_) {}
+  return Promise.resolve(legacyCopy(str));
+}
+function legacyCopy(str) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = str;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, str.length);
+    const ok = document.execCommand && document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+/* ── MARKDOWN ──────────────────────────────────────────────────
+   LEWA writes in prose, but it does reach for a list, an emphasis
+   or the occasional block of text that has to keep its shape. This
+   builds real React elements — model output is never handed to
+   innerHTML — and covers exactly what a therapist's replies use.
+   ────────────────────────────────────────────────────────────── */
+function mdInline(src, kb) {
+  const s = String(src == null ? '' : src);
+  const out = [];
+  let buf = '', k = 0, i = 0;
+  const flush = function () { if (buf) { out.push(buf); buf = ''; } };
+  const isOpen = function (ch) { return !ch || /[\s(\[{"'‘“]/.test(ch); };
+  while (i < s.length) {
+    const c = s.charAt(i), prev = i ? s.charAt(i - 1) : '';
+    if (c === '`') {
+      const j = s.indexOf('`', i + 1);
+      if (j > i + 1) {
+        flush();
+        out.push(h('code', { key: kb + 'c' + k++, className: 'lw-code-inline' }, s.slice(i + 1, j)));
+        i = j + 1;
+        continue;
+      }
+    }
+    if ((c === '*' || c === '_') && s.charAt(i + 1) === c) {
+      const tok = c + c, j = s.indexOf(tok, i + 2);
+      if (j > i + 2 && (c === '*' || isOpen(prev))) {
+        flush();
+        out.push(h('strong', { key: kb + 'b' + k++ }, mdInline(s.slice(i + 2, j), kb + 'b' + k)));
+        i = j + 2;
+        continue;
+      }
+    }
+    if ((c === '*' || c === '_') && s.charAt(i + 1) !== c && (c === '*' || isOpen(prev))) {
+      const j = s.indexOf(c, i + 1);
+      if (j > i + 1 && !/\s/.test(s.charAt(i + 1)) && !/\s/.test(s.charAt(j - 1))) {
+        flush();
+        out.push(h('em', { key: kb + 'i' + k++ }, mdInline(s.slice(i + 1, j), kb + 'i' + k)));
+        i = j + 1;
+        continue;
+      }
+    }
+    if (c === '[') {
+      const close = s.indexOf(']', i);
+      if (close > i && s.charAt(close + 1) === '(') {
+        const end = s.indexOf(')', close);
+        const url = end > close ? s.slice(close + 2, end) : '';
+        if (/^https?:\/\//i.test(url)) {
+          flush();
+          out.push(h('a', { key: kb + 'a' + k++, href: url, target: '_blank', rel: 'noopener noreferrer' }, s.slice(i + 1, close)));
+          i = end + 1;
+          continue;
+        }
+      }
+    }
+    if ((c === 'h' || c === 'H') && /^https?:\/\//i.test(s.slice(i, i + 8))) {
+      const m = /^https?:\/\/[^\s<>()[\]]+/i.exec(s.slice(i));
+      if (m) {
+        flush();
+        out.push(h('a', { key: kb + 'u' + k++, href: m[0], target: '_blank', rel: 'noopener noreferrer' }, m[0]));
+        i += m[0].length;
+        continue;
+      }
+    }
+    buf += c;
+    i++;
+  }
+  flush();
+  return out;
+}
+const MD_BLOCK_START = /^\s{0,3}(#{1,6}\s|>|([-*•]|\d{1,3}[.)])\s|(-{3,}|\*{3,}|_{3,})\s*$)/;
+function mdRow(line) {
+  return String(line).replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(function (c) { return c.trim(); });
+}
+function mdBlocks(src) {
+  const lines = String(src == null ? '' : src).replace(/\r/g, '').split('\n');
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const ln = lines[i];
+    if (!ln.trim()) { i++; continue; }
+    if (/^\s{0,3}(-{3,}|\*{3,}|_{3,})\s*$/.test(ln)) { out.push({ t: 'hr' }); i++; continue; }
+    const hm = /^\s{0,3}(#{1,6})\s+(.*)$/.exec(ln);
+    if (hm) { out.push({ t: 'h', lvl: hm[1].length, s: hm[2] }); i++; continue; }
+    if (/^\s{0,3}>\s?/.test(ln)) {
+      const buf = [];
+      while (i < lines.length && /^\s{0,3}>\s?/.test(lines[i])) { buf.push(lines[i].replace(/^\s{0,3}>\s?/, '')); i++; }
+      out.push({ t: 'quote', s: buf.join('\n') });
+      continue;
+    }
+    if (/\|/.test(ln) && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i + 1])) {
+      const head = mdRow(ln);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim()) { rows.push(mdRow(lines[i])); i++; }
+      out.push({ t: 'table', head: head, rows: rows });
+      continue;
+    }
+    if (/^\s{0,3}([-*•]|\d{1,3}[.)])\s+/.test(ln)) {
+      const ordered = /^\s{0,3}\d/.test(ln);
+      const items = [];
+      while (i < lines.length && /^\s{0,3}([-*•]|\d{1,3}[.)])\s+/.test(lines[i]) && /^\s{0,3}\d/.test(lines[i]) === ordered) {
+        let s = lines[i].replace(/^\s{0,3}([-*•]|\d{1,3}[.)])\s+/, '');
+        i++;
+        while (i < lines.length && lines[i].trim() && /^\s{2,}/.test(lines[i]) && !MD_BLOCK_START.test(lines[i])) { s += ' ' + lines[i].trim(); i++; }
+        items.push(s);
+      }
+      out.push({ t: 'list', ordered: ordered, items: items });
+      continue;
+    }
+    const buf = [];
+    while (i < lines.length && lines[i].trim() && !MD_BLOCK_START.test(lines[i])) { buf.push(lines[i]); i++; }
+    if (buf.length) out.push({ t: 'p', s: buf.join('\n') });else i++;
+  }
+  return out;
+}
+function CodeBlock({ lang, code }) {
+  const [done, setDone] = React.useState(false);
+  return h('div', { className: 'lw-pre' },
+    h('div', { className: 'lw-pre-h' },
+      h('span', { className: 'lw-pre-lang' }, lang || 'text'),
+      h('button', {
+        className: 'lw-pre-copy', type: 'button',
+        'aria-label': 'Copy this text',
+        onClick: function () {
+          copyText(code).then(function (ok) {
+            setDone(!!ok);
+            if (ok) setTimeout(function () { setDone(false); }, 1600);else toast('Copy is blocked here — select the text to copy it.');
+          });
+        }
+      }, h(Icon, { name: done ? 'check' : 'copy', size: 12 }), done ? 'Copied' : 'Copy')),
+    h('code', null, code));
+}
+function RichText({ text, kb }) {
+  const base = kb || 'm';
+  /* Fenced blocks are pulled out whole so their spacing survives. */
+  const parts = String(text == null ? '' : text).split(/```([\w+-]*)\n?([\s\S]*?)```/g);
+  const nodes = [];
+  for (let p = 0; p < parts.length; p++) {
+    if (p % 3 === 0) {
+      const blocks = mdBlocks(parts[p]);
+      for (let b = 0; b < blocks.length; b++) {
+        const blk = blocks[b], key = base + '-' + p + '-' + b;
+        if (blk.t === 'hr') nodes.push(h('hr', { key: key }));
+        else if (blk.t === 'h') nodes.push(h(blk.lvl <= 3 ? 'h3' : 'h4', { key: key }, mdInline(blk.s, key)));
+        else if (blk.t === 'quote') nodes.push(h('blockquote', { key: key }, mdInline(blk.s, key)));
+        else if (blk.t === 'list') nodes.push(h(blk.ordered ? 'ol' : 'ul', { key: key }, blk.items.map(function (it, n) {
+          return h('li', { key: key + '-' + n }, mdInline(it, key + '-' + n));
+        })));
+        else if (blk.t === 'table') nodes.push(h('table', { key: key },
+          h('thead', null, h('tr', null, blk.head.map(function (c, n) { return h('th', { key: n }, mdInline(c, key + 'h' + n)); }))),
+          h('tbody', null, blk.rows.map(function (r, rn) {
+            return h('tr', { key: rn }, r.map(function (c, n) { return h('td', { key: n }, mdInline(c, key + 'r' + rn + n)); }));
+          }))));
+        else nodes.push(h('p', { key: key }, mdInline(blk.s, key)));
+      }
+    } else if (p % 3 === 2) {
+      nodes.push(h(CodeBlock, { key: base + '-code-' + p, lang: parts[p - 1], code: parts[p].replace(/\n$/, '') }));
+    }
+  }
+  return h(React.Fragment, null, nodes);
+}
+
+/* ── Image lightbox ──
+   Opened by dispatching a window event, so any thumbnail anywhere in
+   the app can raise it without threading props through the tree. */
+function openLightbox(src, alt) {
+  try { window.dispatchEvent(new CustomEvent('lewa-lightbox', { detail: { src: src, alt: alt || 'Attached image' } })); } catch (_) {}
+}
+function Lightbox() {
+  const [shot, setShot] = React.useState(null);
+  React.useEffect(function () {
+    const onOpen = function (e) { setShot(e.detail || null); };
+    const onKey = function (e) { if (e.key === 'Escape') setShot(null); };
+    window.addEventListener('lewa-lightbox', onOpen);
+    window.addEventListener('keydown', onKey);
+    return function () {
+      window.removeEventListener('lewa-lightbox', onOpen);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, []);
+  if (!shot) return null;
+  return h('div', {
+    className: 'lw-light', role: 'dialog', 'aria-modal': 'true', 'aria-label': shot.alt,
+    onClick: function () { setShot(null); }
+  },
+    h('img', { src: shot.src, alt: shot.alt, onClick: function (e) { e.stopPropagation(); } }),
+    h('button', { className: 'lw-light-x', 'aria-label': 'Close image', onClick: function () { setShot(null); } }, h(Icon, { name: 'x', size: 20 })));
+}
+
+/* ── Empty state — every screen gets a real one ── */
+function Empty({ icon, title, text, actionLabel, onAction, actionIcon }) {
+  return h('div', { className: 'lw-empty' },
+    h('div', { className: 'lw-empty-ic' }, h(Icon, { name: icon || 'sprout', size: 26 })),
+    h('div', { className: 'lw-empty-t' }, title),
+    text ? h('div', { className: 'lw-empty-s' }, text) : null,
+    onAction ? h('button', { className: 'btn-cont', onClick: onAction, style: { display: 'inline-flex', alignItems: 'center', gap: '.4rem' } },
+      actionIcon ? h(Icon, { name: actionIcon, size: 14 }) : null, actionLabel) : null);
+}
+
+/* ── Bottom sheet (a centred dialog from tablet width up) ── */
+function Sheet({ title, icon, onClose, children, labelledBy }) {
+  const ref = React.useRef(null);
+  React.useEffect(function () {
+    const onKey = function (e) { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    /* Focus moves into the sheet so a keyboard or screen reader lands
+       in the right place rather than back at the top of the page. */
+    try { if (ref.current) ref.current.focus(); } catch (_) {}
+    return function () { window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+  return h('div', { className: 'lw-sheet-bd', onMouseDown: function (e) { if (e.target === e.currentTarget) onClose(); } },
+    h('div', {
+      className: 'lw-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': labelledBy || 'lw-sheet-title',
+      tabIndex: -1, ref: ref
+    },
+      h('div', { className: 'lw-sheet-h' },
+        icon ? h(Icon, { name: icon, size: 18, style: { color: 'var(--cy-ll)' } }) : null,
+        h('div', { className: 'lw-sheet-t', id: labelledBy || 'lw-sheet-title' }, title),
+        h('button', { className: 'lw-icon-btn', onClick: onClose, 'aria-label': 'Close' }, h(Icon, { name: 'x', size: 15 }))),
+      h('div', { className: 'lw-sheet-inner' }, children)));
+}
+
+/* ── Small building blocks ── */
+function LCard({ icon, title, action, actionLabel, children, style }) {
+  return h('section', { className: 'lw-card', style: style },
+    title ? h('div', { className: 'lw-card-h' },
+      icon ? h(Icon, { name: icon, size: 15 }) : null,
+      h('h2', { className: 'lw-card-t' }, title),
+      action ? h('button', { className: 'lw-card-a', onClick: action }, actionLabel, h(Icon, { name: 'chevronRight', size: 12 })) : null) : null,
+    children);
+}
+function Tile({ k, v, unit, note, onClick, label }) {
+  const body = [
+    h('div', { className: 'lw-tile-k', key: 'k' }, k),
+    h('div', { className: 'lw-tile-v', key: 'v' }, v, unit ? h('small', null, unit) : null),
+    note ? h('div', { className: 'lw-tile-n', key: 'n' }, note) : null
+  ];
+  return onClick
+    ? h('button', { className: 'lw-tile', onClick: onClick, 'aria-label': label || k + ': ' + v }, body)
+    : h('div', { className: 'lw-tile', role: 'group', 'aria-label': label || k + ': ' + v }, body);
+}
+function Seg({ value, options, onChange, label }) {
+  return h('div', { className: 'lw-seg', role: 'tablist', 'aria-label': label || 'View' }, options.map(function (o) {
+    return h('button', {
+      key: o[0], type: 'button', role: 'tab', 'aria-selected': value === o[0],
+      className: value === o[0] ? 'on' : '',
+      onClick: function () { SND.tap(); onChange(o[0]); }
+    }, o[1]);
+  }));
+}
+function LRow({ title, sub, children, id }) {
+  return h('div', { className: 'lw-row' },
+    h('div', { className: 'lw-row-l' },
+      h('div', { className: 'lw-row-t', id: id }, title),
+      sub ? h('div', { className: 'lw-row-s' }, sub) : null),
+    children);
+}
+/* Mood sparkline — bars, not a line, so a single day still reads. */
+function Spark({ values, height }) {
+  if (!values || !values.length) return null;
+  return h('div', { className: 'lw-spark', 'aria-hidden': 'true', style: height ? { height: height } : null },
+    values.map(function (v, i) {
+      const m = Math.max(0, Math.min(4, v));
+      return h('i', { key: i, style: { height: (18 + m * 20.5) + '%', background: MOODS[m] } });
+    }));
+}
+
+/* ── One message row ──────────────────────────────────────────────
+   Memoised on the message object itself. Without this, every token
+   of a streaming reply re-rendered the entire conversation, which is
+   what made a long session feel sluggish on a mid-range phone. The
+   comparator deliberately ignores handler identity — the handlers
+   are written with functional updates, so a stale closure cannot
+   read the wrong conversation. ── */
+const MsgRow = React.memo(function MsgRow({ msg, i, tts, speaking, onSpeak, onRate }) {
+  const [copied, setCopied] = React.useState(false);
+  const ai = msg.role === 'assistant';
+  const plain = typeof msg.content === 'string' ? msg.content : msg.display || '';
+  return h('div', { className: 'msg-row ' + (ai ? 'ai' : 'user') },
+    h('div', { className: 'msg-avatar ' + (ai ? 'ai' : 'user'), 'aria-hidden': 'true' },
+      h(Icon, { name: ai ? 'leaf' : 'user', size: ai ? 17 : 15 })),
+    h('div', { style: { minWidth: 0 } },
+      h('div', { className: 'msg-bubble ' + (ai ? 'ai' : 'user') }, h(Bubble, { msg: msg, mid: i })),
+      h('div', { className: 'lw-msg-foot' },
+        h('span', { className: 'msg-time' }, msg.time ? fmtT(msg.time) : ''),
+        h('div', { className: 'lw-msg-acts' },
+        ai && tts ? h('button', {
+          className: 'fb-btn', title: speaking ? 'Stop reading' : 'Read aloud',
+          'aria-label': speaking ? 'Stop reading aloud' : 'Read this reply aloud',
+          style: speaking ? { color: '#008f87' } : null,
+          onClick: () => onSpeak(i, msg.content)
+        }, h(Icon, { name: speaking ? 'pause' : 'volume', size: 14 })) : null,
+        plain ? h('button', {
+          className: 'fb-btn', title: copied ? 'Copied' : 'Copy', 'aria-label': 'Copy this message',
+          onClick: () => copyText(plain).then(ok => {
+            if (ok) { setCopied(true); setTimeout(() => setCopied(false), 1500); }
+            else toast('Copy is blocked here — select the text to copy it.');
+          })
+        }, h(Icon, { name: copied ? 'check' : 'copy', size: 13 })) : null,
+        ai && i > 0 ? h(React.Fragment, null,
+          h('button', {
+            className: 'fb-btn up' + (msg.fb === 1 ? ' on' : ''), title: 'This helped',
+            'aria-label': 'Mark this reply helpful', 'aria-pressed': msg.fb === 1,
+            onClick: () => onRate(i, 1)
+          }, h(Icon, { name: 'thumbsUp', size: 13 })),
+          h('button', {
+            className: 'fb-btn down' + (msg.fb === -1 ? ' on' : ''), title: 'This didn’t land',
+            'aria-label': 'Mark this reply unhelpful', 'aria-pressed': msg.fb === -1,
+            onClick: () => onRate(i, -1)
+          }, h(Icon, { name: 'thumbsDown', size: 13 }))) : null))));
+}, function (a, b) {
+  return a.msg === b.msg && a.i === b.i && a.speaking === b.speaking && a.tts === b.tts;
+});
+
 function Toggle({
   label,
   hint,
@@ -8049,7 +8825,7 @@ function App() {
   var _PROVIDERS$provider6, _PROVIDERS$provider7, _PROVIDERS$provider8;
   const [screen, setScreen] = useState("loading");
   const [account, setAccount] = useState(null); // {ns, name, avatar}
-  const [tab, setTab] = useState("chat");
+  const [tab, setTab] = useState("home");
   const [apiKey, setApiKey] = useState("");
   const [apiInput, setApiInput] = useState("");
   const [apiErr, setApiErr] = useState("");
@@ -8169,6 +8945,17 @@ function App() {
   }, integ().emailjs || {}));
   const [updateInfo, setUpdateInfo] = useState(null); // {version,notes,js,css} when a newer build exists
   const [updChecking, setUpdChecking] = useState(false);
+  /* ── v1.1 interface state ── */
+  const [sessQ, setSessQ] = useState('');          // session search
+  const [renameId, setRenameId] = useState(null);  // session being renamed
+  const [renameVal, setRenameVal] = useState('');
+  const [setSec, setSetSec] = useState(null);      // open settings section, null = index
+  const [a11y, setA11yState] = useState(getA11y());
+  const [lastFail, setLastFail] = useState(null);  // {text, attachments} kept for one-tap retry
+  const setA11y = patch => {
+    const next = _extends({}, a11y, patch);
+    setA11yState(saveA11y(next));
+  };
   const stopRef = useRef(null); // AbortController for the in-flight AI call
   const syncTRef = useRef(null);
   const importRef = useRef(null);
@@ -8671,6 +9458,42 @@ function App() {
     }).filter(Boolean);
     setSessions(list);
   };
+  /* Give a session your own name. The generated date-stamp is only ever a
+     placeholder — once someone names a session, that name is kept. */
+  const renameSession = (id, title) => {
+    const clean = String(title || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    try {
+      const raw = AS.get('sess-' + id);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (clean) { s.title = clean; s.named = true; } else { delete s.named; }
+      AS.set('sess-' + id, JSON.stringify(s));
+      refreshSessionList();
+      scheduleSync();
+      toast(clean ? 'Session renamed.' : 'Name cleared.');
+    } catch (_) {
+      toast("That name couldn't be saved. Try again.");
+    }
+  };
+  /* Re-open a previous session as the live conversation: the current one is
+     put away first, so nothing is ever lost by switching. */
+  const openSession = sess => {
+    if (!sess || !sess.id) return;
+    SND.open();
+    if (sess.id === currSessId) { setTab('chat'); return; }
+    if (messages.length && currSessId) persistSession(currSessId, messages);
+    const msgs = Array.isArray(sess.messages) ? sess.messages : [];
+    setCurrSessId(sess.id);
+    setMessages(msgs);
+    AS.set('msgs', JSON.stringify(msgs.slice(-80)));
+    const ids = JSON.parse(AS.get('session-ids') || '[]').filter(i => i !== sess.id);
+    ids.unshift(sess.id);
+    AS.set('session-ids', JSON.stringify(ids));
+    setViewSess(null);
+    setErrMsg('');
+    setTab('chat');
+    refreshSessionList();
+  };
   const deleteSession = id => {
     localStorage.removeItem(nsKey(ns, "sess-" + id));
     const ids = JSON.parse(AS.get("session-ids") || "[]").filter(i => i !== id);
@@ -9094,10 +9917,12 @@ function App() {
         setErrMsg("You're offline — your message is still here. It'll send once you're connected.");
         whenOnline(() => { setErrMsg(""); toast("Back online — tap send when you're ready."); });
       } else {
-        /* Every fallback was tried and none worked. Their message stays exactly
-           where it is — one copy, in the transcript, saved to this device — so
-           nothing is lost if they close the app and come back. */
-        try { saveMsgs(nm, currSessId); } catch (_) {}
+        /* Every fallback was tried and none worked. Take the unanswered message
+           back out of the transcript and hold it for one-tap retry, so there is
+           never a message sitting there with no reply and no way forward. */
+        setMessages(prev => (prev.length && prev[prev.length - 1].role === 'user') ? prev.slice(0, -1) : prev);
+        try { saveMsgs(messages, currSessId); } catch (_) {}
+        if (txt) setLastFail({ text: txt });
         setErrMsg(e.message);
       }
       SND.error();
@@ -9108,6 +9933,30 @@ function App() {
     }
     busyRef.current = false;
     setAiLoad(false);
+  };
+
+  /* Rating a reply. Written as a functional update so the memoised row can
+     hold on to an older handler without ever writing to a stale list. */
+  const rateMsgAt = (i, dir) => {
+    setMessages(prev => {
+      const m = prev[i];
+      if (!m) return prev;
+      const nm = prev.slice();
+      nm[i] = _extends({}, m, { fb: dir });
+      setTimeout(() => { rateReply(m, dir); saveMsgs(nm, currSessId); }, 0);
+      return nm;
+    });
+  };
+
+  /* One-tap retry after a failure. The message is already out of the
+     transcript by then, so this re-sends it rather than duplicating it. */
+  const retryLast = () => {
+    if (!lastFail) return;
+    const t = lastFail.text;
+    setErrMsg('');
+    setLastFail(null);
+    SND.tap();
+    sendMsg(t);
   };
 
   /* Stop the AI mid-reply (ported from Lewa Coder) — whatever has already
@@ -10083,7 +10932,7 @@ function App() {
   }, "Begin Therapy \u2192")))));
 
   /* ── MAIN APP ── */
-  const TABS = [["chat", "message", "Chat"], ["exercises", "flower", "Skills"], ["checkin", "clipboard", "Check-in"], ["progress", "trending", "Progress"], ["history", "history", "History"]];
+  const TABS = [["home", "home", "Home"], ["chat", "message", "Chat"], ["exercises", "flower", "Skills"], ["checkin", "heart", "Check-in"], ["history", "history", "Sessions"], ["settings", "settings", "Settings"]];
 
   /* Hamburger — only visible on mobile, opens the sidebar as a drawer */
   const menuBtn = /*#__PURE__*/React.createElement("button", {
@@ -10094,10 +10943,612 @@ function App() {
       SND.tap();
       setSbOpen(true);
     }
-  }, "\u2630");
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "menu",
+    size: 18
+  }));
+
+  /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+     v1.1 INTERFACE \u2014 HOME \u00b7 SESSIONS \u00b7 WELLBEING \u00b7 SETTINGS
+     \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+
+  /* One header shape for every panel, so the app never looks stitched
+     together out of different eras of itself. */
+  const hdr = (title, sub, dot, right) => h('div', { className: 'content-header' },
+    h('div', { className: 'header-left' }, menuBtn,
+      h('div', { className: 'status-dot ' + (dot || 'dot-chat'), 'aria-hidden': 'true' }),
+      h('div', { style: { minWidth: 0 } },
+        h('h1', { className: 'header-title' }, title),
+        sub ? h('div', { className: 'header-sub' }, sub) : null)),
+    right || null);
+
+  const TODAY_KEY = new Date().toISOString().slice(0, 10);
+  const partOfDay = () => {
+    const hr = new Date().getHours();
+    return hr < 5 ? 'late night' : hr < 12 ? 'morning' : hr < 17 ? 'afternoon' : hr < 22 ? 'evening' : 'night';
+  };
+  const firstName = () => String((profile && profile.name) || (account && account.name) || '').trim().split(/\s+/)[0] || '';
+
+  /* \u2500\u2500 Derived wellbeing figures. All of it is arithmetic on the
+     person's own check-ins \u2014 none of it is a clinical judgement. \u2500\u2500 */
+  const wellbeing = () => {
+    const hs = (history || []).filter(x => x && typeof x.mood === 'number');
+    const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+    const recent7 = mean(hs.slice(0, 7).map(x => x.mood));
+    const prev7 = mean(hs.slice(7, 14).map(x => x.mood));
+    let dir = 'flat', delta = 0;
+    if (recent7 != null && prev7 != null) {
+      delta = recent7 - prev7;
+      dir = delta > 0.35 ? 'up' : delta < -0.35 ? 'down' : 'flat';
+    }
+    return {
+      hs: hs,
+      spark: hs.slice(0, 14).slice().reverse().map(x => x.mood), // oldest \u2192 newest
+      today: hs.filter(x => x.date === TODAY_KEY)[0] || null,
+      recent7: recent7, prev7: prev7, dir: dir, delta: delta,
+      notes: hs.filter(x => x.note && x.note.trim()).slice(0, 6)
+    };
+  };
+  /* Gentle, plain-language observations \u2014 patterns in what someone has
+     written, deliberately never framed as a finding about them. */
+  const insights = () => {
+    const w = wellbeing(), out = [];
+    if (w.hs.length >= 4) {
+      if (w.dir === 'up') out.push('Your last few check-ins have read a little brighter than the week before.');
+      else if (w.dir === 'down') out.push('This past week has read heavier than the one before it. That is worth being gentle with yourself about.');
+      else out.push('Your mood has stayed fairly level across recent check-ins.');
+    }
+    if (streak >= 3) out.push('You have checked in ' + streak + ' days running. Showing up is the part that adds up.');
+    let es = { top: [], triggers: [], count: 0 };
+    try { es = emoStats(); } catch (_) {}
+    if (es.top.length) out.push('The feeling that surfaces most often in what you write is ' + es.top[0][0] + '.');
+    if (es.triggers.length >= 2) out.push('\u201c' + es.triggers.slice(0, 3).map(t => t[0]).join('\u201d, \u201c') + '\u201d tend to come up when things feel hard.');
+    if (w.notes.length >= 2) out.push('You have added a note to ' + w.notes.length + ' of your recent check-ins \u2014 that record is yours to look back on.');
+    if (!out.length) out.push('A few more check-ins and patterns will start to show here.');
+    return out.slice(0, 4);
+  };
+
+  /* \u2500\u2500 HOME \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  const renderHome = () => {
+    const w = wellbeing();
+    const goals = getGoals().filter(g => !g.done);
+    const lastAI = [].concat(messages).reverse().filter(m => m && m.role === 'assistant')[0];
+    const prevSess = sessions.filter(s => s.id !== currSessId)[0];
+    const trendLabel = w.dir === 'up' ? 'Lifting' : w.dir === 'down' ? 'Heavier' : 'Steady';
+    const quick = [
+      ['Breathe', 'wind', () => setTab('exercises')],
+      ['Grounding', 'compass', () => setTab('exercises')],
+      ['Skills', 'flower', () => setTab('exercises')],
+      ['Progress', 'trending', () => setTab('progress')],
+      ['New session', 'plus', () => { startNewSession(); setTab('chat'); }],
+      ['Talk aloud', 'phone', () => { setTab('chat'); if (STT_SUPPORTED) startCall();else toast('Voice calling needs a microphone this device will share.'); }]
+    ];
+    return h(React.Fragment, null,
+      hdr('Home', fmtD(new Date().toISOString()), 'dot-chat',
+        h('button', { className: 'lw-icon-btn', onClick: () => { SND.tap(); setTab('settings'); }, 'aria-label': 'Settings', title: 'Settings' }, h(Icon, { name: 'settings', size: 16 }))),
+      h('div', { className: 'panel lw-home' },
+        h('div', null,
+          h('div', { className: 'lw-greet' }, 'Good ', h('em', null, partOfDay()), firstName() ? ', ' + firstName() : ''),
+          h('div', { className: 'lw-greet-sub' }, w.today
+            ? 'You checked in today as ' + MOOD_LABELS[w.today.mood].toLowerCase() + '. I am here whenever you want to talk.'
+            : 'However today has gone so far, there is room for it here.')),
+
+        /* Continue, or begin */
+        messages.length
+          ? h('button', { className: 'lw-resume', onClick: () => { SND.tap(); setTab('chat'); } },
+              h('div', { className: 'lw-resume-ic' }, h(Icon, { name: 'message', size: 19 })),
+              h('div', { className: 'lw-resume-b' },
+                h('div', { className: 'lw-resume-t' }, 'Continue our conversation'),
+                h('div', { className: 'lw-resume-s' }, lastAI ? String(lastAI.content || '').replace(/[*#`]/g, '').slice(0, 90) : messages.length + ' messages so far')),
+              h(Icon, { name: 'chevronRight', size: 18, style: { color: 'var(--t3)', flexShrink: 0 } }))
+          : h('button', { className: 'lw-resume', onClick: () => { SND.tap(); setTab('chat'); } },
+              h('div', { className: 'lw-resume-ic' }, h(Icon, { name: 'sprout', size: 19 })),
+              h('div', { className: 'lw-resume-b' },
+                h('div', { className: 'lw-resume-t' }, 'Start today\u2019s session'),
+                h('div', { className: 'lw-resume-s' }, 'Say whatever is on your mind \u2014 there is no right way to begin.')),
+              h(Icon, { name: 'chevronRight', size: 18, style: { color: 'var(--t3)', flexShrink: 0 } })),
+
+        /* The four numbers worth seeing at a glance */
+        h('div', { className: 'lw-hero' },
+          h(Tile, {
+            k: 'Today', v: w.today ? MOOD_LABELS[w.today.mood] : '\u2014',
+            note: w.today ? 'Checked in' : 'Not yet today',
+            onClick: () => setTab('checkin'),
+            label: w.today ? 'Today\u2019s mood: ' + MOOD_LABELS[w.today.mood] : 'You have not checked in today'
+          }),
+          h(Tile, { k: 'Streak', v: streak, unit: streak === 1 ? 'day' : 'days', note: streak ? 'Keep going' : 'Start today', onClick: () => setTab('checkin') }),
+          h(Tile, {
+            k: 'Trend', v: trendLabel,
+            note: w.hs.length >= 2 ? 'Last ' + Math.min(w.hs.length, 14) + ' check-ins' : 'Needs a few more',
+            onClick: () => setTab('checkin')
+          }),
+          h(Tile, { k: 'Goals', v: goals.length, unit: 'active', note: goals.length ? 'In progress' : 'None yet', onClick: () => setTab('progress') })),
+
+        /* Today's check-in */
+        w.today
+          ? h(LCard, { icon: 'check', title: 'Today\u2019s check-in' },
+              h('div', { style: { fontSize: '.85rem', color: 'var(--t2)', lineHeight: 1.65 } },
+                'You logged ', h('strong', { style: { color: MOODS[w.today.mood] } }, MOOD_LABELS[w.today.mood]), ' today.'),
+              w.today.note ? h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t3)' } }, '\u201c' + w.today.note + '\u201d') : null)
+          : h(LCard, { icon: 'clipboard', title: 'Daily check-in' },
+              h('div', { style: { fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.65, marginBottom: '.7rem' } },
+                'A minute of honesty with yourself. It shapes how I meet you today.'),
+              h('button', { className: 'btn-cont', onClick: () => { SND.tap(); setTab('checkin'); }, style: { display: 'inline-flex', alignItems: 'center', gap: '.4rem' } },
+                h(Icon, { name: 'heart', size: 14 }), 'Check in now')),
+
+        /* Emotional trend */
+        h(LCard, { icon: 'trending', title: 'Recent trend', action: () => setTab('checkin'), actionLabel: 'Details' },
+          w.spark.length >= 2
+            ? h(React.Fragment, null,
+                h(Spark, { values: w.spark }),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.6rem', flexWrap: 'wrap' } },
+                  h('span', { className: 'lw-trend ' + w.dir }, h(Icon, { name: w.dir === 'up' ? 'chevronUp' : w.dir === 'down' ? 'chevronDown' : 'wave', size: 12 }), trendLabel),
+                  h('span', { style: { fontSize: '.72rem', color: 'var(--t3)' } }, w.spark.length + ' check-in' + (w.spark.length === 1 ? '' : 's') + ', oldest first')),
+                h('div', { className: 'lw-note' }, 'A picture of what you have logged \u2014 not a clinical assessment.'))
+            : h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.65 } },
+                'Two check-ins is all it takes for a trend to appear here.')),
+
+        /* Goals */
+        h(LCard, { icon: 'target', title: 'Active goals', action: () => setTab('progress'), actionLabel: 'All goals' },
+          goals.length
+            ? goals.slice(0, 3).map((g, i) => {
+                const ms = g.milestones || [], done = ms.filter(m => m.done).length;
+                const pct = ms.length ? Math.round(done / ms.length * 100) : 0;
+                return h('div', { key: i, style: { marginBottom: '.7rem' } },
+                  h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', marginBottom: '.3rem' } }, g.title),
+                  ms.length ? h(React.Fragment, null,
+                    h('div', { className: 'pbar' }, h('div', { className: 'pfill', style: { width: pct + '%' } })),
+                    h('div', { style: { fontSize: '.66rem', color: 'var(--t3)', marginTop: '.22rem' } }, done + ' of ' + ms.length + ' milestones')) : null);
+              })
+            : h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.65 } },
+                'No goals yet. Ask me in chat to set one with you \u2014 I will keep track of the steps.')),
+
+        /* Previous session */
+        prevSess
+          ? h(LCard, { icon: 'history', title: 'Recent session', action: () => setTab('history'), actionLabel: 'All sessions' },
+              h('button', { className: 'lw-sess-main', onClick: () => openSession(prevSess), style: { width: '100%' } },
+                h('div', { className: 'lw-sess-title' }, prevSess.title),
+                h('div', { className: 'lw-sess-meta' }, fmtD(prevSess.date), h('span', { 'aria-hidden': 'true' }, '\u00b7'), prevSess.count + ' messages'),
+                h('div', { className: 'lw-sess-prev', style: { marginTop: '.3rem' } }, prevSess.preview)))
+          : null,
+
+        /* Quick actions */
+        h(LCard, { icon: 'sparkles', title: 'Quick start' },
+          h('div', { className: 'lw-quick' }, quick.map(q =>
+            h('button', { key: q[0], className: 'lw-qbtn', onClick: () => { SND.tap(); q[2](); } },
+              h(Icon, { name: q[1], size: 19 }), q[0])))),
+
+        h('div', { className: 'lw-note', style: { textAlign: 'center', padding: '.2rem 0 .6rem' } },
+          'LEWA is a supportive companion, not a substitute for professional care or emergency services.')));
+  };
+
+  /* \u2500\u2500 SESSIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  const sessionGroup = iso => {
+    const d = new Date(iso), n = new Date();
+    const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diff = Math.round((day(n) - day(d)) / 864e5);
+    if (isNaN(diff)) return 'Earlier';
+    return diff <= 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff <= 7 ? 'This week' : diff <= 30 ? 'This month' : 'Earlier';
+  };
+  const renderHistory = () => {
+    if (viewSess) {
+      return h(React.Fragment, null,
+        hdr(viewSess.title, fmtD(viewSess.date) + ' \u00b7 ' + viewSess.count + ' messages', 'dot-history',
+          h('div', { style: { display: 'flex', gap: '.4rem' } },
+            h('button', { className: 'btn-back', onClick: () => setViewSess(null) }, '\u2190 All'),
+            viewSess.id !== currSessId ? h('button', { className: 'btn-cont', onClick: () => openSession(viewSess), style: { display: 'inline-flex', alignItems: 'center', gap: '.35rem' } },
+              h(Icon, { name: 'message', size: 13 }), 'Continue') : null)),
+        h('div', { className: 'chat-messages' }, viewSess.messages.map((m, i) =>
+          h('div', { key: i, className: 'msg-row ' + (m.role === 'assistant' ? 'ai' : 'user') },
+            h('div', { className: 'msg-avatar ' + (m.role === 'assistant' ? 'ai' : 'user'), 'aria-hidden': 'true' },
+              h(Icon, { name: m.role === 'assistant' ? 'leaf' : 'user', size: m.role === 'assistant' ? 17 : 15 })),
+            h('div', { style: { minWidth: 0 } },
+              h('div', { className: 'msg-bubble ' + (m.role === 'assistant' ? 'ai' : 'user') }, h(Bubble, { msg: m, mid: 'v' + i })),
+              h('div', { className: 'msg-time' }, m.time ? fmtT(m.time) : ''))))));
+    }
+    const q = sessQ.trim().toLowerCase();
+    const matches = sessions.filter(s => {
+      if (!q) return true;
+      return (s.title || '').toLowerCase().indexOf(q) > -1
+        || (s.preview || '').toLowerCase().indexOf(q) > -1
+        || (s.messages || []).some(m => String(m.display || m.content || '').toLowerCase().indexOf(q) > -1);
+    });
+    const groups = [];
+    matches.forEach(s => {
+      const g = sessionGroup(s.date);
+      const bucket = groups.filter(x => x.name === g)[0];
+      if (bucket) bucket.items.push(s);else groups.push({ name: g, items: [s] });
+    });
+    return h(React.Fragment, null,
+      hdr('Sessions', sessions.length ? sessions.length + (sessions.length === 1 ? ' conversation' : ' conversations') : 'Nothing saved yet', 'dot-history',
+        h('button', {
+          className: 'btn-cont', onClick: () => { startNewSession(); setTab('chat'); },
+          style: { display: 'inline-flex', alignItems: 'center', gap: '.35rem' }
+        }, h(Icon, { name: 'plus', size: 13 }), 'New')),
+      h('div', { className: 'panel' },
+        sessions.length ? h('label', { className: 'lw-search' },
+          h(Icon, { name: 'search', size: 15 }),
+          h('input', {
+            type: 'search', value: sessQ, placeholder: 'Search your sessions\u2026',
+            'aria-label': 'Search sessions',
+            onChange: e => setSessQ(e.target.value)
+          }),
+          sessQ ? h('button', { type: 'button', onClick: () => setSessQ(''), 'aria-label': 'Clear search' }, h(Icon, { name: 'x', size: 14 })) : null) : null,
+
+        !sessions.length
+          ? h(Empty, {
+              icon: 'history', title: 'No sessions yet',
+              text: 'Every conversation is saved here on this device, so you can pick one back up whenever you want to.',
+              actionLabel: 'Start a conversation', actionIcon: 'message', onAction: () => setTab('chat')
+            })
+          : !matches.length
+            ? h(Empty, { icon: 'search', title: 'Nothing matched', text: 'No session mentions \u201c' + sessQ + '\u201d. Try a different word.', actionLabel: 'Clear search', onAction: () => setSessQ('') })
+            : groups.map(g => h(React.Fragment, { key: g.name },
+                h('div', { className: 'lw-group' }, g.name),
+                g.items.map(s => {
+                  const live = s.id === currSessId;
+                  return h('div', { key: s.id, className: 'lw-sess' + (live ? ' current' : '') },
+                    h('div', { className: 'lw-sess-top' },
+                      renameId === s.id
+                        ? h('input', {
+                            className: 'lw-rename', autoFocus: true, value: renameVal,
+                            'aria-label': 'Session name',
+                            onChange: e => setRenameVal(e.target.value),
+                            onBlur: () => { renameSession(s.id, renameVal); setRenameId(null); },
+                            onKeyDown: e => {
+                              if (e.key === 'Enter') { renameSession(s.id, renameVal); setRenameId(null); }
+                              if (e.key === 'Escape') setRenameId(null);
+                            }
+                          })
+                        : h('button', { className: 'lw-sess-main', onClick: () => openSession(s), title: 'Open this session' },
+                            h('div', { className: 'lw-sess-title' }, s.title),
+                            h('div', { className: 'lw-sess-meta' },
+                              h(Icon, { name: 'calendar', size: 11 }), fmtD(s.date),
+                              h('span', { 'aria-hidden': 'true' }, '\u00b7'), s.count + ' msgs',
+                              live ? h('span', { className: 'lw-pill live' }, 'Active now') : null)),
+                      renameId === s.id ? null : h('div', { className: 'lw-sess-acts' },
+                        h('button', {
+                          className: 'lw-icon-btn', title: 'Rename', 'aria-label': 'Rename this session',
+                          onClick: () => { SND.tap(); setRenameVal(s.title || ''); setRenameId(s.id); }
+                        }, h(Icon, { name: 'pencil', size: 14 })),
+                        h('button', {
+                          className: 'lw-icon-btn', title: 'Read transcript', 'aria-label': 'Read this transcript',
+                          onClick: () => { SND.tap(); setViewSess(s); }
+                        }, h(Icon, { name: 'book', size: 14 })),
+                        h('button', {
+                          className: 'lw-icon-btn danger', title: live ? 'This is your active session' : 'Delete',
+                          'aria-label': 'Delete this session', disabled: live,
+                          style: live ? { opacity: .35, cursor: 'not-allowed' } : null,
+                          onClick: () => { if (live) return; SND.delete(); deleteSession(s.id); toast('Session deleted.'); }
+                        }, h(Icon, { name: 'trash', size: 14 })))),
+                    s.preview ? h('div', { className: 'lw-sess-prev' }, s.preview) : null);
+                })))));
+  };
+
+  /* \u2500\u2500 CHECK-IN + WELLBEING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  const renderCheckin = () => {
+    const w = wellbeing();
+    const ins = insights();
+    let es = { top: [], triggers: [] };
+    try { es = emoStats(); } catch (_) {}
+    return h(React.Fragment, null,
+      hdr('Check-in', ciDone ? 'Done for today \u00b7 day ' + Math.max(streak, 1) : 'Day ' + (streak + 1) + ' of your journey', 'dot-checkin',
+        h('div', { className: 'header-info' }, fmtD(new Date().toISOString()))),
+      h('div', { className: 'panel' },
+        ciDone
+          ? h(LCard, { icon: 'check', title: 'Today\u2019s check-in' },
+              h('div', { style: { fontSize: '.86rem', color: 'var(--t2)', lineHeight: 1.7 } },
+                w.today ? h(React.Fragment, null, 'You logged ', h('strong', { style: { color: MOODS[w.today.mood] } }, MOOD_LABELS[w.today.mood]), '. ') : null,
+                'I have replied in your conversation.'),
+              w.today && w.today.note ? h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t3)' } }, '\u201c' + w.today.note + '\u201d') : null,
+              h('button', {
+                className: 'btn-cont', onClick: () => { SND.tap(); setTab('chat'); },
+                style: { marginTop: '.8rem', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }
+              }, h(Icon, { name: 'message', size: 13 }), 'Read my reply'))
+          : h(LCard, { icon: 'heart', title: 'How are you today?' },
+              h('div', { style: { fontSize: '.8rem', color: 'var(--t3)', lineHeight: 1.6, marginBottom: '.7rem' } },
+                'Slide the dot along the ramp \u2014 left is heavier, right is brighter.'),
+              h(MoodSlider, { value: selMood, onChange: setSelMood }),
+              h('div', { style: { marginTop: '.9rem' } },
+                h('label', { className: 'field-label', htmlFor: 'ci-note', style: { marginBottom: '.42rem' } }, 'Anything you want to say?'),
+                h('textarea', {
+                  id: 'ci-note', className: 'inp', rows: 4, value: ciNote,
+                  placeholder: 'How did you sleep? What has today asked of you? Say as much or as little as you like\u2026',
+                  onChange: e => setCiNote(e.target.value)
+                })),
+              errMsg ? h('div', { className: 'err-banner', style: { marginTop: '.6rem' } }, errMsg) : null,
+              h('button', {
+                className: 'btn-primary', style: { marginTop: '.8rem' },
+                onClick: () => { SND.checkin(); submitCI(); },
+                disabled: selMood === null || ciLoad
+              }, ciLoad ? 'Sending\u2026' : 'Save today\u2019s check-in')),
+
+        h(LCard, { icon: 'trending', title: 'Your trend' },
+          w.spark.length >= 2
+            ? h(React.Fragment, null,
+                h(Spark, { values: w.spark, height: 56 }),
+                h('div', { style: { display: 'flex', gap: '.5rem', marginTop: '.65rem', flexWrap: 'wrap', alignItems: 'center' } },
+                  h('span', { className: 'lw-trend ' + w.dir },
+                    h(Icon, { name: w.dir === 'up' ? 'chevronUp' : w.dir === 'down' ? 'chevronDown' : 'wave', size: 12 }),
+                    w.dir === 'up' ? 'Lifting' : w.dir === 'down' ? 'Heavier' : 'Steady'),
+                  w.recent7 != null ? h('span', { style: { fontSize: '.72rem', color: 'var(--t3)' } },
+                    'Average this week: ' + MOOD_LABELS[Math.round(w.recent7)]) : null),
+                h('div', { className: 'lw-note' }, 'This is a summary of what you have logged. It is not a diagnosis or a clinical measure, and it cannot tell you what your feelings mean.'))
+            : h('div', { style: { fontSize: '.83rem', color: 'var(--t3)', lineHeight: 1.65 } },
+                'Once you have checked in twice, your trend will appear here.')),
+
+        h('div', { className: 'lw-hero' },
+          h(Tile, { k: 'Streak', v: streak, unit: streak === 1 ? 'day' : 'days' }),
+          h(Tile, { k: 'Logged', v: w.hs.length, unit: 'check-ins' }),
+          h(Tile, { k: 'With notes', v: w.hs.filter(x => x.note && x.note.trim()).length }),
+          h(Tile, { k: 'This week', v: w.recent7 != null ? MOOD_LABELS[Math.round(w.recent7)] : '\u2014' })),
+
+        (es.top.length || es.triggers.length)
+          ? h(LCard, { icon: 'compass', title: 'Patterns I notice' },
+              es.top.length ? h('div', { style: { marginBottom: es.triggers.length ? '.75rem' : 0 } },
+                h('div', { style: { fontSize: '.7rem', color: 'var(--t3)', marginBottom: '.4rem', fontWeight: 700 } }, 'Feelings that come up most'),
+                h('div', { className: 'opt-chips' }, es.top.slice(0, 6).map(t =>
+                  h('span', { key: t[0], className: 'chip', style: { cursor: 'default', textTransform: 'capitalize' } }, t[0] + ' \u00b7 ' + t[1])))) : null,
+              es.triggers.length ? h('div', null,
+                h('div', { style: { fontSize: '.7rem', color: 'var(--t3)', marginBottom: '.4rem', fontWeight: 700 } }, 'Words that recur on the harder days'),
+                h('div', { className: 'opt-chips' }, es.triggers.slice(0, 6).map(t =>
+                  h('span', { key: t[0], className: 'chip-trigger' }, t[0])))) : null,
+              h('div', { className: 'lw-note' }, 'Word patterns from your own messages \u2014 a prompt for reflection, nothing more.'))
+          : null,
+
+        h(LCard, { icon: 'sparkles', title: 'Gentle observations' },
+          ins.map((t, i) => h('div', {
+            key: i,
+            style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.7, padding: '.35rem 0', borderBottom: i < ins.length - 1 ? '1px solid rgba(240,237,229,.06)' : 'none' }
+          }, t)),
+          h('div', { className: 'lw-note' }, 'These are observations about what you have written, not a professional assessment. If something here worries you, please talk it through with someone you trust or a clinician.')),
+
+        h(LCard, { icon: 'clipboard', title: 'Recent notes', action: () => setTab('progress'), actionLabel: 'Progress' },
+          w.notes.length
+            ? w.notes.map((x, i) => h('div', { key: i, className: 'hist-card', style: { marginBottom: '.5rem' } },
+                h('div', { className: 'hist-date' }, fmtD(x.date) + ' \u00b7 ' + MOOD_LABELS[x.mood]),
+                h('div', { className: 'hist-note' }, '\u201c' + x.note + '\u201d')))
+            : h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.65 } },
+                'Notes you add to a check-in show up here, so you can look back at what a day actually felt like.'))));
+  };
+
+  /* \u2500\u2500 MEMORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  const deleteMemory = idx => {
+    try {
+      const mem = getMemory();
+      mem.sessions = (mem.sessions || []).filter((_, i) => i !== idx);
+      AS.set('memory', JSON.stringify(mem));
+      setMemTick(t => t + 1);
+      toast('Memory removed.');
+    } catch (_) {
+      toast('That memory could not be removed. Try again.');
+    }
+  };
+  const renderMemorySection = () => {
+    const mem = getMemory().sessions || [];
+    return h('div', { className: 'lw-set-sec' },
+      h(LCard, { icon: 'brain', title: 'Long-term memory' },
+        h(LRow, {
+          title: 'Remember across sessions',
+          sub: memoryOn ? 'I can draw on earlier sessions and check-ins when it helps.' : 'Each session starts fresh. Nothing carries over.'
+        }, h('label', { className: 'toggle' },
+          h('input', {
+            type: 'checkbox', checked: memoryOn, 'aria-label': 'Long-term memory',
+            onChange: e => { SND.toggle(); setMemoryOn(e.target.checked); AS.set('memoryOn', e.target.checked ? '1' : '0'); }
+          }), h('span', { className: 'toggle-slider' }))),
+        h('div', { className: 'lw-note' },
+          'Memories live only on this device, inside your account. Turning memory off stops them being read without deleting them.')),
+
+      h(LCard, { icon: 'book', title: 'What I remember', action: mem.length ? () => { clearMemory(); toast('All memories cleared.'); } : null, actionLabel: 'Clear all' },
+        mem.length
+          ? mem.map((m, i) => h('div', { key: i, className: 'lw-mem', style: { marginBottom: '.5rem' } },
+              h('div', { className: 'lw-mem-b' },
+                h('div', { className: 'lw-mem-d' }, fmtD(m.date)),
+                h('div', { className: 'lw-mem-t' }, m.summary)),
+              h('button', {
+                className: 'lw-icon-btn danger', 'aria-label': 'Delete this memory', title: 'Delete this memory',
+                onClick: () => { SND.delete(); deleteMemory(i); }
+              }, h(Icon, { name: 'trash', size: 14 }))))
+          : h(Empty, {
+              icon: 'brain', title: 'Nothing remembered yet',
+              text: 'After a few exchanges I write a short note about the session, so we do not start from nothing next time. Those notes appear here for you to read or delete.'
+            })));
+  };
+
+  /* \u2500\u2500 SETTINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  const SET_SECTIONS = [
+    ['ai', 'cpu', 'AI & model', 'Which model answers you, and how it is chosen'],
+    ['voice', 'volume', 'Voice', 'Speaking, listening and hands-free calls'],
+    ['memory', 'brain', 'Memory', 'What is remembered between sessions'],
+    ['privacy', 'lock', 'Privacy', 'What stays on this device and what does not'],
+    ['data', 'database', 'Data', 'Backup, restore, export and delete'],
+    ['appearance', 'palette', 'Appearance', 'Light, dark or follow your phone'],
+    ['notify', 'bell', 'Notifications', 'When LEWA may reach for your attention'],
+    ['a11y', 'accessibility', 'Accessibility', 'Text size, contrast and motion'],
+    ['about', 'info', 'About LEWA', 'Version, updates and what LEWA is for']
+  ];
+  const setToggle = (title, sub, checked, onChange, disabled) => h(LRow, { title: title, sub: sub },
+    h('label', { className: 'toggle' },
+      h('input', { type: 'checkbox', checked: !!checked, disabled: !!disabled, 'aria-label': title, onChange: e => { SND.toggle(); onChange(e.target.checked); } }),
+      h('span', { className: 'toggle-slider' })));
+
+  const renderSettingsSection = key => {
+    if (key === 'ai') {
+      const u = usageLogFor(ns);
+      const t = usageTodayT(ns) || { calls: 0, tin: 0, tout: 0 };
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'cpu', title: 'Provider & model' },
+          h(LRow, { title: (PROVIDERS[provider] || {}).label || provider, sub: MODEL_LABELS[model] || model },
+            h('button', { className: 'btn-back', onClick: () => { SND.tap(); setScreen('apikey'); } }, 'Change')),
+          setToggle('Automatic model routing', 'Simple turns use a cheap model; difficult or safety-critical ones step up. Never chosen by message length.', autoRoute, v => {
+            setAutoRoute(v); S.set('lewa-strategy', v ? 'auto' : 'fixed');
+            if (v && !catModels(provider)) ensureModelsT(provider, apiKey, true);
+          }),
+          setToggle('Send conversation history', 'Off means each message is answered on its own, with no context.', sendHistory, setSendHistory),
+          setToggle('Background web search', 'Silent, free look-ups when a question needs current information.', webSearch, v => { setWebSearch(v); AS.set('webSearch', v ? '1' : '0'); })),
+        u && u.calls ? h(LCard, { icon: 'sliders', title: 'Usage on this device' },
+          h(LRow, { title: 'All time', sub: u.calls + ' calls \u00b7 ' + fmtTok(u.tin) + ' in / ' + fmtTok(u.tout) + ' out' }),
+          h(LRow, { title: 'Today', sub: t.calls + ' calls \u00b7 ' + fmtTok(t.tin + t.tout) + ' tokens' }),
+          h('div', { className: 'lw-note' }, 'Counted from what each provider reports back. Nothing about your usage leaves this device.')) : null);
+    }
+    if (key === 'voice') {
+      let voices = [];
+      try { voices = listTopVoices() || []; } catch (_) { voices = []; }
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'volume', title: 'Speaking' },
+          setToggle('Read replies aloud', TTS_SUPPORTED ? 'I speak every reply as it arrives.' : 'This device has no speech output available.', autoRead, v => { setAutoRead(v); if (!v) stopSpeaking(); }, !TTS_SUPPORTED),
+          h(LRow, { title: 'Voice', sub: 'Pick the voice that is easiest to listen to' },
+            h('div', { className: 'lw-seg' }, [['female', 'Warm'], ['male', 'Low']].map(g =>
+              h('button', { key: g[0], className: voiceGender === g[0] ? 'on' : '', onClick: () => { SND.tap(); setVoiceGender(g[0]); setVoiceName(''); } }, g[1])))),
+          voices.length ? h('div', { style: { marginTop: '.6rem' } },
+            h('label', { className: 'field-label', htmlFor: 'voice-pick' }, 'Exact voice on this device'),
+            h('select', {
+              id: 'voice-pick', className: 'inp', value: voiceName || '',
+              onChange: e => { setVoiceName(e.target.value); S.set('lewa-voice', e.target.value); }
+            }, h('option', { value: '' }, 'Best available'), voices.map(v => h('option', { key: v.name, value: v.name }, v.label)))) : null),
+        h(LCard, { icon: 'mic', title: 'Listening' },
+          h(LRow, {
+            title: 'Voice call mode',
+            sub: STT_SUPPORTED ? 'Talk with me like a phone call \u2014 I listen, reply, then listen again.' : 'This device has no speech input available.'
+          }, h('button', {
+            className: 'btn-cont', disabled: !STT_SUPPORTED,
+            onClick: () => { SND.tap(); setTab('chat'); startCall(); }
+          }, 'Start a call')),
+          h('div', { className: 'lw-note' }, androidTTS()
+            ? 'Speech is handled by your phone\u2019s own voice engine, so it keeps working with the screen off.'
+            : 'Speech uses your browser\u2019s built-in voices. Availability varies between browsers.')));
+    }
+    if (key === 'memory') return renderMemorySection();
+    if (key === 'privacy') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'lock', title: 'On this device' },
+          setToggle('Save conversations', 'Keeps your sessions on this device so you can return to them.', saveConvo, setSaveConvo),
+          setToggle('Share rough location', 'Adds your general whereabouts to the session context \u2014 city level, never an address.', locShare, v => {
+            setLocShare(v); S.set('lewa-locshare', v ? '1' : '0');
+            if (v) fetchLocation();else { const t = buildCtx('Location not shared'); setCtx(t); setLocLabel(t.period + ' \u00b7 ' + t.time); }
+          })),
+        h(LCard, { icon: 'eye', title: 'What leaves this device' },
+          h('div', { style: { fontSize: '.82rem', color: 'var(--t2)', lineHeight: 1.75 } },
+            'Your messages go to the AI provider you chose, because that is what generates a reply. Nothing else does: your profile, check-ins, notes, goals, memories and usage all stay in this browser\u2019s storage.'),
+          h('div', { className: 'lw-note' },
+            'Your API key is stored obfuscated on this device, is never included in a backup or a sync, and is never sent anywhere except the provider it belongs to. Web look-ups are stripped of anything that looks like a key before they are sent.')));
+    }
+    if (key === 'data') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'database', title: 'Your data' },
+          h('div', { className: 'lw-quick', style: { marginBottom: '.4rem' } },
+            [['Backup', 'download', exportBackup], ['Restore', 'upload', () => importRef.current && importRef.current.click()],
+             ['Save chat', 'save', exportTranscript], ['Email chat', 'mail', emailTranscript]].map(a =>
+              h('button', { key: a[0], className: 'lw-qbtn', onClick: () => { SND.tap(); a[2](); } }, h(Icon, { name: a[1], size: 18 }), a[0]))),
+          h('div', { className: 'lw-note' }, 'A backup is a single file holding your sessions, check-ins, goals and memories. API keys and tokens are deliberately left out of it.')),
+        h(LCard, { icon: 'github', title: 'Sync' },
+          ghUser
+            ? h(React.Fragment, null,
+                h(LRow, { title: 'Connected as ' + ghUser, sub: syncState === 'error' ? 'Last sync failed \u2014 tap Sync now to try again.' : syncState === 'ok' ? 'Synced.' : 'Your sessions sync to a private repository you own.' },
+                  h('button', { className: 'btn-back', onClick: () => doSync(true) }, 'Sync now')),
+                setToggle('Sync automatically', 'Pushes quietly a little after each change.', syncOn, v => { setSyncOn(v); S.set('lewa-ghsync', v ? '1' : '0'); if (v) doSync(true); }))
+            : h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.7 } },
+                'Not connected. You can link a private GitHub repository from the sidebar to keep your sessions backed up across devices.')),
+        h(LCard, { icon: 'trash', title: 'Delete' },
+          h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.7, marginBottom: '.7rem' } },
+            'This removes everything stored for this account on this device \u2014 sessions, check-ins, goals and memories. It cannot be undone, so export a backup first if you might want it later.'),
+          h('button', {
+            className: 'btn-danger', onClick: () => { SND.delete(); setShowClear(true); },
+            style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem' }
+          }, h(Icon, { name: 'trash', size: 14 }), 'Clear my data')));
+    }
+    if (key === 'appearance') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'palette', title: 'Theme' },
+          h('div', { className: 'lw-seg' }, [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match phone']].map(m =>
+            h('button', {
+              key: m[0], className: themeMode === m[0] ? 'on' : '', 'aria-pressed': themeMode === m[0],
+              onClick: () => { SND.tap(); setThemeModeState(m[0]); applyThemeMode(m[0]); }
+            }, m[1]))),
+          h('div', { className: 'lw-note' }, 'Dark is LEWA\u2019s native look and the easiest on the eyes late at night, which is often when this app is open.')));
+    }
+    if (key === 'notify') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'bell', title: 'Notifications' },
+          setToggle('Tell me when a reply arrives', 'Only while the app is in the background. Nothing else is ever sent.', notifyOn, async v => {
+            setNotifyOn(v); S.set('lewa-notify', v ? '1' : '0');
+            if (v) {
+              const ok = await ensureNotifyPermission();
+              if (!ok && notifyBlocked() && !(window.LewaAndroid && window.LewaAndroid.notify)) toast('Your browser is blocking notifications \u2014 LEWA will show an in-app banner instead.');
+              notify('LEWA', 'Notifications are on. I will let you know when a reply is waiting.');
+            }
+          }),
+          h('div', { className: 'lw-note' }, 'LEWA never sends reminders, streak nags or prompts to come back. A notification only ever means a reply you asked for is ready.')));
+    }
+    if (key === 'a11y') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'type', title: 'Text size' },
+          h('div', { className: 'lw-seg' }, [['small', 'Small'], ['normal', 'Default'], ['large', 'Large'], ['xlarge', 'Largest']].map(s =>
+            h('button', { key: s[0], className: a11y.text === s[0] ? 'on' : '', 'aria-pressed': a11y.text === s[0], onClick: () => { SND.tap(); setA11y({ text: s[0] }); } }, s[1]))),
+          h('div', { className: 'lw-note' }, 'This scales the whole interface, not just the conversation.')),
+        h(LCard, { icon: 'contrast', title: 'Contrast' },
+          setToggle('Higher contrast', 'Strengthens quieter text and borders \u2014 helpful outdoors or on a dimmed screen.', a11y.contrast === 'high', v => setA11y({ contrast: v ? 'high' : 'normal' }))),
+        h(LCard, { icon: 'wind', title: 'Motion' },
+          h('div', { className: 'lw-seg' }, [['system', 'Match phone'], ['on', 'Full'], ['off', 'Reduced']].map(m =>
+            h('button', { key: m[0], className: a11y.motion === m[0] ? 'on' : '', 'aria-pressed': a11y.motion === m[0], onClick: () => { SND.tap(); setA11y({ motion: m[0] }); } }, m[1]))),
+          h('div', { className: 'lw-note' }, 'Reduced motion stops the background drift and the message animations. \u201cMatch phone\u201d follows your system setting.')),
+        h(LCard, { icon: 'accessibility', title: 'Also built in' },
+          h('div', { style: { fontSize: '.82rem', color: 'var(--t2)', lineHeight: 1.8 } },
+            'Every control has a screen-reader label and a visible focus ring. Tab, Shift+Tab and Enter reach everything, Escape closes any dialog, and tap targets clear 44px on a touch screen.')));
+    }
+    if (key === 'about') {
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'leaf', title: 'LEWA Therapist' },
+          h(LRow, { title: 'Version', sub: 'v' + runningVersion() },
+            h('button', {
+              className: 'btn-back', disabled: updChecking,
+              onClick: () => {
+                SND.tap(); setUpdChecking(true);
+                checkForUpdate(true).then(m => {
+                  setUpdChecking(false); setUpdateInfo(m);
+                  toast(m ? 'Update v' + m.version + ' is ready.' : 'You are on the latest version.');
+                }, () => { setUpdChecking(false); toast('Could not reach the update server. Check your connection and try again.'); });
+              }
+            }, updChecking ? 'Checking\u2026' : 'Check for updates')),
+          updateInfo ? h('button', {
+            className: 'btn-cont', style: { marginTop: '.6rem', width: '100%' },
+            onClick: () => { SND.tap(); applyUpdate(updateInfo); }
+          }, 'Install v' + updateInfo.version + ' and restart') : null),
+        h(LCard, { icon: 'heart', title: 'What LEWA is' },
+          h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
+            'A warm, evidence-informed companion for the ordinary work of feeling better: somewhere to be heard, to think out loud, and to practise skills drawn from CBT, DBT, ACT and related approaches.')),
+        h(LCard, { icon: 'alert', title: 'What LEWA is not' },
+          h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
+            'Not a clinician, not a diagnosis, and not an emergency service. Nothing here replaces care from a real person.'),
+          h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)' } },
+            'If you are in immediate danger, contact your local emergency number. In the US you can call or text 988, or text HOME to 741741. Elsewhere, your local crisis line.')));
+    }
+    return null;
+  };
+  const renderSettings = () => {
+    const open = SET_SECTIONS.filter(s => s[0] === setSec)[0];
+    return h(React.Fragment, null,
+      hdr(open ? open[2] : 'Settings', open ? open[3] : 'How LEWA works for you', 'dot-progress',
+        open ? h('button', { className: 'btn-back lw-set-back', 'aria-label': 'Back to all settings', onClick: () => { SND.tap(); setSetSec(null); } }, '\u2190 Settings') : null),
+      h('div', { className: 'panel' },
+        open
+          ? renderSettingsSection(open[0])
+          : h(React.Fragment, null,
+              h('div', { className: 'lw-set-grid' }, SET_SECTIONS.map(s =>
+                h('button', { key: s[0], className: 'lw-set-card', onClick: () => { SND.tap(); setSetSec(s[0]); } },
+                  h(Icon, { name: s[1], size: 20 }),
+                  h('div', { className: 'lw-set-n' }, s[2]),
+                  h('div', { className: 'lw-set-d' }, s[3])))),
+              h('div', { className: 'lw-note', style: { textAlign: 'center', paddingTop: '.6rem' } },
+                'Signed in as ' + ((account && account.name) || 'you') + ' \u00b7 everything here applies to this account on this device.'))));
+  };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "app"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "skip-link",
+    href: "#lewa-main"
+  }, "Skip to content"), /*#__PURE__*/React.createElement(Lightbox, null), /*#__PURE__*/React.createElement("div", {
     className: "aurora",
     "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null)), /*#__PURE__*/React.createElement("div", {
@@ -11140,6 +12591,7 @@ function App() {
   }, TABS.map(([id, ic, lb]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     className: "sb-tab" + (tab === id ? " active" : ""),
+    "aria-current": tab === id ? "page" : undefined,
     onClick: () => {
       SND.tap();
       setTab(id);
@@ -11150,9 +12602,10 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: ic,
     size: 19
-  })), lb)))), /*#__PURE__*/React.createElement("div", {
-    className: "content-col"
-  }, tab === "chat" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })), lb)))), /*#__PURE__*/React.createElement("main", {
+    className: "content-col",
+    id: "lewa-main"
+  }, tab === "home" && renderHome(), tab === "settings" && renderSettings(), tab === "chat" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "content-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-left"
@@ -11160,7 +12613,7 @@ function App() {
     className: "status-dot dot-chat"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "header-title"
-  }, "Therapeutic Session"), /*#__PURE__*/React.createElement("div", {
+  }, (sessions.filter(s => s.id === currSessId)[0] || {}).title || "Therapeutic Session"), /*#__PURE__*/React.createElement("div", {
     className: "header-sub",
     style: {
       display: "inline-flex",
@@ -11331,85 +12784,19 @@ function App() {
       const el = e.target;
       setShowJump(el.scrollHeight - el.scrollTop - el.clientHeight > 300);
     }
-  }, messages.map((m, i) => /*#__PURE__*/React.createElement("div", {
+  }, !messages.length && !aiLoad ? /*#__PURE__*/React.createElement(Empty, {
+    icon: "sprout",
+    title: "Whatever is on your mind",
+    text: "There is no right way to start. A word, a sentence, or the whole of it \u2014 I am listening either way."
+  }) : messages.map((m, i) => /*#__PURE__*/React.createElement(MsgRow, {
     key: i,
-    className: `msg-row ${m.role === "assistant" ? "ai" : "user"}`
-  }, /*#__PURE__*/React.createElement("div", {
-    className: `msg-avatar ${m.role === "assistant" ? "ai" : "user"}`
-  }, m.role === "assistant" ? /*#__PURE__*/React.createElement(Icon, {
-    name: "leaf",
-    size: 17
-  }) : /*#__PURE__*/React.createElement(Icon, {
-    name: "user",
-    size: 15
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: `msg-bubble ${m.role === "assistant" ? "ai" : "user"}`
-  }, /*#__PURE__*/React.createElement(Bubble, {
     msg: m,
-    mid: i
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "msg-time",
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: ".4rem"
-    }
-  }, m.time ? fmtT(m.time) : "", m.role === "assistant" && TTS_SUPPORTED && /*#__PURE__*/React.createElement("button", {
-    onClick: () => playMessage(i, m.content),
-    title: speakingId === i ? "Stop reading" : "Read aloud", "aria-label": speakingId === i ? "Stop reading aloud" : "Read this reply aloud",
-    style: {
-      background: "none",
-      border: "none",
-      color: speakingId === i ? "#008f87" : "rgba(240,237,229,.32)",
-      cursor: "pointer",
-      fontSize: ".78rem",
-      padding: "0 .2rem",
-      lineHeight: 1,
-      transition: "color .15s"
-    }
-  }, speakingId === i ? /*#__PURE__*/React.createElement(Icon, {
-    name: "pause",
-    size: 14
-  }) : /*#__PURE__*/React.createElement(Icon, {
-    name: "volume",
-    size: 14
-  })), m.role === "assistant" && i > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      display: "inline-flex",
-      gap: ".1rem",
-      marginLeft: ".1rem"
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "fb-btn up" + (m.fb === 1 ? " on" : ""),
-    title: "This helped", "aria-label": "Mark this reply helpful",
-    onClick: () => {
-      rateReply(m, 1);
-      const nm = [...messages];
-      nm[i] = _extends({}, m, {
-        fb: 1
-      });
-      setMessages(nm);
-      saveMsgs(nm, currSessId);
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "thumbsUp",
-    size: 13
-  })), /*#__PURE__*/React.createElement("button", {
-    className: "fb-btn down" + (m.fb === -1 ? " on" : ""),
-    title: "This didn't land", "aria-label": "Mark this reply unhelpful",
-    onClick: () => {
-      rateReply(m, -1);
-      const nm = [...messages];
-      nm[i] = _extends({}, m, {
-        fb: -1
-      });
-      setMessages(nm);
-      saveMsgs(nm, currSessId);
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "thumbsDown",
-    size: 13
-  }))))))), aiLoad && /*#__PURE__*/React.createElement("div", {
+    i: i,
+    tts: TTS_SUPPORTED,
+    speaking: speakingId === i,
+    onSpeak: playMessage,
+    onRate: rateMsgAt
+  })), aiLoad && /*#__PURE__*/React.createElement("div", {
     className: "msg-row ai"
   }, /*#__PURE__*/React.createElement("div", {
     className: "msg-avatar ai"
@@ -11462,8 +12849,41 @@ function App() {
     name: "arrowDown",
     size: 17
   })), errMsg && /*#__PURE__*/React.createElement("div", {
-    className: "err-banner"
-  }, errMsg), attachErr && /*#__PURE__*/React.createElement("div", {
+    className: "err-banner",
+    role: "alert"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: ".5rem",
+      alignItems: "flex-start"
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "alert",
+    size: 15,
+    style: {
+      marginTop: 2,
+      flexShrink: 0
+    }
+  }), /*#__PURE__*/React.createElement("span", null, errMsg)), (lastFail || isOffline()) && /*#__PURE__*/React.createElement("div", {
+    className: "lw-retry"
+  }, lastFail && /*#__PURE__*/React.createElement("button", {
+    className: "lw-retry-btn",
+    onClick: retryLast
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "refresh",
+    size: 13
+  }), "Try again"), /*#__PURE__*/React.createElement("button", {
+    className: "lw-retry-btn",
+    style: {
+      background: "rgba(240,237,229,.06)",
+      borderColor: "var(--bdr)",
+      color: "var(--t3)"
+    },
+    onClick: () => {
+      setErrMsg("");
+      setLastFail(null);
+    }
+  }, "Dismiss"))), attachErr && /*#__PURE__*/React.createElement("div", {
     className: "attach-err"
   }, "\u26A0 ", attachErr), attachments.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "attach-strip"
@@ -11629,261 +13049,7 @@ function App() {
     size: 18
   })))), tab === "exercises" && /*#__PURE__*/React.createElement(ExercisesTab, {
     menuBtn: menuBtn
-  }), tab === "checkin" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "content-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "header-left"
-  }, menuBtn, /*#__PURE__*/React.createElement("div", {
-    className: "status-dot dot-checkin"
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "header-title"
-  }, "Daily Check-in"), /*#__PURE__*/React.createElement("div", {
-    className: "header-sub"
-  }, "Day ", streak + 1, " of your journey"))), /*#__PURE__*/React.createElement("div", {
-    className: "header-info"
-  }, fmtD(new Date().toISOString()))), /*#__PURE__*/React.createElement("div", {
-    className: "panel"
-  }, ciDone ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: "2rem",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: ".75rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "2.8rem"
-    }
-  }, "\u2705"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Playfair Display',serif",
-      fontSize: "1.65rem",
-      color: "#FAF8F2",
-      fontWeight: 300
-    }
-  }, "Check-in Complete"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: "rgba(250,248,242,.55)",
-      fontSize: ".88rem",
-      lineHeight: 1.7,
-      maxWidth: 360
-    }
-  }, "LEWA has received your update and responded in your chat. Consistency is the cornerstone of healing \u2014 keep showing up."), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary",
-    style: {
-      maxWidth: 220,
-      marginTop: ".4rem"
-    },
-    onClick: () => setTab("chat")
-  }, "View LEWA's Response")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "sb-box"
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Playfair Display',serif",
-      fontSize: "1.18rem",
-      color: "#FAF8F2",
-      fontWeight: 300,
-      marginBottom: ".22rem"
-    }
-  }, "How are you feeling today?"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".73rem",
-      color: "rgba(250,248,242,.55)"
-    }
-  }, "Slide the dot up the ramp \u2014 left is heavier, right is brighter")), /*#__PURE__*/React.createElement(MoodSlider, {
-    value: selMood,
-    onChange: setSelMood
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "field-label",
-    style: {
-      marginBottom: ".42rem"
-    }
-  }, "Anything to share with LEWA today?"), /*#__PURE__*/React.createElement("textarea", {
-    className: "inp",
-    rows: 4,
-    placeholder: "How did you sleep? Did you try any exercises? Any thoughts or events you'd like to process? Share freely\u2026",
-    value: ciNote,
-    onChange: e => setCiNote(e.target.value)
-  })), errMsg && /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: "#f87171",
-      fontSize: ".8rem"
-    }
-  }, errMsg), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary",
-    onClick: () => {
-      SND.checkin();
-      submitCI();
-    },
-    disabled: selMood === null || ciLoad
-  }, ciLoad ? "Sending to LEWA…" : "Submit Daily Check-in"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: ".5rem",
-      paddingTop: "1rem",
-      borderTop: "1px solid rgba(255,255,255,.06)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "sb-label",
-    style: {
-      marginBottom: ".5rem"
-    }
-  }, "Session Settings"), /*#__PURE__*/React.createElement("div", {
-    className: "sb-box",
-    style: {
-      padding: ".65rem .85rem"
-    }
-  }, /*#__PURE__*/React.createElement(Toggle, {
-    label: "Save conversations",
-    hint: "Store chats on this device",
-    checked: saveConvo,
-    onChange: v => {
-      SND.toggle();
-      setSaveConvo(v);
-    }
-  }), /*#__PURE__*/React.createElement(Toggle, {
-    label: "Send history to AI",
-    hint: "Off = each message is independent",
-    checked: sendHistory,
-    onChange: v => {
-      SND.toggle();
-      setSendHistory(v);
-    }
-  }), /*#__PURE__*/React.createElement(Toggle, {
-    label: "Web search",
-    hint: "Silent, free lookups \u2014 works with every model",
-    checked: webSearch,
-    onChange: v => {
-      SND.toggle();
-      setWebSearch(v);
-      AS.set('webSearch', v ? '1' : '0');
-    }
-  }), /*#__PURE__*/React.createElement(Toggle, {
-    label: "Long-term memory",
-    hint: "Remembers past sessions & check-ins",
-    checked: memoryOn,
-    onChange: v => {
-      SND.toggle();
-      setMemoryOn(v);
-      AS.set('memoryOn', v ? '1' : '0');
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "sb-label",
-    style: {
-      marginTop: ".7rem",
-      marginBottom: ".5rem"
-    }
-  }, "Voice & Audio"), /*#__PURE__*/React.createElement("div", {
-    className: "sb-box",
-    style: {
-      padding: ".65rem .85rem"
-    }
-  }, /*#__PURE__*/React.createElement(Toggle, {
-    label: "Read replies aloud",
-    hint: TTS_SUPPORTED ? "LEWA speaks every response" : "Not supported here",
-    checked: autoRead,
-    onChange: v => {
-      SND.toggle();
-      setAutoRead(v);
-      if (!v) stopSpeaking();
-    }
-  }), /*#__PURE__*/React.createElement(Toggle, {
-    label: "Voice call mode",
-    hint: STT_SUPPORTED ? "Talk like a phone call" : "Not supported here",
-    checked: callActive,
-    onChange: v => {
-      v ? startCall() : endCall();
-    }
-  }), TTS_SUPPORTED && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: ".55rem",
-      paddingTop: ".55rem",
-      borderTop: "1px solid rgba(240,237,229,.06)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".72rem",
-      color: "rgba(250,248,242,.62)",
-      fontWeight: 700,
-      marginBottom: ".4rem"
-    }
-  }, "LEWA's voice"), /*#__PURE__*/React.createElement("select", {
-    className: "inp",
-    style: {
-      fontSize: ".74rem",
-      padding: ".42rem .55rem"
-    },
-    value: voiceName,
-    onChange: e => {
-      SND.tap();
-      const n = e.target.value;
-      setVoiceName(n);
-      S.set('lewa-voice', n);
-      speakText("Hello — I'm right here with you.", null, voiceGender, n);
-    }
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "Auto \u2014 warmest voice on this device"), listTopVoices().map(v => /*#__PURE__*/React.createElement("option", {
-    key: v.name,
-    value: v.name
-  }, v.label))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginTop: ".7rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".72rem",
-      color: "rgba(250,248,242,.55)"
-    }
-  }, "Tokens used this session"), /*#__PURE__*/React.createElement("span", {
-    className: "token-badge"
-  }, "~", tokensUsed.toLocaleString())), credits && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: ".55rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      fontSize: ".72rem",
-      marginBottom: ".3rem"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "rgba(250,248,242,.55)"
-    }
-  }, "API Credits remaining"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#fbbf24",
-      fontWeight: 500
-    }
-  }, "$", credits.remaining != null ? credits.remaining.toFixed(4) : "∞", credits.limit != null ? ` / $${credits.limit.toFixed(2)}` : "")), credits.limit != null && /*#__PURE__*/React.createElement("div", {
-    className: "credits-bar"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "credits-fill",
-    style: {
-      width: `${Math.max(0, Math.min(100, credits.remaining / credits.limit * 100))}%`,
-      background: credits.remaining / credits.limit > 0.25 ? "#008f87" : credits.remaining / credits.limit > 0.1 ? "#f59e0b" : "#e05c5c"
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".61rem",
-      color: "rgba(196,181,253,.35)",
-      marginTop: ".35rem"
-    }
-  }, "Max/reply: ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "rgba(250,248,242,.55)"
-    }
-  }, CFG.MAX_TOKENS), " \xB7 Context: last ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "rgba(250,248,242,.55)"
-    }
-  }, CFG.CONTEXT_LIMIT, " msgs"), " \xB7 Resets on page reload"))))), tab === "progress" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), tab === "checkin" && renderCheckin(), tab === "progress" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "content-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-left"
@@ -12295,158 +13461,15 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "trash",
     size: 14
-  }), " Clear My Data")))), tab === "history" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "content-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "header-left"
-  }, menuBtn, /*#__PURE__*/React.createElement("div", {
-    className: "status-dot dot-history"
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "header-title"
-  }, viewSess ? "Session Transcript" : "Chat History"), /*#__PURE__*/React.createElement("div", {
-    className: "header-sub"
-  }, viewSess ? viewSess.title : `${sessions.length} saved session${sessions.length !== 1 ? "s" : ""}`))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: ".5rem",
-      alignItems: "center"
-    }
-  }, viewSess && /*#__PURE__*/React.createElement("button", {
-    className: "btn-back",
-    onClick: () => setViewSess(null)
-  }, "\u2190 All"), /*#__PURE__*/React.createElement("button", {
-    onClick: startNewSession,
-    style: {
-      padding: ".35rem .75rem",
-      background: "rgba(0,107,101,.14)",
-      border: "1px solid rgba(124,58,237,.25)",
-      borderRadius: 7,
-      color: "#FAF8F2",
-      fontSize: ".72rem",
-      cursor: "pointer",
-      fontFamily: "'Lato',sans-serif",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: ".3rem"
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "plus",
-    size: 13
-  }), " New Session"))), viewSess ? /*#__PURE__*/React.createElement("div", {
-    className: "chat-messages"
-  }, viewSess.messages.map((m, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: `msg-row ${m.role === "assistant" ? "ai" : "user"}`
-  }, /*#__PURE__*/React.createElement("div", {
-    className: `msg-avatar ${m.role === "assistant" ? "ai" : "user"}`
-  }, m.role === "assistant" ? /*#__PURE__*/React.createElement(Icon, {
-    name: "leaf",
-    size: 17
-  }) : /*#__PURE__*/React.createElement(Icon, {
-    name: "user",
-    size: 15
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: `msg-bubble ${m.role === "assistant" ? "ai" : "user"}`
-  }, /*#__PURE__*/React.createElement(Bubble, {
-    msg: m
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "msg-time"
-  }, m.time ? fmtT(m.time) : ""))))) : /*#__PURE__*/React.createElement("div", {
-    className: "panel"
-  }, sessions.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "empty-msg"
-  }, "No saved sessions yet. Sessions are automatically saved as you chat.") : sessions.map(sess => /*#__PURE__*/React.createElement("div", {
-    key: sess.id,
-    style: {
-      background: "rgba(167,139,250,.06)",
-      border: "1px solid rgba(255,255,255,.07)",
-      borderRadius: 12,
-      padding: "1rem 1.1rem",
-      display: "flex",
-      flexDirection: "column",
-      gap: ".45rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: ".5rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".67rem",
-      letterSpacing: ".1em",
-      textTransform: "uppercase",
-      color: "rgba(250,248,242,.55)",
-      marginBottom: ".2rem",
-      display: "flex",
-      alignItems: "center",
-      gap: ".4rem"
-    }
-  }, fmtD(sess.date), " \xB7 ", sess.count, " messages", sess.id === currSessId && /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#FAF8F2",
-      background: "rgba(124,58,237,.15)",
-      padding: ".08rem .38rem",
-      borderRadius: 4,
-      fontSize: ".58rem",
-      letterSpacing: ".08em"
-    }
-  }, "CURRENT")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: ".82rem",
-      color: "rgba(250,248,242,.55)",
-      lineHeight: 1.5,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
-    }
-  }, sess.preview)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: ".38rem",
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setViewSess(sess),
-    style: {
-      padding: ".33rem .68rem",
-      background: "rgba(0,107,101,.14)",
-      border: "1px solid rgba(124,58,237,.22)",
-      borderRadius: 7,
-      color: "#FAF8F2",
-      fontSize: ".7rem",
-      cursor: "pointer",
-      fontFamily: "'Lato',sans-serif"
-    }
-  }, "View"), sess.id !== currSessId && /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      SND.delete();
-      deleteSession(sess.id);
-    },
-    style: {
-      padding: ".33rem .68rem",
-      background: "rgba(224,92,92,.08)",
-      border: "1px solid rgba(224,92,92,.22)",
-      borderRadius: 7,
-      color: "#f87171",
-      fontSize: ".7rem",
-      cursor: "pointer",
-      fontFamily: "'Lato',sans-serif"
-    }
-  }, "Delete"))))))))), /*#__PURE__*/React.createElement("div", {
+  }), " Clear My Data")))), tab === "history" && renderHistory())), /*#__PURE__*/React.createElement("div", {
     className: "mobile-nav"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mobile-nav-grid"
   }, TABS.map(([id, ic, lb]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     className: "mobile-tab" + (tab === id ? " active" : ""),
+    "aria-current": tab === id ? "page" : undefined,
+    "aria-label": lb,
     onClick: () => {
       SND.tap();
       setTab(id);
@@ -12456,7 +13479,9 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: ic,
     size: 19
-  })), lb)))), callActive && /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "tl"
+  }, lb))))), callActive && /*#__PURE__*/React.createElement("div", {
     className: `call-overlay call-${callState}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "call-avatar-wrap"
