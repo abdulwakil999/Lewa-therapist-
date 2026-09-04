@@ -3289,6 +3289,7 @@ Life events: ${p.lifeEvents || "None disclosed"}
 ${timeInfo}
 ${cameraGuidance}
 ${memoryBlock}
+${p._session ? `\nEARLIER IN THIS SESSION (this conversation ran long, so the older turns are no longer sent in full — here is what they contained):\n${p._session}\nUse it purely for continuity. Never mention that anything was condensed, shortened, or dropped.` : ''}
 ${p._prefs ? `\nWHAT HAS HELPED THIS PERSON BEFORE (their feedback — lean toward these):\n${p._prefs}` : ''}
 ${p._goals ? `\nTHEIR ACTIVE GOALS (weave in progress naturally, celebrate wins, never nag):\n${p._goals}` : ''}
 ${webBlock}
@@ -3421,12 +3422,26 @@ const migrateModel = m => MODEL_MIGRATE[m] || m;
    prompt; the patient only ever sees LEWA's normal reply — no thoughts,
    no research process. ── */
 const _wsCache = new Map(); // ported from Lewa Coder: 10-min per-query cache, no repeat fetches
+const _wsInflight = new Map(); // identical queries in flight share one request
+/* Nothing that looks like a credential is ever put on the wire to a search
+   endpoint — not the app's own keys, and not one a person happens to paste
+   into the conversation. */
+const SECRET_IN_TEXT = /\b(sk-[A-Za-z0-9_\-]{12,}|sk_[A-Za-z0-9_\-]{12,}|gsk_[A-Za-z0-9]{12,}|ghp_[A-Za-z0-9]{12,}|github_pat_[A-Za-z0-9_]{12,}|xai-[A-Za-z0-9]{12,}|AIza[A-Za-z0-9_\-]{20,}|eyJ[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+)\b/g;
+function scrubSecretsT(s) {
+  return String(s || '').replace(SECRET_IN_TEXT, '');
+}
 async function bgWebSearch(query) {
-  const q = (query || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+  const q = scrubSecretsT(query).replace(/\s+/g, ' ').trim().slice(0, 180);
   if (!q) return '';
   const wsKey = q.toLowerCase();
   const wsHit = _wsCache.get(wsKey);
   if (wsHit && Date.now() - wsHit.t < 600000) return wsHit.v;
+  if (_wsInflight.has(wsKey)) return _wsInflight.get(wsKey);
+  const _wsRun = _bgWebSearch(q, wsKey);
+  _wsInflight.set(wsKey, _wsRun);
+  try { return await _wsRun; } finally { _wsInflight.delete(wsKey); }
+}
+async function _bgWebSearch(q, wsKey) {
   const withTimeout = (p, ms) => Promise.race([p, new Promise(res => setTimeout(() => res(null), ms))]);
   const out = [];
   try {
@@ -3835,31 +3850,47 @@ const OR_EQUIV = {
   'gemini-2.5-flash': 'google/gemini-2.5-flash',
   'gemini-2.5-pro': 'google/gemini-2.5-pro'
 };
+/* OpenRouter names most models as "<vendor>/<id>". Where a model isn't in the
+   hand-written table above — because it was discovered live, or added after
+   this build shipped — derive the OpenRouter name from the provider it
+   belongs to, and only use it if OpenRouter's own catalogue confirms it. */
+const OR_VENDOR = { anthropic: 'anthropic', openai: 'openai', gemini: 'google' };
+function orEquivalentT(provider, model) {
+  if (OR_EQUIV[model]) return OR_EQUIV[model];
+  const vendor = OR_VENDOR[provider];
+  if (!vendor || !model) return null;
+  const guess = vendor + '/' + String(model).replace(/^models\//, '');
+  const cat = catModels('openrouter');
+  if (cat && cat.length) {
+    for (let i = 0; i < cat.length; i++) if (cat[i] && cat[i].id === guess) return guess;
+    return null; // catalogue is present and doesn't have it — don't invent a route
+  }
+  return guess;
+}
+/* ── PROVIDER ROUTING ─────────────────────────────────────────────
+   1. This provider's own key → talk to it directly.
+   2. No native key, but an OpenRouter key that can reach an equivalent
+      model → route through OpenRouter, silently.
+   3. A custom endpoint → use it as given.
+   4. Nothing usable → say exactly what is missing, in plain words. ── */
 function resolveRouteT(provider, model, passedKey) {
-  var _PROVIDERS$provider;
-  if (provider === 'custom') return {
-    provider,
-    model,
-    key: passedKey || KeyVault.loadFor('custom')
-  };
+  if (provider === 'custom') {
+    const ck = passedKey || KeyVault.loadFor('custom');
+    if (!ck) throw new Error('Your custom endpoint has no key saved. Open Settings → API and add the key your endpoint expects.');
+    return { provider: provider, model: model, key: ck };
+  }
   const native = KeyVault.loadFor(provider) || passedKey || '';
-  if (native) return {
-    provider,
-    model,
-    key: native
-  };
+  if (native) return { provider: provider, model: model, key: native };
   const or = KeyVault.loadFor('openrouter');
-  if (or && provider !== 'openrouter' && OR_EQUIV[model]) return {
-    provider: 'openrouter',
-    model: OR_EQUIV[model],
-    key: or
-  };
-  if (passedKey) return {
-    provider,
-    model,
-    key: passedKey
-  };
-  throw new Error(`No API key can reach this model. Add a ${((_PROVIDERS$provider = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider.label) || provider} key — or a single OpenRouter key, which can serve most models here.`);
+  if (or && provider !== 'openrouter') {
+    const eq = orEquivalentT(provider, model);
+    if (eq) return { provider: 'openrouter', model: eq, key: or, viaOpenRouter: true };
+  }
+  if (passedKey) return { provider: provider, model: model, key: passedKey };
+  const label = (PROVIDERS[provider] || {}).label || provider;
+  const a = /^[aeiou]/i.test(label) ? 'an' : 'a';
+  const have = Object.keys(PROVIDERS).filter(function (p) { return p !== provider && KeyVault.loadFor(p); }).map(function (p) { return (PROVIDERS[p] || {}).label || p; });
+  throw new Error(or ? `Your OpenRouter key can't reach ${model} — OpenRouter doesn't carry it. Pick a different model, or add ${a} ${label} key in Settings → API.` : have.length ? `No key for ${label} yet. You do have a key saved for ${have.join(' and ')} — switch provider in Settings → API, or add ${a} ${label} key. A single OpenRouter key can serve most models here.` : `No API key saved yet. Open Settings → API and add ${a} ${label} key — or one OpenRouter key, which can serve most models in this app.`);
 }
 
 /* ── LIVE MODEL CATALOGUES (ported from Lewa Coder) — each provider's
@@ -3932,94 +3963,450 @@ async function fetchModelsLive(provider, key) {
 function catModels(provider) {
   try {
     const c = JSON.parse(S.get('lewa-cat-' + provider) || 'null');
+    /* A stale catalogue is still far better than none — it is only ever used
+       to describe models, never as proof that one still exists. */
     return c && c.list && c.list.length ? c.list : null;
   } catch (_) {
     return null;
   }
 }
+/* One refresh per provider at a time. Without this, opening Settings while a
+   send is in flight fired the same catalogue request three or four times. */
+const _catInflight = {};
 async function ensureModelsT(provider, key, force) {
   if (!key || provider === 'custom') return;
+  const slot = 'lewa-cat-' + provider;
   try {
-    const cur = JSON.parse(S.get('lewa-cat-' + provider) || 'null');
+    const cur = JSON.parse(S.get(slot) || 'null');
     if (!force && cur && cur.at && Date.now() - cur.at < 216e5 && cur.list && cur.list.length) return;
-    const list = await fetchModelsLive(provider, key);
-    if (list && list.length) {
-      S.set('lewa-cat-' + provider, JSON.stringify({
-        at: Date.now(),
-        list
-      }));
-      window.dispatchEvent(new Event('lewa-models'));
+  } catch (_) {}
+  if (_catInflight[provider]) return _catInflight[provider];
+  _catInflight[provider] = (async function () {
+    try {
+      const list = await fetchModelsLive(provider, key);
+      if (list && list.length) {
+        S.set(slot, JSON.stringify({ at: Date.now(), list: list }));
+        window.dispatchEvent(new Event('lewa-models'));
+      } else {
+        /* Discovery failed (offline, rate limit, revoked key). Keep whatever is
+           cached and simply try again later — never blank the picker. */
+        try {
+          const old = JSON.parse(S.get(slot) || 'null');
+          if (old && old.list && old.list.length) S.set(slot, JSON.stringify({ at: Date.now() - 18e6, list: old.list }));
+        } catch (_) {}
+      }
+    } catch (_) {} finally {
+      delete _catInflight[provider];
     }
-  } catch (_) {}
+  })();
+  return _catInflight[provider];
+}
+/* Is this id something the provider can plausibly still serve? Only ever
+   answers "no" when we have a live catalogue to be sure with. */
+function modelLooksValidT(provider, model) {
+  if (!model || provider === 'custom') return true;
+  if (isModelDead(provider, model)) return false;
+  const cat = catModels(provider);
+  if (!cat || !cat.length) return true; // no catalogue — give it the benefit of the doubt
+  for (let i = 0; i < cat.length; i++) if (cat[i] && cat[i].id === model) return true;
+  const built = (PROVIDERS[provider] || {}).models || [];
+  return built.indexOf(model) !== -1;
 }
 
-/* ── SMART MODEL ROUTING (Auto strategy, ported from Lewa Coder) —
-   classify how demanding the turn is, then use the cheapest model that
-   can handle it — only ever swapping WITHIN the session's own provider,
-   and never above a sane price ceiling. Crisis-adjacent turns always get
-   the strongest available model. ── */
-function classifyComplexityT(text) {
-  const t = (text || '').toLowerCase();
-  const words = t.trim().split(/\s+/).filter(Boolean).length;
-  if (/suicid|self[- ]?harm|hurt myself|end my life|crisis|abuse|assault|trauma|panic attack/.test(t)) return 'hard';
-  if (words > 60) return 'hard';
-  if (words <= 8) return 'easy';
-  return 'medium';
+/* ══════════════════════════════════════════════════════════════
+   MODEL CAPABILITY MAP  ·  COST CONTROL
+   ──────────────────────────────────────────────────────────────
+   Every model the app can reach is described by a small profile:
+   how capable it is (tier 0–3), whether it can read images, and
+   what its output costs per million tokens. Real prices come from
+   the live catalogue whenever the provider publishes them; where
+   it doesn't, the tier's typical price stands in so the router
+   still has something honest to compare. Routing then spends the
+   LEAST it can while still being adequate — and stops counting
+   pennies entirely when a turn is safety-critical.
+   ══════════════════════════════════════════════════════════════ */
+const TIER_PRICE = [0.35, 1.5, 6, 22]; // $ / 1M output tokens, typical for the tier
+const MODEL_TIER_RULES = [
+  /* cheapest patterns first — "gpt-5.4-mini" must read as small, not as GPT-5 */
+  { re: /(nano|flash[-\s]?lite|[-\s]lite\b|haiku|mini|tiny|small|gemma|instant)/i, tier: 0 },
+  { re: /-(?:[1-9]|1[0-2])b(?:\b|-)/i, tier: 0 },
+  { re: /(flash|turbo|nemotron|deepseek|kimi|glm|qwen|llama|scout|air|mixtral)/i, tier: 1 },
+  { re: /(sonnet|gpt-5\.[0-4]|gpt-4o|gpt-4\.|grok|command|mistral[-\s]large|pro\b|pro[-\s])/i, tier: 2 },
+  { re: /(opus|fable|gpt-5\.[5-9]|gpt-6|ultra|o[13][-\s]?pro|reasoner|thinking)/i, tier: 3 }
+];
+const VISION_RE = /(gpt-4o|gpt-4\.1|gpt-5|gemini|claude|grok|pixtral|vision|llava|[-\s]vl\b|internvl)/i;
+const NO_VISION_RE = /(nemotron|deepseek|kimi|embed|whisper|tts|moderation|guard)/i;
+function modelTier(id) {
+  const s = String(id || '');
+  for (let i = 0; i < MODEL_TIER_RULES.length; i++) if (MODEL_TIER_RULES[i].re.test(s)) return MODEL_TIER_RULES[i].tier;
+  return 1;
 }
-function routeModelT(text, provider, model) {
-  if (S.get('lewa-strategy') !== 'auto') return {
-    provider,
-    model
-  };
-  try {
-    const list = (catModels(provider) || []).filter(m => m && m.id && (m.pout || 0) > 0 && (m.pout || 0) <= 20);
-    if (list.length < 2) return {
-      provider,
-      model
-    };
-    const ranked = [...list].sort((a, b) => (a.pout || 0) - (b.pout || 0));
-    const cx = classifyComplexityT(text);
-    let pick;
-    if (cx === 'easy') pick = ranked[0];else if (cx === 'hard') pick = ranked[ranked.length - 1];else pick = list.find(m => m.id === model) || ranked[Math.floor(ranked.length / 2)];
-    if (pick && pick.id) return {
-      provider,
-      model: pick.id
-    };
-  } catch (_) {}
+function modelSeesImages(id) {
+  const s = String(id || '');
+  return VISION_RE.test(s) && !NO_VISION_RE.test(s);
+}
+/* One model's full profile, merging the live catalogue over the built-in map. */
+function modelInfoT(provider, id) {
+  const cat = catModels(provider) || [];
+  let hit = null;
+  for (let i = 0; i < cat.length; i++) if (cat[i] && cat[i].id === id) { hit = cat[i]; break; }
+  const tier = modelTier(id);
+  let pout;
+  if (hit && typeof hit.pout === 'number' && hit.pout > 0) pout = hit.pout;
+  else if (/:free\b/i.test(String(id))) pout = 0;
+  else if (hit && hit.pout === 0 && provider === 'openrouter') pout = 0; // OpenRouter publishes a true 0 for free models
+  else pout = TIER_PRICE[tier];
   return {
-    provider,
-    model
+    id: id,
+    label: (hit && hit.label) || MODEL_LABELS[id] || id,
+    tier: tier,
+    vision: modelSeesImages(id),
+    pout: pout,
+    live: !!hit
   };
 }
 
-/* ── USAGE TRACKING (ported from Lewa Coder) — per-account, per-model
-   token totals, persisted across sessions. ── */
-function recordUsageT(ns, provider, model, tin, tout) {
+/* ── DEAD MODEL REGISTRY ──────────────────────────────────────────
+   A model that has been retired (or was saved by a build from a year
+   ago) must never permanently break an account. When a provider tells
+   us a model no longer exists we remember that, stop offering it, and
+   pick a living equivalent. The memory expires after a week, because
+   providers do bring models back. ── */
+const DEAD_KEY = 'lewa-dead-models';
+const DEAD_TTL = 6048e5; // 7 days
+function deadModels() {
+  try { const d = JSON.parse(S.get(DEAD_KEY) || '{}'); return d && typeof d === 'object' ? d : {}; } catch (_) { return {}; }
+}
+function markModelDead(provider, id) {
+  if (!id) return;
   try {
+    const d = deadModels();
+    d[provider + '|' + id] = Date.now();
+    Object.keys(d).forEach(function (k) { if (Date.now() - d[k] > DEAD_TTL) delete d[k]; });
+    S.set(DEAD_KEY, JSON.stringify(d));
+  } catch (_) {}
+}
+function isModelDead(provider, id) {
+  const at = deadModels()[provider + '|' + id];
+  return !!at && Date.now() - at < DEAD_TTL;
+}
+/* Everything we could route to right now: the live catalogue first, then the
+   curated built-in list, so routing keeps working with no network at all. */
+function modelPoolT(provider) {
+  const out = [], seen = {};
+  const add = function (id) {
+    if (!id || seen[id] || isModelDead(provider, id)) return;
+    seen[id] = 1;
+    out.push(modelInfoT(provider, id));
+  };
+  (catModels(provider) || []).forEach(function (m) { if (m) add(m.id); });
+  ((PROVIDERS[provider] || {}).models || []).forEach(function (id) { add(id); });
+  return out;
+}
+/* Does this error mean "that model doesn't exist any more"? */
+function isUnknownModelError(err) {
+  if (!err) return false;
+  const st = err.status;
+  if (st !== 400 && st !== 404 && st !== 422) return false;
+  let msg = '';
+  try { msg = String(err.message || '') + ' ' + JSON.stringify(err.body || {}); } catch (_) { msg = String(err.message || ''); }
+  return /model|not found|does not exist|no endpoints|unsupported|deprecat|decommission|invalid/i.test(msg);
+}
+/* "anthropic/claude-opus-4.8" → anthropic · "claude-sonnet-5" → claude */
+function modelFamilyT(id) {
+  const s = String(id || '');
+  const i = s.indexOf('/');
+  if (i > 0) return s.slice(0, i).toLowerCase();
+  const m = /^[a-z]+/i.exec(s);
+  return m ? m[0].toLowerCase() : s.toLowerCase();
+}
+/* Choose a living stand-in for a model that no longer exists. Someone who
+   chose Claude should get Claude back — not silently land on a different
+   maker's model — so the same family is preferred, then the nearest class,
+   and only then price. */
+function healModelT(provider, model) {
+  markModelDead(provider, model);
+  const want = modelTier(model);
+  const fam = modelFamilyT(model);
+  const pool = modelPoolT(provider).filter(function (m) { return m.id !== model; });
+  if (!pool.length) return null;
+  const byCost = function (a, b) { return a.pout - b.pout; };
+  const byNearest = function (a, b) { return Math.abs(a.tier - want) - Math.abs(b.tier - want) || a.pout - b.pout; };
+  const kin = pool.filter(function (m) { return modelFamilyT(m.id) === fam; });
+  const kinOk = kin.filter(function (m) { return m.tier >= want; }).sort(byCost);
+  if (kinOk.length) return kinOk[0].id;
+  if (kin.length) return kin.slice().sort(byNearest)[0].id;
+  const anyOk = pool.filter(function (m) { return m.tier >= want; }).sort(byNearest);
+  if (anyOk.length) return anyOk[0].id;
+  return pool.slice().sort(byNearest)[0].id;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REQUEST CLASSIFICATION
+   ──────────────────────────────────────────────────────────────
+   Five classes: trivial · normal · complex · sensitive · crisis.
+   Length is deliberately NOT the signal — "he hit me again" is
+   four words and is the most important message of the day, while
+   a long, cheerful story about a weekend needs nothing special.
+   What actually counts: how much feeling is present, whether the
+   feelings conflict, whether the material is heavy, whether real
+   reasoning is being asked for, whether there is an image or a
+   document to read, whether current information is needed, and
+   whether anyone's safety is in question.
+   ══════════════════════════════════════════════════════════════ */
+const RE_REASONING = /\b(why|how come|explain|understand|make sense|figure out|work (out|through)|decide|decision|choose|compare|pros and cons|should i|what if|weigh|plan|strategy|torn between|on the one hand|the reason|does (it|this) mean)\b/i;
+const RE_FRESH = /\b(today|tonight|this (week|month|year)|latest|current(ly)?|the news|right now|recently|price of|weather|who won|what'?s happening|202[5-9])\b/i;
+const RE_HEAVY = /\b(abuse|assault|rape|trauma|ptsd|grief|grieving|died|dying|death|funeral|divorce|miscarriage|addiction|relapse|eating disorder|anorexi|bulimi|worthless|panic attack|flashback|dissociat|psychosis|bipolar|overdose|hopeless|numb|can'?t go on|breakdown|hate myself)\b/i;
+const RE_AMBIVALENT = /\b(torn|back and forth|two minds|can'?t decide|cannot decide|dilemma|conflicted|part of me|not sure (if|whether)|either way|weighing (it|this|them)|go(ing)? round in circles)\b/i;
+const RE_TRIVIAL = /^(hi|hey|hello|yo|sup|good (morning|afternoon|evening|night)|thanks?|thank you|ty|ok(ay)?|k|yes|yeah|yep|no|nah|sure|cool|nice|great|got it|bye|goodnight|night|lol|haha|hmm+|mhm|alright|fine)[\s!.,?]*$/i;
+function classifyRequestT(text, opts) {
+  opts = opts || {};
+  const t = String(text || '').trim();
+  const low = t.toLowerCase();
+  const a = opts.analysis || null;
+  const atts = opts.attachments || [];
+  /* ── capability requirements ── */
+  let needsVision = !!opts.cameraActive, needsDocs = false;
+  for (let i = 0; i < atts.length; i++) {
+    const k = String((atts[i] && (atts[i].kind || atts[i].type || atts[i].name)) || '').toLowerCase();
+    if (/image|photo|camera|png|jpe?g|webp|gif|heic/.test(k)) needsVision = true;else if (k) needsDocs = true;
+  }
+  const needsFresh = !!opts.webSearch || RE_FRESH.test(low);
+  const crisis = a && a.crisis ? a.crisis.level || 0 : detectCrisis(low).level || 0;
+  const reasons = [];
+  let cls;
+  if (crisis >= 3) {
+    cls = 'crisis';
+    reasons.push('safety signal');
+  } else {
+    let s = 0;
+    const emo = a ? a.confidence || 0 : 0;
+    const sentences = (t.match(/[.!?]+|\n/g) || []).length + 1;
+    const questions = (t.match(/\?/g) || []).length;
+    const negations = (low.match(/\b(not|never|can'?t|won'?t|don'?t|no one|nothing|nobody)\b/g) || []).length;
+    const heavy = RE_HEAVY.test(low);
+    if (emo > 0.45) { s += 1; reasons.push('clear emotion'); }
+    if (emo > 0.7) { s += 1; reasons.push('strong emotion'); }
+    if (a && a.mixed) { s += 1; reasons.push('mixed feelings'); }
+    if (heavy) { s += 2; reasons.push('heavy material'); }
+    if (crisis === 2) { s += 2; reasons.push('acute distress'); }
+    if (RE_REASONING.test(low)) { s += 1; reasons.push('needs reasoning'); }
+    /* Being genuinely stuck between two options is hard work to help with,
+       however briefly it happens to be phrased. */
+    if (RE_AMBIVALENT.test(low)) { s += 1; reasons.push('ambivalence'); }
+    if (questions >= 2) { s += 1; reasons.push('several questions'); }
+    if (negations >= 3) { s += 1; reasons.push('heavy negation'); }
+    if (sentences >= 5) { s += 1; reasons.push('long account'); }
+    if (needsVision) { s += 1; reasons.push('image to read'); }
+    if (needsDocs) { s += 1; reasons.push('document to read'); }
+    if (needsFresh) { s += 1; reasons.push('needs current info'); }
+    if (a && (a.intent === 'advice' || a.intent === 'info' || a.intent === 'reflecting')) { s += 1; reasons.push(a.intent); }
+    const social = RE_TRIVIAL.test(t) || a && (a.intent === 'greeting' || a.intent === 'joking');
+    if (social && s === 0) { cls = 'trivial'; reasons.push('social turn'); }
+    else if (s >= 5 || heavy && emo > 0.5) cls = 'sensitive';
+    else if (s >= 3) cls = 'complex';
+    else if (s >= 1) cls = 'normal';
+    else cls = t.split(/\s+/).length <= 4 ? 'trivial' : 'normal';
+  }
+  return { cls: cls, crisis: crisis, needsVision: needsVision, needsDocs: needsDocs, needsFresh: needsFresh, reasons: reasons };
+}
+/* Kept so any older caller keeps working. */
+function classifyComplexityT(text) {
+  const c = classifyRequestT(text, {}).cls;
+  return c === 'trivial' ? 'easy' : c === 'normal' ? 'medium' : 'hard';
+}
+
+/* ── SMART MODEL ROUTING ──────────────────────────────────────────
+   Spend the least that will do the job. Simple and ordinary turns go
+   to a cheap model; genuinely difficult ones step up; anything
+   safety-critical gets the strongest model that can actually be
+   reached, with no price ceiling at all. Swaps only ever happen
+   inside the session's own provider, so no extra key is ever needed. */
+const CLASS_TIER = { trivial: 0, normal: 0, complex: 2, sensitive: 2, crisis: 3 };
+const CLASS_CEILING = { trivial: 1.2, normal: 3, complex: 12, sensitive: 40, crisis: Infinity };
+function pickModelT(provider, current, need) {
+  const pool = modelPoolT(provider);
+  if (pool.length < 2) return current;
+  const target = CLASS_TIER[need.cls] != null ? CLASS_TIER[need.cls] : 1;
+  const ceiling = CLASS_CEILING[need.cls] != null ? CLASS_CEILING[need.cls] : 6;
+  let able = pool.filter(function (m) { return !need.needsVision || m.vision; });
+  if (!able.length) able = pool;
+  if (need.cls === 'crisis') {
+    /* Safety-critical: strongest reachable model, cost is not a factor. */
+    const best = able.slice().sort(function (a, b) { return b.tier - a.tier || b.pout - a.pout; })[0];
+    return best ? best.id : current;
+  }
+  const adequate = able.filter(function (m) { return m.tier >= target && m.pout <= ceiling; }).sort(function (a, b) { return a.pout - b.pout || a.tier - b.tier; });
+  if (adequate.length) {
+    const cur = able.filter(function (m) { return m.id === current; })[0];
+    /* Don't churn: if their own model is already in the right class and
+       nothing adequate is cheaper, leave their choice alone. */
+    if (cur && cur.tier >= target && cur.pout <= adequate[0].pout) return current;
+    return adequate[0].id;
+  }
+  /* Nothing clears the bar under the ceiling — take the strongest we have. */
+  const best = able.slice().sort(function (a, b) { return b.tier - a.tier || a.pout - b.pout; })[0];
+  return best ? best.id : current;
+}
+function routeModelT(text, provider, model, opts) {
+  let need;
+  try { need = classifyRequestT(text, opts || {}); } catch (_) { need = { cls: 'normal', crisis: 0, needsVision: false, needsDocs: false, needsFresh: false, reasons: [] }; }
+  if (S.get('lewa-strategy') !== 'auto') {
+    /* A manual choice is respected — with two safety overrides: an image is
+       never sent to a model that cannot see, and a turn with a real safety
+       signal is never answered by a model too small to handle it. */
+    try {
+      const cur = modelInfoT(provider, model);
+      if (need.needsVision && !cur.vision || need.cls === 'crisis' && cur.tier < 2) {
+        const up = pickModelT(provider, model, need);
+        if (up && up !== model) return { provider: provider, model: up, need: need, switched: true };
+      }
+    } catch (_) {}
+    return { provider: provider, model: model, need: need, switched: false };
+  }
+  try {
+    const pick = pickModelT(provider, model, need);
+    if (pick && pick !== model) return { provider: provider, model: pick, need: need, switched: true };
+  } catch (_) {}
+  return { provider: provider, model: model, need: need, switched: false };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   USAGE TRACKING — per model, per provider, per day
+   ──────────────────────────────────────────────────────────────
+   Real numbers reported by the provider are always preferred; the
+   on-device estimate is only a fallback, and how often it had to
+   be used is recorded too, so the totals can be read honestly.
+   ══════════════════════════════════════════════════════════════ */
+const USAGE_EMPTY = { v: 2, tin: 0, tout: 0, calls: 0, est: 0, byModel: {}, byProvider: {}, byDay: {} };
+function dayKeyT(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+/* Accepts a log written by ANY earlier build and returns the current shape. */
+function normalizeUsage(u) {
+  if (!u || typeof u !== 'object') u = {};
+  u.v = 2;
+  u.tin = u.tin || 0;
+  u.tout = u.tout || 0;
+  u.calls = u.calls || 0;
+  u.est = u.est || 0;
+  u.byModel = u.byModel && typeof u.byModel === 'object' ? u.byModel : {};
+  u.byProvider = u.byProvider && typeof u.byProvider === 'object' ? u.byProvider : {};
+  u.byDay = u.byDay && typeof u.byDay === 'object' ? u.byDay : {};
+  return u;
+}
+function recordUsageT(ns, provider, model, tin, tout, opts) {
+  try {
+    opts = opts || {};
     const k = nsKey(ns || 'default', 'usagelog');
-    const u = JSON.parse(localStorage.getItem(k) || '{"tin":0,"tout":0,"calls":0,"byModel":{}}');
-    u.tin += tin || 0;
-    u.tout += tout || 0;
-    u.calls++;
-    const mk = String(model || '?');
-    u.byModel[mk] = u.byModel[mk] || {
-      tin: 0,
-      tout: 0,
-      calls: 0
+    let u;
+    try { u = JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { u = null; }
+    u = normalizeUsage(u || JSON.parse(JSON.stringify(USAGE_EMPTY)));
+    const i = Math.max(0, tin || 0), o = Math.max(0, tout || 0);
+    const bump = function (bucket, key) {
+      if (!bucket[key]) bucket[key] = { tin: 0, tout: 0, calls: 0 };
+      bucket[key].tin += i;
+      bucket[key].tout += o;
+      bucket[key].calls++;
     };
-    u.byModel[mk].tin += tin || 0;
-    u.byModel[mk].tout += tout || 0;
-    u.byModel[mk].calls++;
+    u.tin += i;
+    u.tout += o;
+    u.calls++;
+    if (opts.estimated) u.est++;
+    bump(u.byModel, String(model || '?'));
+    bump(u.byProvider, String(provider || '?'));
+    bump(u.byDay, dayKeyT());
+    /* Keep the daily ledger to the last 90 days so it can never grow unbounded. */
+    const days = Object.keys(u.byDay).sort();
+    while (days.length > 90) delete u.byDay[days.shift()];
     localStorage.setItem(k, JSON.stringify(u));
     window.dispatchEvent(new Event('lewa-usage'));
   } catch (_) {}
 }
 function usageLogFor(ns) {
   try {
-    return JSON.parse(localStorage.getItem(nsKey(ns || 'default', 'usagelog')) || 'null');
+    const raw = localStorage.getItem(nsKey(ns || 'default', 'usagelog'));
+    if (!raw) return null;
+    return normalizeUsage(JSON.parse(raw));
   } catch (_) {
     return null;
   }
+}
+function usageTodayT(ns) {
+  const u = usageLogFor(ns);
+  if (!u) return null;
+  return u.byDay[dayKeyT()] || { tin: 0, tout: 0, calls: 0 };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTEXT MANAGEMENT
+   ──────────────────────────────────────────────────────────────
+   A long session cannot simply be posted in full — it would
+   overflow the model's window and quietly get truncated at the
+   wrong end. So the recent turns go in whole, everything older is
+   folded into a compact digest, and durable facts (names, work,
+   diagnoses, medication) are lifted out so they survive no matter
+   how far back they were said. All of it is deterministic and
+   costs nothing: no summarising API call, nothing to fail.
+   ══════════════════════════════════════════════════════════════ */
+const CTX_BUDGET = 6000; // tokens of conversation we are willing to send
+function msgTextT(m) {
+  if (!m) return '';
+  if (typeof m.content === 'string') return m.content;
+  if (m.display) return m.display;
+  if (Array.isArray(m.content)) {
+    for (let i = 0; i < m.content.length; i++) if (m.content[i] && m.content[i].type === 'text') return m.content[i].text || '';
+  }
+  return '';
+}
+const FACT_RE = /\b(my (name|wife|husband|partner|mum|mom|dad|son|daughter|boss|therapist|doctor|brother|sister|diagnosis|job|marriage|relationship)\b|i (work|live|study) (at|in|as)\b|i'?m \d{1,2}\b|i (was )?(diagnosed|prescribed)\b|i (take|started|stopped) \w+)/i;
+function factsFromT(msgs) {
+  const out = [];
+  for (let i = 0; i < msgs.length && out.length < 10; i++) {
+    const m = msgs[i];
+    if (!m || m.role !== 'user') continue;
+    const t = msgTextT(m).replace(/\s+/g, ' ').trim();
+    if (t && FACT_RE.test(t)) out.push('· ' + t.slice(0, 140));
+  }
+  return out;
+}
+function digestOlderT(older) {
+  if (!older || !older.length) return '';
+  const themes = {}, lines = [];
+  older.forEach(function (m) {
+    const t = msgTextT(m).replace(/\s+/g, ' ').trim();
+    if (!t || m.role !== 'user') return;
+    try {
+      const a = analyzeMessage(t);
+      if (a.primary && a.primary !== 'neutral') themes[a.primary] = (themes[a.primary] || 0) + 1;
+    } catch (_) {}
+    lines.push('· they said: ' + t.slice(0, 120));
+  });
+  const top = Object.keys(themes).sort(function (x, y) { return themes[y] - themes[x]; }).slice(0, 4);
+  return 'Condensed from ' + older.length + ' earlier message' + (older.length === 1 ? '' : 's') + (top.length ? ' — recurring feelings: ' + top.join(', ') : '') + ':\n' + lines.slice(-12).join('\n');
+}
+function buildContextT(msgs, budget, maxTurns) {
+  const all = (msgs || []).filter(Boolean);
+  const lim = Math.max(2, maxTurns || CFG.CONTEXT_LIMIT);
+  budget = budget || CTX_BUDGET;
+  let keep = [], used = 0;
+  for (let i = all.length - 1; i >= 0 && keep.length < lim; i--) {
+    const cost = estTokens(msgTextT(all[i])) + 8;
+    if (keep.length && used + cost > budget) break;
+    used += cost;
+    keep.unshift(all[i]);
+  }
+  if (!keep.length && all.length) keep = all.slice(-1);
+  const older = all.slice(0, all.length - keep.length);
+  const facts = factsFromT(older);
+  const digest = digestOlderT(older);
+  return {
+    messages: keep,
+    dropped: older.length,
+    tokens: used,
+    text: older.length ? (facts.length ? 'Things they have told you that still matter:\n' + facts.join('\n') + '\n\n' : '') + digest : ''
+  };
 }
 function fmtTok(n) {
   n = n || 0;
@@ -4214,6 +4601,7 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
     throw await apiError(provOfUrl(baseURL), r);
   }
   let text = '',
+    reasonBuf = '',
     finish = '',
     usage = {
       tin: 0,
@@ -4237,15 +4625,29 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
     const ch = ((_j$choices = j.choices) == null || (_j$choices = _j$choices[0])) || {};
     if (ch.finish_reason) finish = ch.finish_reason;
     const d = ch.delta || {};
-    const rc = d.reasoning || d.reasoning_content;
-    if (rc) onDelta && onDelta('reasoning', rc);
+    const rc = d.reasoning || d.reasoning_content || d.thinking;
+    if (rc) {
+      /* Kept only so an answer can be rescued from it below — it is never
+         streamed to the screen, only the soft "reflecting…" indicator is. */
+      if (reasonBuf.length < 24000) reasonBuf += rc;
+      onDelta && onDelta('reasoning', rc);
+    }
     if (d.content) {
       text += d.content;
       onDelta && onDelta('text', d.content);
     }
   });
+  /* Some models put the whole answer in the reasoning channel and leave
+     content empty. Take whatever followed the last closing think tag —
+     and if there is no such marker, treat it as reasoning and keep it
+     hidden rather than showing raw internal monologue. */
+  let out = cleanModelOutput(text) || text;
+  if (!out.trim() && reasonBuf) {
+    const after = reasonBuf.split(/<\/(?:think|thinking|thought|reasoning|analysis)>/i).pop();
+    if (after && after.trim().length > 12 && after.length < reasonBuf.length) out = cleanModelOutput(after) || after.trim();
+  }
   return {
-    text: cleanModelOutput(text) || text,
+    text: out,
     usage,
     truncated: finish === 'length'
   };
@@ -4375,9 +4777,108 @@ async function callLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, mo
   }
 }
 
-/* Credits fetch — only works for OpenRouter */
+/* ══════════════════════════════════════════════════════════════
+   FAILURE RECOVERY
+   ──────────────────────────────────────────────────────────────
+   A failed request must never cost someone their words. Only the
+   network attempt is ever repeated — the message itself stays
+   exactly where it is in the transcript, is never re-posted, and
+   is never silently dropped. The ladder is: one short backoff
+   retry for anything transient · self-repair when the model has
+   been retired · a compatible sibling model · and only when every
+   rung has failed does a plain-language error reach the person.
+   ══════════════════════════════════════════════════════════════ */
+const RETRYABLE_STATUS = { 408: 1, 409: 1, 425: 1, 429: 1, 500: 1, 502: 1, 503: 1, 504: 1, 529: 1 };
+function isRetryableT(err) {
+  if (!err) return false;
+  if (RETRYABLE_STATUS[err.status]) return true;
+  return /timeout|timed out|temporarily|overload|try again|capacity|rate limit/i.test(String(err.message || ''));
+}
+function sleepT(ms) {
+  return new Promise(function (r) { setTimeout(r, ms); });
+}
+/* A different model on the same provider that hasn't been tried yet —
+   preferring one of similar strength, so a fallback never quietly answers a
+   heavy moment with a tiny model. */
+function fallbackModelT(provider, model, tried, need) {
+  const pool = modelPoolT(provider).filter(function (m) {
+    return !tried[m.id] && (!need || !need.needsVision || m.vision);
+  });
+  if (!pool.length) return null;
+  const cur = modelTier(model);
+  const min = need && (need.cls === 'crisis' || need.cls === 'sensitive') ? Math.max(0, cur - 1) : 0;
+  const ok = pool.filter(function (m) { return m.tier >= min; });
+  const near = (ok.length ? ok : pool).slice().sort(function (a, b) {
+    return Math.abs(a.tier - cur) - Math.abs(b.tier - cur) || a.pout - b.pout;
+  });
+  return near[0] ? near[0].id : null;
+}
+/* run(provider, model, attempt) does one exchange and may throw. */
+async function attemptExchangeT(run, opts) {
+  opts = opts || {};
+  const signal = opts.signal;
+  const provider = opts.provider;
+  let model = opts.model;
+  const tried = {}, notes = [];
+  let lastErr = null;
+  for (let step = 0; step < 4; step++) {
+    if (signal && signal.aborted) throw lastErr || new Error('stopped');
+    tried[model] = 1;
+    try {
+      const out = await run(provider, model, step);
+      return { result: out, provider: provider, model: model, notes: notes };
+    } catch (err) {
+      if (signal && signal.aborted) throw err;
+      lastErr = err;
+      /* The model is gone. Remember that, repair the account, carry on. */
+      if (isUnknownModelError(err)) {
+        const healed = healModelT(provider, model);
+        if (healed && !tried[healed]) {
+          notes.push('healed');
+          model = healed;
+          if (opts.onHeal) try { opts.onHeal(healed); } catch (_) {}
+          continue;
+        }
+      }
+      /* Transient — one short backoff, then try the very same thing again. */
+      if (isRetryableT(err) && notes.indexOf('retry') === -1) {
+        notes.push('retry');
+        await sleepT(err.status === 429 ? 1500 : 700);
+        continue;
+      }
+      const alt = fallbackModelT(provider, model, tried, opts.need);
+      if (alt) {
+        notes.push('fallback');
+        model = alt;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr || new Error('Could not reach a model after several attempts. Please try again in a moment.');
+}
+
+/* Credits fetch — only works for OpenRouter.
+   Called after every reply, so the answer is cached for two minutes and
+   concurrent asks share one request: the balance does not move fast enough
+   to be worth a round trip per message. */
+let _creditCache = null;
+let _creditInflight = null;
 async function fetchCredits(apiKey, provider) {
   if (provider !== 'openrouter') return null;
+  if (_creditCache && Date.now() - _creditCache.at < 12e4) return _creditCache.v;
+  if (_creditInflight) return _creditInflight;
+  _creditInflight = _fetchCredits(apiKey).then(function (v) {
+    if (v) _creditCache = { at: Date.now(), v: v };
+    _creditInflight = null;
+    return v;
+  }, function () {
+    _creditInflight = null;
+    return null;
+  });
+  return _creditInflight;
+}
+async function _fetchCredits(apiKey) {
   try {
     const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
       headers: {
@@ -6939,7 +7440,7 @@ function nsKey(ns, k) {
    an account created by any earlier build stays readable, and a
    failed migration never wipes anything.
    ══════════════════════════════════════════════════════════════ */
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 3;
 const MIGRATIONS = {
   /* v1 → v2: emotion log, goals and feedback became first-class. Older
      accounts simply had none of these keys; seed empty containers so every
@@ -6957,6 +7458,42 @@ const MIGRATIONS = {
       if (prov && legacy && localStorage.getItem('lewa-x9q2::' + prov) == null) {
         localStorage.setItem('lewa-x9q2::' + prov, legacy);
       }
+    } catch (_) {}
+  },
+  /* v2 → v3: the usage ledger grew per-provider and per-day breakdowns, and
+     the saved model is checked against the retirement table. Nothing is
+     removed — an old ledger keeps every token it had already counted, and an
+     account that was already current simply passes straight through. */
+  3: function (ns) {
+    try {
+      const k = nsKey(ns, 'usagelog');
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        const u = normalizeUsage(JSON.parse(raw));
+        /* Older logs recorded totals but not who spent them. Attribute what we
+           can from the per-model figures rather than inventing numbers. */
+        if (!Object.keys(u.byProvider).length && Object.keys(u.byModel).length) {
+          Object.keys(u.byModel).forEach(function (m) {
+            const p = m.indexOf('/') > -1 ? 'openrouter' : /^claude/.test(m) ? 'anthropic' : /^gpt|^o[13]/.test(m) ? 'openai' : /^gemini/.test(m) ? 'gemini' : 'unknown';
+            if (!u.byProvider[p]) u.byProvider[p] = { tin: 0, tout: 0, calls: 0 };
+            u.byProvider[p].tin += u.byModel[m].tin || 0;
+            u.byProvider[p].tout += u.byModel[m].tout || 0;
+            u.byProvider[p].calls += u.byModel[m].calls || 0;
+          });
+        }
+        localStorage.setItem(k, JSON.stringify(u));
+      }
+    } catch (_) {}
+    /* A model saved by an older build may have been retired since. Point it at
+       its living equivalent now, so the first message after an update works. */
+    try {
+      const saved = localStorage.getItem('lewa-model');
+      const healed = migrateModel(saved);
+      if (saved && healed && healed !== saved) localStorage.setItem('lewa-model', healed);
+    } catch (_) {}
+    /* Seed the containers added since v2 so every reader can assume they exist. */
+    try {
+      if (AccountStore.get(ns, 'usagelog') == null) AccountStore.set(ns, 'usagelog', JSON.stringify(USAGE_EMPTY));
     } catch (_) {}
   }
 };
@@ -7796,11 +8333,32 @@ function App() {
     const savedProv = S.get("lewa-provider");
     if (savedProv) setProvider(savedProv);
     const savedMdl = S.get("lewa-model");
-    if (savedMdl) setModel(migrateModel(savedMdl));
+    /* Retired ids saved by an older build heal immediately, before anything
+       tries to use them. */
+    const startMdl = savedMdl ? migrateModel(savedMdl) : '';
+    if (startMdl) {
+      setModel(startMdl);
+      if (startMdl !== savedMdl) S.set('lewa-model', startMdl);
+    }
     fetchCredits(key, savedProv || provider).then(c => {
       if (c) setCredits(c);
     });
-    ensureModelsT(savedProv || provider, key); // free, cached ~6h — fills the live model picker
+    const bootProv = savedProv || provider;
+    /* Free (zero-token), cached ~6h — fills the live model picker. Once the
+       real catalogue is in, a saved model the provider no longer serves is
+       swapped for a living equivalent, so an account is never left permanently
+       unable to send a message. */
+    Promise.resolve(ensureModelsT(bootProv, key)).then(() => {
+      try {
+        if (!startMdl || bootProv === 'custom') return;
+        if (modelLooksValidT(bootProv, startMdl)) return;
+        const healed = healModelT(bootProv, startMdl);
+        if (healed && healed !== startMdl) {
+          S.set('lewa-model', healed);
+          setModel(healed);
+        }
+      } catch (_) {}
+    });
     setTimeout(() => setScreen("accounts"), 500);
     return () => clearInterval(tick);
   }, []);
@@ -8308,7 +8866,15 @@ function App() {
     const nm = [...messages, uMsg];
     setMessages(nm);
     setAiLoad(true);
-    const ctxMsgs = sendHistory ? nm : [uMsg];
+    /* Context management: recent turns go in whole; anything older is folded
+       into a compact digest so a long session never overflows the window and
+       gets truncated at the wrong end. */
+    const ctxBuild = sendHistory ? buildContextT(nm, CTX_BUDGET, CFG.CONTEXT_LIMIT) : {
+      messages: [uMsg],
+      text: '',
+      dropped: 0
+    };
+    const ctxMsgs = ctxBuild.messages;
     const _web = webSearch ? await bgWebSearch(txt) : ''; // silent lookup while the typing dots show
     /* Hidden analysis pass (zero-token, on-device): emotion, intent, urgency,
        crisis, therapy framework. Feeds the model; logged to the timeline. */
@@ -8317,14 +8883,22 @@ function App() {
     const profileWithContext = _extends({}, profile, {
       _cameraActive: cameraOn,
       _memory: buildMemoryText(),
+      _session: ctxBuild.text,
       _webResults: _web,
       _analysis: analysis,
       _prefs: buildPrefsText(),
       _goals: buildGoalsText()
     });
-    /* Smart routing (Auto): light turns go to a cheaper model, heavy or
-       crisis-adjacent turns to the strongest — within the same provider. */
-    const routed = routeModelT(txt, provider, model);
+    /* Smart routing: the turn is classified on what it actually contains —
+       feeling, difficulty, images, documents, need for current information,
+       safety — never on how many words it happens to have. Simple turns take
+       a cheap model; safety-critical ones take the strongest available. */
+    const routed = routeModelT(txt, provider, model, {
+      analysis: analysis,
+      attachments: outgoingAttachments,
+      cameraActive: cameraOn,
+      webSearch: webSearch
+    });
     /* Streaming (ported from Lewa Coder): the reply appears token by token
        and can be stopped mid-thought. Falls back to a normal call if the
        stream can't start. */
@@ -8333,19 +8907,41 @@ function App() {
     setStreamText("");
     setStreamThink(false);
     let liveText = "";
+    let usedModel = routed.model;
     try {
       let reply,
         usage = null;
       try {
-        let res = await streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model, {
+        /* Every attempt starts the visible reply from scratch, so a failed
+           first try can never leave half a sentence stuck on screen. */
+        const attempt = await attemptExchangeT(function (prov, mdl) {
+          liveText = "";
+          setStreamText("");
+          return streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, prov, mdl, {
+            signal: ctrl.signal,
+            onDelta: (kind, chunk) => {
+              if (kind === 'text') {
+                liveText += chunk;
+                setStreamText(lwStripLiveThinking(liveText));
+              } else setStreamThink(true); // model is reasoning — soft indicator only, never raw thoughts
+            }
+          });
+        }, {
+          provider: routed.provider,
+          model: routed.model,
+          need: routed.need,
           signal: ctrl.signal,
-          onDelta: (kind, chunk) => {
-            if (kind === 'text') {
-              liveText += chunk;
-              setStreamText(lwStripLiveThinking(liveText));
-            } else setStreamThink(true); // model is reasoning — soft indicator only, never raw thoughts
+          /* The saved model no longer exists — repair the account so this
+             never happens again, rather than failing every future message. */
+          onHeal: healed => {
+            if (S.get('lewa-model') === routed.model) {
+              S.set('lewa-model', healed);
+              setModel(healed);
+            }
           }
         });
+        let res = attempt.result;
+        usedModel = attempt.model;
 
         reply = res.text;
         usage = res.usage;
@@ -8367,7 +8963,7 @@ function App() {
           }];
           let cont;
           try {
-            cont = await streamLEWA(contMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model, {
+            cont = await streamLEWA(contMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel, {
               signal: ctrl.signal,
               onDelta: (kind, chunk) => {
                 if (kind === 'text') {
@@ -8400,7 +8996,9 @@ function App() {
             return;
           }
         } else if (!liveText) {
-          reply = await callLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, routed.model);
+          /* Last rung: streaming is unavailable or blocked on this network —
+             ask for the whole reply in one piece instead of giving up. */
+          reply = await callLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel);
         } else {
           throw streamErr;
         }
@@ -8418,7 +9016,7 @@ function App() {
             const warmer = await callLEWA([{
               role: 'user',
               content: `Rewrite the following reply so it lands with real warmth and emotional validation FIRST, in fresh natural language, without minimising and without sounding clinical. Keep it the same length or shorter, keep any genuine guidance, and reply with ONLY the rewritten message.\n\nReply to rewrite:\n"""${reply}"""`
-            }], profileWithContext, apiKey, ctx, 400, 1, routed.provider, routed.model);
+            }], profileWithContext, apiKey, ctx, 400, 1, routed.provider, usedModel);
             if (warmer && warmer.trim().length > 10 && empathyScore(warmer, analysis) > es) reply = warmer.trim();
           } catch (_) {/* keep the original on any failure */}
         }
@@ -8437,7 +9035,14 @@ function App() {
       saveMsgs(final, currSessId);
       SND.receive();
       setTokensUsed(t => t + estTokens(displayText) + estTokens(reply));
-      recordUsageT(ns, routed.provider, routed.model, usage && usage.tin ? usage.tin : estTokens(displayText), usage && usage.tout ? usage.tout : estTokens(reply));
+      /* Token accounting: the provider's own numbers are authoritative — the
+         on-device estimate is only used when it didn't report any, and that
+         fact is recorded so the totals can be read honestly. */
+      const realIn = usage && usage.tin > 0 ? usage.tin : 0;
+      const realOut = usage && usage.tout > 0 ? usage.tout : 0;
+      recordUsageT(ns, routed.provider, usedModel, realIn || estTokens(displayText), realOut || estTokens(reply), {
+        estimated: !realIn && !realOut
+      });
       if (notifyOn && document.hidden) notify('LEWA', reply.replace(/\*\*/g, '').slice(0, 110));
       scheduleSync();
       /* Refresh credits after each call */
@@ -8489,6 +9094,10 @@ function App() {
         setErrMsg("You're offline — your message is still here. It'll send once you're connected.");
         whenOnline(() => { setErrMsg(""); toast("Back online — tap send when you're ready."); });
       } else {
+        /* Every fallback was tried and none worked. Their message stays exactly
+           where it is — one copy, in the transcript, saved to this device — so
+           nothing is lost if they close the app and come back. */
+        try { saveMsgs(nm, currSessId); } catch (_) {}
         setErrMsg(e.message);
       }
       SND.error();
@@ -8955,13 +9564,24 @@ function App() {
      Export/Import is a full local backup of THIS account. GitHub sync keeps
      sessions & preferences in a PRIVATE repo on the user's own GitHub; both
      sides push/pull it. API keys and tokens are NEVER uploaded. ── */
+  /* Secrets never leave this device. API keys and the GitHub token are stored
+     outside the account namespace already, but this is belt-and-braces: any
+     key that even looks like a credential is refused here, so it can never
+     reach a backup file or the sync repository through a future change. */
+  const SECRET_KEY_RE = /(^|-)(x9q2|apikey|api_key|key|token|secret|password|auth|credential|bearer)($|-|::)/i;
+  const SECRET_VALUE_RE = /^(sk-|sk_|gsk_|ghp_|github_pat_|gho_|xai-|AIza|Bearer\s)/;
   const dumpAccountData = () => {
     const data = {};
     try {
       const pre = `lewa-${ns}-`;
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && k.startsWith(pre)) data[k.slice(pre.length)] = localStorage.getItem(k);
+        if (!k || !k.startsWith(pre)) continue;
+        const short = k.slice(pre.length);
+        if (SECRET_KEY_RE.test(short)) continue;
+        const v = localStorage.getItem(k);
+        if (typeof v === 'string' && SECRET_VALUE_RE.test(v)) continue;
+        data[short] = v;
       }
     } catch (_) {}
     return data;
@@ -10383,7 +11003,23 @@ function App() {
         fontWeight: 700,
         letterSpacing: ".05em"
       }
-    }, "ALL-TIME \xB7 ", u.calls, " calls \xB7 ", fmtTok(u.tin), " in / ", fmtTok(u.tout), " out"), Object.entries(u.byModel).sort((a, b) => b[1].calls - a[1].calls).slice(0, 3).map(([mk, v]) => /*#__PURE__*/React.createElement("div", {
+    }, "ALL-TIME \xB7 ", u.calls, " calls \xB7 ", fmtTok(u.tin), " in / ", fmtTok(u.tout), " out"), (() => {
+      /* Today, and who the tokens went to — the provider's own reported
+         numbers wherever it gave them. */
+      const today = usageTodayT(ns) || { tin: 0, tout: 0, calls: 0 };
+      const provs = Object.entries(u.byProvider || {}).sort((a, b) => b[1].tin + b[1].tout - (a[1].tin + a[1].tout));
+      const line = [
+        today.calls ? `Today: ${today.calls} call${today.calls === 1 ? '' : 's'} · ${fmtTok(today.tin + today.tout)} tok` : 'Today: nothing yet',
+        provs.length ? provs.map(([p, v]) => `${(PROVIDERS[p] || {}).label || p} ${fmtTok(v.tin + v.tout)}`).join(' · ') : ''
+      ].filter(Boolean).join('  ·  ');
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: ".58rem",
+          color: "rgba(250,248,242,.42)",
+          marginBottom: ".3rem"
+        }
+      }, line, u.est ? ` · ${u.est} estimated` : '');
+    })(), Object.entries(u.byModel).sort((a, b) => b[1].calls - a[1].calls).slice(0, 3).map(([mk, v]) => /*#__PURE__*/React.createElement("div", {
       key: mk,
       style: {
         display: "flex",
