@@ -5,12 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="description" content="LEWA — a warm, evidence-based AI therapy companion. Private, always available, and built to help you feel heard."/>
 <meta name="theme-color" content="#001a19"/>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23004643'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle'%3E🌿%3C/text%3E%3C/svg%3E"/>
-<!-- Optional document parsers — only used when a PDF/DOCX is attached; the app
-     runs fully without them (both uses are guarded). Fonts are embedded in the
-     stylesheet, so typography needs no network. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<!-- The app's own leaf, drawn as a path rather than an emoji: emoji render
+     differently (or not at all) across platforms, and the icon is LEWA's
+     identity in the tab, on the home screen, in the widget and on the tile. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23004643'/%3E%3Cg fill='none' stroke='%2359d3c7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.5 18.5A5.6 5.6 0 0 1 10.4 7.7c4.6-.9 5.8-1.3 7.4-3.3.8 1.6 1.6 3.4 1.6 6.4 0 4.4-3.8 7.7-7.9 7.7Z'/%3E%3Cpath d='M4.5 20c0-2.4 1.5-4.3 4.1-4.8 1.9-.4 3.9-1.6 4.7-2.4'/%3E%3C/g%3E%3C/svg%3E"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23004643'/%3E%3Cg fill='none' stroke='%2359d3c7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.5 18.5A5.6 5.6 0 0 1 10.4 7.7c4.6-.9 5.8-1.3 7.4-3.3.8 1.6 1.6 3.4 1.6 6.4 0 4.4-3.8 7.7-7.9 7.7Z'/%3E%3Cpath d='M4.5 20c0-2.4 1.5-4.3 4.1-4.8 1.9-.4 3.9-1.6 4.7-2.4'/%3E%3C/g%3E%3C/svg%3E"/>
+<!-- Content Security Policy. connect-src has to allow https: because the
+     person can point the app at any OpenAI-compatible endpoint they like,
+     but everything else is closed down: no plugins, no framing, no base-tag
+     injection, no form posts, and scripts only from this file or the CDN the
+     optional document parsers come from. file: is permitted because the
+     Android build serves the app from file:///android_asset.
+     frame-ancestors is deliberately absent: browsers ignore it in a meta
+     tag, so it belongs in an X-Frame-Options / CSP response header wherever
+     this file is hosted. object-src and child-src close the equivalent
+     in-page holes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; script-src 'self' file: data: blob: 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob: https:; media-src 'self' file: data: blob: https:; font-src 'self' file: data:; connect-src 'self' file: data: blob: https:; worker-src 'self' file: data: blob: https://cdnjs.cloudflare.com; child-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"/>
+<!-- The PDF and Word parsers are NOT loaded here. They are third-party code
+     that only matters when somebody attaches one of those files, and two
+     blocking requests to a CDN on every single launch is a poor trade for a
+     feature most sessions never touch. They are fetched on demand instead,
+     which also means the app boots with zero external requests. Fonts are
+     embedded in the stylesheet, so typography needs no network either. -->
 <style>
 /* Local fonts (offline) */
 @font-face{font-family:'Lato';font-style:normal;font-weight:300;font-display:swap;src:url(data:font/woff2;base64,d09GMgABAAAAAFrEABIAAAAA+FwAAFpeAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG6R6HHAGYBaLYACBRAgaCYJzEQwKgvgQgt0HC4NCABKpBAE2AiQDhnYEIAWFGgeERQxyG9Ln6fDfDe99UcWpSt3GMJ23baLeJWj4C9gxLzwOCvBKFxnR4wCmetLs/////////89OJjJcl0t7aVqgDNjmnL6+RiQCQVqgIRM9ka1hKJEL1m127Nh02zZkHIlsSDIbgkV9p+tqKjKLpW9x9LJRgehCI6mCKqiCydz5xh/PaYSlmuHZXPkRJdOdzvUwr09z2fdmwl47ffXAStTRzBdpzuE+XRfTdy0bpH9yTiYjWblOlTlu5IGdp6jE2hn0W86UPWR/BpV5po070vygNTTzxGA3KKnk/62+7/8hmdXRCwyqYvmBuyQk7wV7uV8ajtZ8zYY7/OsbN5nh6PYw4Qn+V2xsc77NqDiRUOWyqluQVHOfdHXsVBAb5aNjyNcqnNWPRrtn+DsXlX/6o0CUXi8z7Aiq5N39VTCo+FB1Cho7XYTGzquWHY0lFjroA4pa3n8vtuB0nv4otwhwm7kj8RshIS3E8/t9myP3yZdFVBtRNUEWX0uoNhreCFFc2oo3LJncAdimOAtFERSjkFIQQVRQUQmRKGlJA5U2MNFZm42x1F6a2xffXOo3fe2LetT2f9tjz9WX39v/1Vl9WfqS7dgxhRQHnCijAeV5kiFaAiwq6g64aKi6jnvgbveKBgBqqgIG3TjhJuHwIYmS0dkwJ6mStM5tDpn66zeK8rxMAoaFckG9mN9Dne9Ltpz03UmGvTARbDiMnchBFwjs3CKt0uoAFZAnoA8YAA0O5O0VqqUsTWCTYIp9/hAyoAsiPIlNV1uUFqUF8D+UmzXZ85k7h2CrIpNknRVkVaDz+PW+EQqVEwhWMaiBVwxPyJksHqOR+KNyyi7n6yvaLwPX8Aa6egNtXMbPMvLNzmwg7cORNuLFnMjN2pMVqCCnK0qOuWudyVQlyZbTNFV5wgpV7CP2PbzmsY8Bk10nD8QGZhicF1IcdYhanf++kgnkgHPjZxRQK1y77fvqlCjbvwAGAySZ2etX6uHP1XMn63sCUicBgo0+EYI1Zt1S6v054M7n+BqIJgZgEEGzw+XzYpNKZXhuyCSu62fvNBKIry/VjSPNVlKhQiXzZiszJsaJcWIfP98HDToDfp3ID4cJDsjqOkRnxTUs9RmVaslCxgRCwl4t/w0IwIGQ5z/uaWeLsrfC2/QozQJPvsB+ILqWXA/kz1QlOrADtoylG1CMDU3VsiKMgyuWKytfNO3/t2lv++5IsqX1nn88n9Eb4NNbIfxUJVwmZao3d954Hmi+RmN7jywvaPXJ0pKlZW1AsDCWvEQOMMlaf2A5wNwCV9QiVeH2n5S/SlkiFmWddNCF5/+Z9nv7NnSJw15QIyMcQuJk8mrOG4oeqr70gIqkWZRHuPK7K335zyP+SbwM6Fl1gN9tPWoyweOBMtWvlK+baH6tx3JNzFIULL9P12XBTLMH0GA4HFHLNWe8JzCQmgvobp2t/ILc2PCiCy/I0l8XKYjP/9efW987P2iwG/Dq2BH2rf3Yb4Pkgxd8YzPZmLdgHsQnEwjz1XwtYEm+rhx0AzMwQzEUreS1/lWqn3tVP65rkEHmphSdyAUhbOez6l8m0eY4P1osYhob/G2f035V2oC5AtYsmf7d7fubtGz35Z87lUzAC1TSpg7vviIRoMBkOGyYNSe/ABBVfaXRCQDjABFBhnmgVWvrW8wkAMWz0q7ITLWuO7yqSy2qhS+xf/Cok7WF8udlXqmxJCrziluKysJU3p0S2R0muy2lFZXlzxN8Ycpn7EHnXV6jLZhy4kB39W1hY8N0i/rLz7lX/e0Rq1vmeZqck3MzNZyaXmr8YC5KMLWodH1G0Zat2pT20AZaR+/DwSP2zKb+BAIPqvCmQJEyncA8hAajMQnYRGIyKY1MSc+kZmXn0OgMJocrEIqlcoVSpdYbCotK6GM5QSSRydVand6iR68+/dwGAf3vDwRD4f2Dw6Pjk7Pzi8ur6xuCpGiW46OxuPBZTKbSmWwuXyiWqJ3KVZIlgZTGcgCqE1RX9/hdv8dWxi4cnFzcPDluL79PhimQVehnJAwVxSNRRgAK8gVDoLCyNdg5OLm4eYK3QoBEoTE4vKiYOIFYWcWFu9WOewQ7w7kLl65cuzlee6kEWYKBQGFwBBKFxuDwomLiBOKm0u20SdWUjFJRurQZarP1tpjLkra0TLJtOfkUQmX5o9tGpdLVnmtYd8ZdP/o9A+V6xtecpXmynEfXjsFYpGXk5FU2FW6zStWMB+t51v/+Vqyj2LTFzCItIyev8kuN5OkLv1E1qAd1NFtQYmwEAoUNJ53OOJgvPfqakbW8DX4BQSHh7Z78GIZhGDaCFxUTJyTRT+wkmkJRSflrq93uPolCqaeGfVnuyyNpoqz148ITPWS1mwLKqD112o09NQRkOAJDEAwZjkn4l/Bf0DzjAjNRk+qnvz6jbdbonOL5aF336dt5bUND923WaCs7fTGWba6RRVnbttCuHJxc3DzlPeUXEBQStldn8bkLl65cuyk8IpAoNKbZAid4UbHEIdS7wnsffOyEKVElpTrdfRkO49j9s/dTFCVllddHul07SRReqn3StYwg/6zwKGU/+AH4euOBEVrIB2yQHtOOejDWk851tdMfy2vKULtNWzHmzCyxRtta7cLBycXNU2e15y5cunLtpvAfBBKFxuDwomLiBGIlPacqXbtMZwk55BVSrKckyqmUX8OSqJXh5VBEmffj6AmtWgEQtc91chSHKlSQcObMmT8EcYY4Q0IgvELZxS+owI9kp8UYK2Vba+fg5OLmKe8Kv4CgkLC9Ois5d+HSlWs3hXcmkCg0JqyG8/AiKiZOyDvx3gcfO6FCrHUSnxJZBUUl5c0fqB6p1dEA1+0POt554RcQTAhhe7X/7sChoyT42h8kqmSkCqKMANxvDKuWQB2BBQKFxfbIHgecXNw8H1wVBT8WQpAoNAaHFxUTJxArS1rYHO32tFTNWhZI3k7h919k2ewok51ksV9un9AZdlX29OuPhlzDBoHCekbvbG/mfa2b1rN7LTFEbwJbxJjHLLGUs5UPz0rr4374a8KQKDQGhxcVEyccZhrX7PbsLk2PjFwKnHzOyyiXA9mx27Obyq81kV9XvVOLOhpgQR5gSL90gHowhlMMM1ZmzZfe+mtG1vK+8wsICgnbK/wDgUShMTi8qJg4IYl+Yietp1BUUn5Zm8TKkVWUEUDY2Dk4ubh5jo++NKt9K49Yur70wpN1Yw8IhQVS/1r6L2gYD+YmMs28w4fngeB9IQyJQmO27FESiqIoeoW+y3t88HEWy5MUXkqTz9SL14ysklKKSsqboNugVM3n5cUXd2V+3KhR6l/XvrbjSufurks9C/tjkqFhnkEHEneigaeb0FYu3IlmygJaP1j63r9yYA4d3T9eKG8niSkqDWbk5FMsU0I5FZYqt+1KuiP1qnZa0zIrCo2ytgVYLCs6H3THsudUb8qYZ6A3y1Y6uwaW2IgdDk4ubp7h8am03UxnreRInhRC5fZ6JX1jt3BE+LL7ce0TWb/QQ/UAKKP21Ek3ztEwgxweL02AIeuX7sao/z2W/whaZtxhJtaTmqeI0/SM67nIvDxcYKjskfMEtITaoTXqbNajCh/RrVu37hFunvY+8JuAoJCwvY84boJhGIZhWhiGYRimpaWldQAjyNFRwk3ChSPIWTI/5zKwJ06eGisZmSLKMgC/vT3fmXR97r7eE/U+6qd1gAGWshXtHJxc3Dynx0dyl4CRiT3ZJWBkZAqVZb3bOKmoGcrLVFfU6miAh17gl0JPZb+sZxTPYvMe3TH6vLYYlDEWZW3vFb8ICAoJb/fSidIKGRkOh8ORkZGtuadUT9WoowEW5BmGQGHlfeoXEBQStlf4ZwKJQmNweFExcUIS/cQ3R5KAshDtgMJPlSk+TQGEOnVGA6xO7bq6x339rEcsQEZhIFBY6YHXjFurkCAIgiA4Ut67fgFBIWF7w2P3nV04d+HSlWs3hR8lkCg0BocXFRMndMKuqE+TQCpy7nMFOQDgEwNyXqerjwg22sr2f9+Gi77te91USiTU7ZZyu7aLbvJn5uNp/wgBbwjbAgyA9D5/0a7DkZe2p3Yyndn9gO0DMAoAC4D/ZdN2eT4gF8DQrlz0/+M70rNyeDABjgIA6whuAAz2fZ0K+EVK/LTXs8njgB+F5V8352JKXLOUoWab07E/l8vj8flnIHgBIAiKCoVnJHpiMYZJJEZG59j4npiYmpqZLe1cWcnlCoVSuUrOuiDEcXPzNXK0RRA63RayL8vKytraxmZb2WTZ2VGUY8fby3pSTp06c+bc+S5kuSxXcl1j7Ubm23KH4x7XA94eZXoqz4ReiLwS781/lAApCRnp5JdBUZQUVJQKqKaWXlO0NHS09HQzSFdYihQqVrQSaRMPKBCAQBgakYYWhuIYgU9KrYqmGHpWKlc8J/AiYbFf9vtqpBKZVC5bIUVZKqVapVGvlbwrvc6g3yjZVGadFl1W3dsk3cuhz6nfxf3d5OJ7iNLeND7D+6Vk+Q8Ui22strPZMbv8OYrTKJcxbuPzyK+3+Ezd/gWe/ARLyG5he0TsXVS+YyVuRsKspLml5CtdMhZlHZBzcHn5FErRYSVHVpY3WCqOqTquZml12Y3SdErLaW1n1pFXt/Ss6HtrA3kOC2QVbA0CGio3VnAoAoaEj5IqXRgUFj1OKnwRcEQ8iTBZ1pSikmmUqhmyapYRw5i5iaxMy8zE3NTCbEtZXpW1pY2VrfV2srQvBztH+53UdX6KF0dXJzfn3f8sPMrTzcvd22MfOfut/ZR/muhfqr2S0fX+KK/hpT/h1f6S0bX+rv2j9q/af2r/y+hq6+UGK4B8zxrQnRIjX+penB0YDWKG7DVVZg/rS1HpJf1a7wyGZfWslXUzna1k27M3O7tuPFqHi/TBzISUR4VktazRfflbJiT+o/vet3Pd9d/f36KYk0445ohpOyR+2/+LwIOP/DHQEWK0HIBO/18OXQmg86sUUiPGAdSugPPOniAE0A+SkTNo+5y3wEH685u4AkQiEFwHZ4lcvsq35AqQKfL8ElGJ4C3RMZ5Sh9YjhrKhPbahjIewl5mX2NjU2BzHMnRmA2IJjjUdj8sebyKXNl+L3hTZ9fps4gowFAHmDp2hH1Fxc6DCOIn/diRRiqVFquU6hW7pEW1Z2nxUH41EIrhLH8s/IB8PIPX6jjivpeEzOxwR9QWR4NNTzEbAVRPffDoNztjn9tJo5NIjcUY2pPT7Y63Ax5MbSiC0uXcFkC1Kx7gr5BF5OX8EGT1y0cizq49+bcQhroAjxSodlwMd3ypEMwYPlKH4RgEArQBA7gKQFHrdA4ChSwGg1wHIRQA1A8GLD6WTO9wIKOLXJahuqLVn33YtxT5lV6/aaevXQtKmq3djPeoRUvAqgBWF9xD3xw98rRVBhZNYt1W8dNvordeEIrKqnLNb3Gbl3LB+X6SWA1q6bvumqfQz0wQYAFybZGxnjXT/qrG3eUZbjsFHgCl0+T0+8nTd4/6nnQExzc1waBnS0pO8nwLA0BxDZF78zzwcE9se2IFuoEscQZzKnJ1SoDoATHURAVCHOPF5EQXNKLSf9efZuCvztIBU15/hC2IEtR0EfX0E4UAHsPTuik0AJi5YhDjukdG5hnNzZMx9v//lXSuzLMd8vYV8Ul/ddVPLCBw9hQ2YHlgjXScDbEHrATE+R67PcgN8IwBrRMlGd0szGnIqbySglfLsbMKIoT7qKpVqGmV6U9PQKoMhaGm3SSOXBBLQphoSd3zgGxIToZVh/4XwSr11KshNW3QAuVi4BWgO9UNbJV468PiDec2srxbu6SYNI5Qx3JDNQQhClhGRjq4BpUnPu4gwG0cRNlWGDtBdxdkTCM250Y+pTB79b7MrJe0aThZU9dh2OtPbuLYM5xqSD2FaNr20zANtqlhnt8RUIAF1K+CU90A4bDojp7cMaO/0duTUdk8hR+l+CwpjgsQX0dLYlOAsKoY8s7zuBxHmAwhnSwLSi3id/7RQpL316imX2TsNcX0JYfYU8V5oZZr9hMzhlnEXnMwBR4+uZykrn9x2/SvTBXQ7my/X7i+n/PLY/Mb2KPHtabpcN3wP0n4n3PgsvF+HV3D94ApZptmVTDds8nopjkx7jL6ogVuOS//SQEDPLGN7srmpCUSeYtIDX3LlN0weuSzEyE56fMkgdfX1LeB5aHPWPbUb0peMdBeniwhJ/9JA8lvsd5Zdy1/P+76aMQtsJbT0eicWioXfh1Ybxru4J6ihyIVB8TxgcP69N05dP+3CZmhFuMqnna+OLi3ONt28Q0IuoDc19WQrhOxrN8//R9JLHx+/RIppHoIHfmhFej7B1LRZXBHpEAybDShDHVm9ITb1bsM6E6+3flUXW8ITcoejCA/cU9bWNNuknHghYdqjc5VsezLjNV83ihQ/qhqx7+sy3PGTcnbYtzKe1rMWt/DeIvAOHuggj9NDbUNZcUqlimBrf1K45mTUt9RlcqeB5nUvXm2NLXvZFUCntn8DwDeZyfZTfH1zhxxf/uoGxU8yulvLp6yU52Koc5MXmko4qMr0jGXrrLE+NbuuThSge4ZiLM/7Behf1X/Libg+cvp5yj/Q/qeq8L+FVz1jw6xMHudMKjv1nQG/YNfDZumHQJhHh0atZk+zEZG6wcHL+fCQUI5Y/y5FOAklPY+5L6F0jbS6by0/jR0ZLophxgFJ6kpUfJER9cpZyOYSForoe3pMWw4Jy1N7PpCKtIvyfmLq9v8N0uIcAkF8LA9FEqBy57T+5o73fQbJkJwY+5JVPHzhwcUzvLeRRWduhZYGhla95UnyXU8WCiKQu2szB2loOijIWIAFzBiLOy2y5oYhGJBppt30vbAuHFEzWFStGccx8FjA9zibljPX+MBytNvV8RVKBl9f9fCmR/PozjCsIzoMMmVX+dQObgeoMrP219XvLBgCsgCS/Djv4hXbgDsIi3Fi7v1FP28gYQdZU2RyD1tMvjZLAY9Zb9brs9EZmT1GF5w/hJygf9iXDI853OTAQWi99KNS90A5c+cFBJ3X5MNhx217dlkeJ4npc5MEGG4sJKZaNo/4RbEnAdq54jw32IiZMdJZgfLMLSThQZVfceSleY/uasn3plnM6c4zMaWPBZs0mtl3Xo1OPV10unm1KfeKXcrc98E/HFykoCJCccRm45NJPZCsgsVEEtuxmeFpgbml9DqmflUoMMtLVJhTm+/pAItdvRtxgeAs5zyLhyGia6VJ5kIPR3JcElXrNyiOi/yxZXN5aONKylmmmKzchXehWUvx/Tbksa8UoAs/PyqHAff78XZ6W1d6BYGU21S15MGOP1My3cpY75EFZ2yyeNgLAWdfKiyoAtVMe0J+aOWIlzJt0SBygXALmUUwFV++wGyNacvUzCUFFXRBg1MnFt9ThnRCWN9lvDtyEEwSuW1JrKIzMQ9ZudmnGgV0Ka0LO7NaHcsDotXuai30rpEq12D0oaY3HaOAgYBvTsOHcqTCESbXsAuX0MrxuK1JUK6RlY93eaWT04cKap2aEScv7WwMFXQIr5GZGsZKDYTuSU4hNzMSHYr16xIKEVpFlISxEjf7ovsaRNDpwCPowBsjc++fztvK3BqqnrGhw/T272NKxj62OEmqPSbOHdvS1g29vWVSzRAPdpv0zhZBgTa6IhZ2cbr2RllqP8TdTLqvsNuj0PAZH0weTNCdmFwamEr2ADzkldl0CiUiW4ZgAfs1wxLAf5tgrGIwi/rSMyvk6VTvCIuD1Tp8K/GpCoDlmZ1MdBM3k94RR6UQcGO2MhemKZ492AwuQZdVadeOqfn6Ok/zgf5zy2xF4nguYuQ7jBm1OtonkIfqHGFoWcVqogh9LIl1O2853RzJFbXn/DzFdAhKTytnbw6gZCcV85c5kuvDbQXaAXYzkx7n9nEbcbJJub3MBjbRgMdtP97Epepckpe0qk6xqOnhsMXUtsEOL8wVkyzZzueSsAKeVdDPdnXL+JeWRmsbcb/pauzMlWrXSajy3fiJDQj6ttR0t9hL+oyrVc597lZh1VpXLBuOsZkl4R5p1q+zAf3KSjR7a3ZyFFo9sf2Fmux9KjNji8AeNzGTXkORKOwYill5Nj/nKbg60Amma+stLL1x6FmT+B2zk/W5naLT7npQdTkxbAWJSHq8Dk4XhUARC2le7sgQjVbRarGqyMqyqKE8AUD7tUrTTHklvjmAlAPJ6HgBd7eW78u7vY0ecmp5j0YrqJNTrTy3Wp+/QhLHoF7osDYqfYuZzeDKGb/aHMvU99/PxjiIHFGOnarA65NniABEJdR8VfnW3J5QP1vxSOs1FwjEkCtRpnO4vp3DFHjts9PC1RaJYDDPvj6N9GoOBTJp6cktU7SoLSlugfwwIL8vGUSRvj49zBUrrrFWyaeNkGkIDLi0tNmJHSyFhbHYVD6Iw/ERwprhryZXhBTfiqIiwbUliHSjKNNzpTrWOJpkrKDVFnBYY/ovBcqiG0RcpyG7KUwAbI1Y+J1qh80e3GMRdQbtxpfSWT//5RUO6ovUwPIkVjPTiIF+x4wAqM8hRbBjw2Z77BcdtstOxxW7M163YjfUOUaWBWV0cUPpv+3S4RDp+W5TZ/PZ4+z0gNCL4Uuyv0wG6GwiNfqKl7Y4aRsgJQMqUC2WJHtVx1vF/pO09on0hDNvjk0wUEH0vsOxYQ0728ujhVEui1xrZtgtyUObAu63zfbE/rBrUdVrrLJnEre7HrgPxTedetk0hrpB7grm1bX2e8paH+7HCboMm3r6JWYjVeeAcd770OFU7KFIPPZAcrYOYo7paJz6pFvw/8lz7yvjJ3kOttoisqeWQOhcz5U++ohYmhGwNNujeV6Ho6RUAyk2oWB0g3GO6Xm6XNAV5GqkuliZuPwCVMmLC11nZObCi3lBkKEF2wl0qJO8uiKWXEYB+tBKkbTfu7hEfm5eW9VhQVYtqX7t+mHQXcv764e7qO7j0LW693Vq3ytUC8TVrbq/7lINsZ1R+WS3OGLaA8MJ0GLa9Mt/xT+zlI7aJ0bp7lngOGqlzAJIfUMEfn4C/HnNEoKlr8+ZA4HLLL62D4CAALi8KvTd2tUugEUVqFY65aljdyr66DNVPdldKqBnXME63UucYvmp2hF6oW/mxk5P/66b/uNPF6ffqFOFqa9tx/hZyUaf50HwGUVwTnaCkpKJkPrvwfIi/OpY3i3w//0OwZB5JMzyzz+ik1lhdw74git8T9EQa8hXQLywyLWw0/vmAeieRxcCkFnYEs5104gesg1K70IsCzvTC736aiHSPEOzQz4ZAMNC4APfh8C+G4gNwXJmIS43BjgF+RQKfg4BTmFcg1ez5OW54nOJYAjE11O9Da8e4dZB8cXnlsH/Qr39IklfK3r/U6fgvtCMpnVD8SVvjRrFwYGemu3fq3NxK43h38Ojchq5eP3fZvjdseDN3mtlfNmBtyF+i/IMDkobWR/XxoZ1ks1yepOBS+40m0fpJRuABwO/B2P8r5h9JkVPFDsgAaW/FGFyvWJynpTEabBCcgYPbqBpsiar6vdxLV7+nwZ8H4jZuy0vtVDFrMKfhNtlXu0ZBbqkxvYfGUlaMaOcUB+NFXvWksSieOMifoGsJfUqtJUEGqOKINMSe7U6Yp9MV0VgMCoJcl1yn1grQVXTeHIEkShD5PBQ1RIJqiqHK0MQiXIEjYuqMm/T+oHZzD7Xe2EcyaxcS+qVwwoQO5w5mjzojMjjInE5/yr6PzExfZLdTNRJKNbwT+fMgcBv8A4ke7cmMYdWhuHmJRRmKlXjWvXaMoFP2e0riHk7INOjOO8S3ZCI1gfbHt+4cqFS28HYhpaJd6bWl/K2GATkbn1Vm5ofxZPxJjS8tKZibXdqeCNWkl1XnF8fT+W1x1VRDZKSa+8XcFnRFRJhCba6RP6Thv/r+m7jrua3K/yDvpzOd9nvML+O+cblinEaNB8+fQnsX9H0TjNN1ru+f6OJ9lwO+NK02OWAO+QbGlxM+MugcPPbr8S4cHbXF1Bh7THZr+erhs9X35oMRg3eWqves1r9F+rj+irol5QvgvPrltL+/Bjfczfs12mPYPcvz3wLQ78y31U49Hu3JGGs/8Jx4fGL0ovHhMcuZFYXoJ9hkx6kJMIKsIpMcdyTZj9vPXn65x+3kxXf+8V/bze1fKL4JNaer+ovlN1AaHgOxSb8dO9HbCKI/fyDc7KgwRMrGodjWeNZadC5c9IclmHl3GVBpreOsl44d43xlcpRfs2uSB99k/Vc3FGedI7xnH9xPF+fogi57aj4TNgUGDp8ecouAiA7XfSVMH5xUjGSXFPC2lYqTxlQdTibbp678JrjizZBUEHUnSjQgeYffl211Ika8C1cKbleI6xFM9i1OI2Aaj4yAt8g3/AaZBBtrSsbT/s2QT2p2E6o0jP6dFy8U6SyUN/eHbP/7KCWO9ZSuUgra5nJtdmyOuOMp0GgLIlJUYCjigjm6DxDf46hiFCfwcLVGOV7khu4hR7DhGIJqZIlTq1W8WuQdHYNVs3PMt+tj/VN8Q0wCEn9f431qfQTP3hSQDfAv05oJnYH/YvfRmg4qla/Bw1FJ5BTSiw0SwnscCzguJYHaQZnOg8yamuzdhfVSpZ6206wzDkOWDFKQrx1dl9IYGA+2h7LU26l2E3ZI8X5hM0Gw1BaSdZmKD/kU2d9+2MsW1o4neOsYuwqLeXMtrqOsGymeWZjM/NotUr1sbGry9cHVbCY8CuZn3d0lpM8J0vp05d2pSs0g+mlJeRuiSKtu8iwOUWqG6IZS1PbaHmv3ElQuwA37r15PoyF+wLwCVJAv4PoEewg6xvpGy3s7QYpoUWhr81hgz8x0nPVSDtNTO1xlE1kGksmMivKqD1iGtLOUhvpn7DBtTkKPbFFamBv32h5I90iVvQSjEpyA7+Y3eYQbobTaJvhDiG7rZhPbihR9hHkVxVNKRIlxpFFT7TLJY1JYrErSS5JtNOzMA6Jsimlm6bXjlArHDljRYV5u5rrFnLLS/YwaxsZc+bMMBPBxLQP18f9jNLM8r9KE+XtX+AiRySpm/WG1jShtDu1SE9uF0tJ7RpNK1Gs7s0qLE5u7N6h37U5hfve6xdSsdgGr8cG9CLO7T/1uJMFeucXXDjgtudbXMQv74BYj7uIi0k5opwe+xEm828gC7T0ZWLE7xspMb6J4XtDWY87E4kbQgMOs1PlCcYwKq8tsUiSUcvLT67mK1UMQQYWCppneR32TvyPl6XM4YlIZeyMxAJ+djGcnFeKYuGVvkGVINikyf4TQ/B0Vacr8tBkFm1RKqmKhHR2VGG6Ovdw+8AZdWN6ETTXYFjzF8QSNLK/o7JsOTJn8t7ysdI7B3be5XcMvnSsrFX57D1RG/De6Q1FI2Mv2aZcsz+4+McaYYBsYTHW/tmVFszqQVfs9U+Cmnb3v1KuLtS+mK3OOmXudPO9uJj8cB6DXgFTytKbElCGEYHVRR0R40I4dUct/8jAcPGBXcuLu7KZYCkm3W0N9+xrRVwr/dpm+7os91MAuidblkgNRdQ+NTXBJtRW5HIgByJOHdlqYG5vMZ2g1JkXC0zn12ZG2GkVRtEwVm8SkcuHUnWKRFvm9tMja6mDktIn/tbWt22iVspIjG70pfXYahloYdbsd/bt/+27JJvDnPgy5m+P2qB+p499oIJXw3hdt3S7FzQPRibUDyfnPtS05DeFmLDqrAl273rTqZEPFsq8Tyy/Lpv0AqDba/LSwonlMm/H3Jjil7H9n6g6936/t3OiT/T6XC158W71b7QqVZX0N7UcgJP5mqfqU/cN2eTdVkxGsIXNYGtsEf5BBwT02I/qfs2py+pKGIfpp/+1nl41gRYWTP7Lqz7WecVAqAtvYfx6ZBvEr+Gn4VLSznj70F3tnvmCh6MT6se7Fm5r16OKUsAtuekA2kVtY01jtq6Sza9D0lu3mrPPVLXtYZQTCwPBsUmBEW+C/fqxl+D5LSR1OWHCesJ2U/1XQchJO/1wtmidgqkcreiLYVyg5/BBVVTJeY3pcFzFy4jCw1YADlpNmZr9Wm8Auq3pmbN7Hh43ftiBunCr/RWYD0C34WwUAfXZ3a+iIJG/oS/cI0Sf1QPQzQN7t6NP3d4K4brBfwxnca4RY+YNAHSnhn+W1XuDGH3wjHNJWyja8MFCmf+J1dfWyXGjniv3X5gv39dt45N8rY4sbvhwbP4TTeemjzUT88pIjisf+M9Ofaze1PmJemxe8WB9Sp2VbQWgu/qvf3+9VszZ3VX7FsPlo/AtGSVbCzPaRfNXjl/2rS7a8EElflW2r76DT6gZ1MD+XiNyfxuOluKcsrnzl7Pj1bPEsiKzz24ezS3y24T72aSHVL75Ad27LHFF/EfJGMGqSneJJi/uXPPckfnjN53QwF4uwR4vkTQmScU4U6aAVmxibSL0JW2imGS0Rq2etqeh4WBe1Zar5WL1+bchfsv1G4UoYzi9oCfNoCVt5IpppabcTUl9iZvIJjltYyE/vcdmnqKVO49x+fz1C95Pbu0zAKRYAZjyUsu6I7DO8Go6sg+bKq2VLuG1oYlL6vZ2o0LjTeqqtFWYsg87O2b4fwK6WwGGi+GYCeKpxWg4bEJEAssxfe7CDI9Qtzq2NaxgWLVVINhrivQazmaCY/qMxzzTEQG/XVX/nYOXgaXRX7iLojA3mg2G5ijKjUJd0Be/LFnA1/lvVmKd/H1i7R3/8l+P/Pu1BfyUvzbM2HvGaY8LKOYP8QU2AeIUUw8OaBsb/DLb5cr+cnTQEAs2iARn3OjQz6iYnwfUkPiQJSrntyZ1+jFfAH/FwAQGgT8E8IYPwUGBGCTgSTAR+2PCT/ew0OcNoIr7gesTsi7oe/8RpSNR3m5agZUDChA+PdV5Vyb7cPvvp/j/B/KzU3NvcmCcQFD8ZETH7J7HGQE+Lbf/jYmFVwZucsuZ2iRLGJ1sjBXSCaUcJr9ySvaU9IanfahpzCUwY7mk5SDYzgCJ5IisWt6cJi3B9qsGzlCySyOUBD4d7bnV8waqN4ehTE9DCEr4oesXjgLweGkrS/umpXr5xr//P6WuOodmZA77uDxd6t2CiwjrOWjab2EYAqnqQY5B18PUNRLmyu/Nf7x+gRxSwukH+uP3a6IYml6aoY40a3GkzOqdm7OkglLkLyxQoGN/NZesjbfCqMY9nNpuxlpLfc75evcBUVXZBL1xfftaZJbfHpZ+yeFcvvEf5gkto6J0vrQUgMdnmYPbySoY4upe5PPI0RcF27LszuxZR9hH4I9CasmHjPXurAJxNUKEW/I//6nUISWXYpyhVOtBXrM794PNlbTT9d0HhBU8SQtJp8/oAEp2yJM2ybQ1yesHLrcNA98Lxx7apE7qlKlr8Zy4By3EwOCAPniqMuYdhFXcxuazOl7D51+ynHGr68jIExP+Z2JLMgTkxiJlF1Gm4UZOklhxSWvlsE3e3T6boOWEHDmbQa9r1C5SbI69+ApBujFDZqszwCHHs0L/+3fiWx5O6i4UpDUWqXqIMbBMElARVxHQ6O3yxpXkJny8C00giDQZHXHK/G5kKT1DXUvMNWHYLFQhlYou4rDK0UymCc1hoYtyUkjrb7X1nDkAHjc2cQqWzE5lO1lRljiobTe2b9m8r7f8oJmlfbDuC/3s/n3j/QFN8JPm/4KD/2u+Fxz88Trx3Ryf7+WUWG12rg5Di/3KIAMFAi9HKiRaRfmlr5bdkIvHm5PB7ifbWg9XBxecnZmGLL5Wr954pQIbjsy+47EKJ/4hvYwS+sXxOhn23gCfu0+JogK3X2GxRSkFUaTqrk1htbG5elV2eQxF5EpRGpOGDe2l7SMdUy5KSbxAhK8RtRvbdzZM1ygGS9PVT9d1Nz8extnq0/aa9p1bAvKzF5VvCBr6aKsuF+28J9/gV+ZhfiOcD682tiTwOXVG30vT1SXNmE1Js7r6Xrp+4HSGEWZNZsJMjdZ3vz42awQgmxL4dyBwWjU7Vq5r1eduHRWmC36GxfuaZqz0Qn+q+tyuJ3NzPs/quX/wMZVCWdpjliql3q1tQpIuBtYAY8I+mx/cHnC6Yitf/8Fxae5+GvQxQHxC2rh/wEUUB0MDWCSoj9bvdVzdjmFCj/tPgsleHQTCbVNG0DJ08PsoTgLpP0lSeZwtrjxBkkVS0VjJNTpFF0nlmMw7U8ZfBgUaPzDEsZlG1D8IOTGNxJIQdxI7xL95lYx0YlmBsCUpv3ALeXH92IkgS22N643toG9A8YdA4SbgTRCxPYufNZ8o4kJjMRRdoy+wZVrfmPYzePQ+y5+3nrKD5XnaR6X302P8gKMc9WlbjapNJv/ltv4CWhDFvi8Gg6mwHujENIdzuA82DxUFBAgyPEz3hWA4LugU1NpC4bzVBDkVYQnFhlkgDRGPBilDTUEXoM1RPNhn93kQMzQEJ+1ITq6WQtm4gmC2buhf/U+F4Ot89GLK+5BOwUN/XeF3Do9C8FM+cZm9FzlpfwxS81uZxchgzrHeKNXbsiAwFfbCp2QbU3asBHbKRxQDEmaQ58+HfpzwQmQW30qA3seGSIzij9K/XkVqBsbRdPT4gAaZGWwLtQXbqfR4Gz/fjs/LxINAQGQSLxYbI0vNglaG2qH29PitW6WXLkq3bYlPh9pDHdBKamqMDMuLTUICQSB8Zp4dz8+Pt9GpwfZQW7DNCLE8FgOERAxvX4W9xz9+QNUcV9e+TXrxknRrB7G3Zd0Iv39eZZlIzUAfmo7uG9AYU05mxl/bH8bCSjPjinO4WiyVXJFgJ5UlJCUc3urwkRANoYDtvkeHGRPuNBUnAH98jeVgQ2Knnd8PwH/F8+z5/kbvvcK6LvrZxlrmudb+k/n1Hn43An4AY0C/a3z7syS1nH6gn0+VLKpxw6kKkYcFmZdQAwI2UDZVcVK0GFvYTr9PAr4HY9hPypN36ZztTInPhguOwg3bGKW1afsteZNBaOhiQjF5v7VxV541vwGjYdLVRnVvIPRdxrW76iiatJEsK8J2yxK+xYIA/nspev7GB6r58BBcUBvsGivmdWSMhMK7ug58tI+BraJNT3tMT1+oTmQyqnAXrg6fmqIlVktcpQYN4xid2Au7yHRjXDWfQcWXCQTleCrVXKEgODXfu1wodAVCXljbjM0QZYqTRV3RTzW8n9vpo5sSEcHyqIa4wmxnk1Mzm4ybnGu5Tc7fB/zF2WI/cXJaH6gqCITbqoygUQ3wlyguNjmVrciwEatItgwFN7WIoVK1KlDqvDKu4b4GPy+M4zCMSFYOUk4ik8Xq7CpSLamKrOaQdXSJodWKMXPKRRnE0gKRCb+RKAtF6sSE3DyKlmBMLMdf4cXRjXQimntJnqTHFSUc0MULi9cbAs54Qe6oH0EgNyw3INCb1nURyCPNXQ2kpA2qQd9YbHbXvrdA3g3QJ4f3cxtLZ3LrXcxFqzlvsblpkWWiaMDCmD8f1FYE+vvtM0RyVG5KaRllWGuwlotLO9Mk6lZc9idyE3mlaH9Pz/7iZbLZPDSdKe7pKdpPXjGZycvv2szBphXy/nNZzjYNW5+fOv3UNjT03OZDtufDw7a888xzu/vUDq3/qL/+M1rFR4AmRX7sfk/+DQzyxOcrWExiblHKKNzuQc5nS4VJixsXQUFVZ9cdfbbF1lgOESM7gLPsoYNeE2xqdAJw1zp5F8B/2nLvr6CAirOYCwOTp87GVwQE/XUvsLXsTtHz79NrldiHcY+kfqEKLjTojfztmlvtej29p77J3Lm5MegsamtMjdz/J31gSeuW6GrmWEtTaWFRpapp7v8gD248koWM9T7tZCRXyeXVRCbTqNPgjBwqIRmSG1Xy6Clo1V0VOiVF+c0kUrLgh+Tev9/Xf0gY65o4Ljw+Ih05Jjw2EXX/1yPCI6xQq5YgiexECFJwEZx9rXc//ARjhoVEROC/jgAamx48Ou8rECPQprKUGAafl1EO27CE+DzQ2GYRh17SEsQRzri8pDy+5qQAkq/KS8Hk/6GOTaHJY8sRefN3Usu8gbew2Bws5Qgx8etBdiSS/bkwJD3V4KETMVGKUlIsU5AbpQr2/aEn0NhqMSDUk7f+bfEJyNrzeLYjIsbjvOhc7aFCa3lPPoYv2qDFCFJgFhgAI9cr93Pdyu8B+EKtIPjg07TY5jPrymi9Ejmtq65wPtUmXZCFvjrChIUaz78Khb08ZwyFMQ+/DNkL8fY/2hpLHk6I3PEqF2RO7KPHGnVBRTk58OOAbd/gEiVhI7sL40CnzuyLoWzvcAFB9pJPl7P3jqa2JoW7xvMciUJpgpPLHajTcPM44oj2QdSIHWe3d9bX2bvslbh19fqFZT3oXt89IBRUcTbecJTNOWo4i6kIgADvPW0JDGwtbQEtS3m9CQOBVl9gXuCGxxmNt1qbr0XT8iVIbmdzOAHRDU999/bsUSguzdu8owuG/5ZX/plwr1bAJCpDN6RCTGOnfxwNf+PVvUjrXKTpXptdflEfmjGEPJgJ6uHVBf1hNoOGFrUoKveM9ZHL32LwVa8XbjuuKD/Dyc8nVfDyVVRhKjrYf47lfcgb/w+PrKLwOKSivNNHhFuC+jvN368/PWxBdvpaRDrjfldN4udUqIwiyU71z5lnCn7YcyVW1ueB8BnNbKEfKNkuKJ8I0PUDvj9Uz57Xe+zjdj7dPv7W1jWzcCNle2wBoHJ61i21TqY8ur3L3xOfZ4EWvnlbIQ9nfxbwx3LHDAzQZ3w7wxzgrG5oQDc2uFzkRldNDbemttoZ7ed4Phou0eTU7uPv/g8lrPxZaWyKWeYeXvaWj/KUDOfYO7GwzIW7ZqMzVPLu0kzxywJF8vxjHvVkTgUXkeYjxqaUS7aWHn3ASTtMMXskDlxSx8LvPmuMLxdCjv0nWR0udFrdk6aXE01pjORCHk+Rycv4LR4DuHY0VoDg4CoRyhxOap1e0UGQWHbknVHwL4MCZad1ccycQtQjhILEzpZryZZ4bUq2iJlK4gvoqiwBm6SkxkULnlgShfx2fLE2faDkF+NvFtZMo3Mue/24oOGFuCvHWJ9xqCZsP3islnRIW9eWlc83IdgJcn9wS0e1kKzHmEMpPauDyQMh+QWOStbGmExmJVzGItqEufzaKfXT9Dc8uUNNEy6BGcclrQSBvuIH5EsOyCo3be8Mq0l2nuqM/X2r1w1sL4uhS6cipCcU4al5DUmagtQ22T68oJ6sKE7p81Zo1Nh+fpE55T9P7IAwfSgYl8Z7u8jalXm2wXFexy7L+3G7ekDi8AyXzp8/FDHmZJu//7mOqqXeZCF45/9gT06ISh94LEdCmuqP4QNB1+tMT+wt+XsT33MNUb+rmzmiaSjcl9u0kX20qjTrkHPTrMCWXhFVTlVr/wGfHn5WLZrf4Tn6ma6PU9iZ+taGhh+yLVqZKzVf15ujcxC2KYszdpaY2inrHlXvHxEe2diP5WFD4AM/BC8rfXmXmRk9jpw8+lqT/XaRs5VSedW7YGhC/2l2HvfiZjvuO79Sty2lStNwjBiSRgmm2JPn/3wtX3UlifX9DEM9cc4eoe+n6+uIs+Z3ZPWv5jScdWHWCBBBxjaW9k1r9cr1fy26W1KSLn4ce8dtPoPU40rzpLbIlWIUFZ1u3VxysfueZf+qzm9hXufvy92zuYvnSG59vQWMQsJN33BhTPiwf2FV21C/pmVI9HBsXJQPn1vT1DesaqC65PpLGfqFuFsEA8c13dmwyxEcXCcowLH/1Jr7vbGknYlDF3aPle/mV/VlnXe5slblHbNXYNrx3nRifwiL4ygWN+PwpjPKVpqiDjdjNuFmFfWtdKWqja6sx82azLgZZV0bjfzCOe9AC4I3xv89qN6dLMiR3XMqXkgBdM8c50sg+6tX6hjfvjDMkQe/otG/PjiPwZx7+Asa/cvDw6Np6+RXSHulkdf50gUwcXAOJlmiRyFnNIgo/EoMHcMo1qNQMzxE9IglhB8SezdHAQHsspfZ9z+N5IaIEqTi7ddmXUBftTLVlJFD4APBP4UGeV9Uf3+CExYgUK1INWdkn7bq9+MvVvFWW/Nh5MtRku+yNcJI4OQvfc3+fuNYFZ1YKZM7iDR6JdFpdKHTiHaZjBJ2ECn1oqObY9Pl2G83/yDhxWhOktfRRZOJnaMr4Pry9166xwvjQlCP/pPBnWckztyqsKIkea7oB8oEEFgQ65UXq4NlG8YZtS3CU2CXAQ76DpqbnBbq4+kND3ga9H1AG/98Tcc408AoCedjsiluP/+BPLpKZKE0x/DqliX946rbgUNzOXs9fUJTSfv+D6STn8vaP6/k9/hnMRnnxV+3bYaCoJvvtQjPM5lZ/j2225VvNOdc9uJ7Xc3ZO/8+XUiP5eReXnVR+ojVOpphRPL8W5h+gaADyH1HZg8o+R+UdvzUMfQ77yQsHXnCVD1GL0UJPDnep0IFABwxAlCmaPJNEbuS5Tp8h5SF4MM71rWC9yDCfuf+TX7Ai0nMrRB/TRfkTsEdCORGwY01clMzdEdzd39QTswS+p0flMinSMgN60025sAD9K0JrwDeDzfvbIwIQV/yEQIx5t2tLjUUanHtaTXDgKIHlwyhvl+WoA5fvYxC3bp6GIU+dPVLFOrS1UN566XBJTn+rH8GOipGEHQ4l3caZdH4g5FUVBKNikJll8iM3pAA6AHAAF+6QgAU0QrbePwmKY1uiW6AZgA4OHt+A9oaLfiNgAYAAOHeEup92L1xv6YcEGhwUr0JvHTSHPr/oLZGC/5/EN0CDQBwqBb8p9HWaMH/FqABAA5trQApwNl5Jl8iekv0o+gn0ZXwGAABwfFn8ip6S/QjqAQAvH9vCTNfDrtv6f4oUBlTeNMhHo7Sof9vatvCUI7oJ1AJgIDu+DN5Eb0l+hFUAiBQdPwt3IHKyjozdep3bS2Zeuw6gf/hD7pwE4AzAHwG6P/Bp3xoTyUEbxoQ34ScrpG1hC5BhKqY3VIB4/IzahB6Jmdoi8/w3aESBW/a1PUzLsbfz6tKCN40OCISgJ947CrjU8oOkwi5Q46Q9o47hy6+oDNhMuTO14ICIMsRuyHvIvER/wqdDBFfhMzl2dngQNvLf6ASBd02umoZjE/pVCUE3QZHhP2f8bulGMMkplg1hz7molJsPmoBsyzyEiZIntfJevU2fP+8PbdP5xS+/oXnsLD/ApyLMYQ2H1myK4d1CbkSzMGKe20dUUMVB/A8Xbufj7C3AwTtSvAY2bA3EZFTFrMG3UFras1xk9QpCIkqMA6LsAtOwS24C0/D8/AKvAUP8vzD+OlF/MpVWMcdprJQDVcm4sSkDFi4Oq7XDEqrRhMU9i8ozLxDFbWuv3uGpv36TSP7Eaj5mr/oZlhAKke1WOR+LHBnZykwo6q16OmTBmYsks+W00ZHHXNU8nXJst6xfvg0rAlE76/2li24obBeS8auplzsXzUz1C7XQutyKwCY0aDclNziP2RdwdZoykUL4zYJxJJDcdXQjt+iz6WhYTH4sxlOzipuMJdNCB4GB2H68DRVhf+PNyP2PlYI/N8FU4lc9u6TnpWs0x2wSTUx0S+Z3U677Z5nvOBVb3voc7/773seHhA+/6eDO3Gap+N/wRyE46pi3KJdTrnlrqc97xVveeAzv/m3/QrXHrXsDVp+wXjn1D9lz6zTvOYEVxwBAAAAAAAAACQAICsfwpnp6vkE4DdJWXySJ2OPMNe7/ffT6t2YjT7uK0tfeeuc9mNLW5yRmQcDy+FTnYfKOgPQyxs28yif5DS1Ty+GT/RevUCCA6cIgp77L7vRe/9v5qocJViDY3D4w0p7g7yWfD2lKIqiKIqiKIqiiaKRYgA2BPKz1Xv/4Obq5dxFD8hUA14jBRBCCCGEEEKYEEZ8onEp0OwMTZi8hcYVk1q7Xou0LKG9m7ReSu4jYMTONpxYS/z/LXleglPbPfDutZ8FT4347SqW6VMURVEURVEURVEUFZR2JQibgDX9P5dAAt+cOsBHiorcstg3X4XZ3QryUwUf0vu774oxhE9SrW9vrsE7JNcJhFgcgEedFJNKiqIoiqIoiqIoiqKoqKoNW/IImv8JpnxAW/FsagMp+pJ7mxriEH9kgy+Y5s/vxlN6qQUAAAAQ1YPQgYQikDRNVVVV1bjesADASvwzKa0vHoclfHtYNxLKUBanOOWKe+fTEYaJUmviQXP2DS+vWSnjePWSFnmnKLq7u7soiqK7x9fzXQgdpItZXyxzXeOmQ671xuWH0i/Tr+0hfDTIv25SkhA4cb7d+V4eB7n9YB8y2PvP0NZrKCAAAAAAAAkgP3yBtiOKjlF0OGfbEJ6GpwaDwWAopRSDwWCkUmqtatdOBZ/xTUYRzGLnLUNpaVR9Nbzf4+/8bUIfhYhmZpb18BLpW8Z9adz5kaM5JQiCIERECIIgSTRqis7dwwIXNvBSCNNYJE6bmOQtiWDLtAEjW60jXh86pk5nMeP5b5Yh0igxhLdH+CmciuTuH8+iJglSWDpdOs3lcrlcLpfL5XK5POVyeX7EhcFsbpILsaAaqb1DZ9Ts3Vzr1uMBYrXfIVFrRHAocqHT99Zm8F7asxaDe+3KMAHMT9hXGAD6IKnnATyvC56KzT7ugbEiRM/EWOF3dIovQf7Bq9b4bANaPPWigFS7u01GfgpvtwOb7sm2W/6UtzfRYSkpIiIiIiIiIhJTDyGbiGwFOxmGYRiGYRiGYRiGYaKpBx0kw2Tari4F6jgOoo9fLgXxVgQhLvRYaaXKz9xvzwqdCs6pg0UESJM4DwXi27aDeEsi94B5C8/8tiK3eJjnhAqbBfXG3ieaflqdp08O0NDQmKUMvMjF4Ltv7mb/V7/gD/yDQNRD6CDBBsjho0YyySTDMAzDMAzDMAzDMEw09c4ZsqRrjP8lKP85eaxAU0R2IxTGWiwCx3dsh3tvmIGdMs7CAsgKN1jHrZusfvdwzS8wv4La30GVufGiWdkWiSQm9RA6SIkkt0Rb9mfTnkDfhs5b7oTkchLap23kcvMyDSyx9VB39mq3hnV0n3bGHtXThu5/VyiWusL9fPVmhuC1YJ/Wp4hSZarYFMG57IT0SOqtPsHdvp78JErKSqLfirbhXdChbMg0EjmG9bzSe8ET8r8Tf6Xabmkzv5l2X4UwhP8X5bUpxnovbaiptJZ1hOc1OV9aQYIatUXTPmxpn4Av4+CcOmoRYNv5TspxX4bK73nupjK20TwS+0UpAlwDoKlITV1dVVVVVSgUClWNrYeQASSpT5IkSZIkSUbrQQfJsT/5+gZv3I+DbIwvLWI1PkUcFvQd2N22T8sMeT1dcMqFTpRcLuXIka02re3M1cNDdbkK7JQNFZnrZktKEoSIiIgIBAKBiMTUQ8iAJWEcAAAQBEEAiNSDDhLjuDKGsf20RCcAcE16i6n0DX5sgCkkvxPjEZpCZz/zKbS0ZsKv72FG7j27OaDD6Pnn2fF9/yHAEQizH/tEZzuY3d1y+93eDQl19V20pKOZHFbZIpB5AjU/ct2d929lN/1lcpEiTpJ874sQA/37tddi4V6FjZYOzH9m65Qh0ZPA4jWK8afH4uNtTv7OLcn69WbwERoJRg5EvjnNfp9G+rXdjvrdsDbOelxMp+ZXU40HEB8O7eCH8r7kwIEIOtWF/+TtkaKEy8aXQqqooChqGIahlFKCIMRQDyEDJZoMIYTMzMzMEMKI9aCDhBGLluyHtLShcEPyZUXm/R1KI7tHfkojP3um2BgvbMLhVLLNTeI80dFPJJFEEARBiIgQBEGIKJJqCGtIMAAAAAAAACL1oIMEtmIwq+EPw5iVmL87purvpCQiIiIiIiIiiqqHkMEjmZmZmZmZmZmj60EHyYe8XG5bv573jbm8RM4be1ksvdV951IJ+1vdt9WE/t134gn91/zG/6Koh9ANSOr6epkUoUokAAAAAABApNqlZctRu5vrmolYG5yb8xfZvrk/QWFK09pLWTSRKwo3pwnjwwEAAAAAAACITj2EDpITHW4ASSedNE3TNE3TNE3TNE3TUdeDls4vFgH0/HFqe6KeN0yTIz0/ZWn+tQZ8dXkqprTZZQtN0oqrCk7mmN/ypELDRW7B5ZNcWRW37OJkhomMyN740PqTcfaSf9HYo1253szMgzdp3+ZtwOyn/uyOIO6gy+/fHN6kQzo4iIiIiIODg4OIxEM1hJadGbM02kSk8Spr9h9uaJ4E65KVvOQlj4eIiIg8Ho+HiNGrh1DEZjIES2tmRbawjslK2R75eZ/GkBh8/zPjF44/HNbhFGyOmpmwZLfTbrvnGS941dseDn4I97dKqFbjHsdaSm8UB/XmqoRa8eLPuZbPRUb54rPRCmjc2yq+GcR3fdiJRM1rAJb6lu14WL2af6EPmkTFnhr5JKzzzP4oCLwv5Me+HqVPPD/4ChSf+RAOhyfee6aHeZxvT8E6Ppw0mZSSJElKKSUZrYeQ4ZtewvciZLajJ6eq7fK0bUu3Xy8Gxs/vwuAkqUmIqqqqEkKIqsZWQ2jZClMscp1OHhe6y/tAh0mwCg2NeOE5SC1ApB5CB4kIlCwtGTMzMzPGGDOzuHpQwNHp8FFrlQjsH6VAUBZXp7u6Ea9xQWZeeie6wb+JPxNhOB1ebd6HYkhKSZIkpZSSjNZD6CD5Rvqbrk1Gcdv+kxjG4dOsLRgo0axrGNz/PzjlqSjhSOZba1Dtxa609cJKSCQAAAAAAAAQqYdQ5BBbft2GdXPmojdsZDG2Reu3rdjJDuXclntzNixbnglOlWQ8YbvnvS9MlTRN0zRN0zRN0zRN01HXQ+gg6YVWWhfPrAPNSpuAtn6rcOefUFJMoQG0fddBkiRJkiRJkiRJkiSjrIfQQZLkTmNO5asr8funbjNiFVn4LYrcWO5+UjTYx21DZlsZlnNiGIZhGIZhGIZhGIZFVg+hg8QG1je70qUOOs9/3Mmfeh5/4+6lO+/r2uaX50NuBx0b+pgTANy+S7nsZ5uH8g8tc+Kwo/iH7cfMp4KhhS6NbnjNdJHx4K8WQgYszZqyHKMn00+PxsZMIvahb7YXsF2sIDaapBLrOMzYCNg1SpMo3OsShJVBy1dtzFivL7tJaBlsNu4sjK65mNsWt2dNNVRSv/FNJ2P746isonhMonKdutPSlEqlUqlUKpVKpVLpIjWELyWbNISXw2CYWe3JaDaJa3HFEkambQz7sZaivLkwvB5qJJleGVn01eZWzBnq/1zQK6S2ZNlSZ0HkLt2Pv1p+GrcSc4FA3pdDeeqx4H9C702yavJ7J42zs3mSOe2cKEdZRTTUScGOeb53qXOQQZalE6tiSYmTgL7qUhVNyde348SytHaXN+zaPrqldvEIq+ynsI8deHyp8jhekpymRHWatMx8zL+QxXKxKYty+s2/hNsfdSvhTn5u8jiCV9Yt7dn2DmyVn570Sh6ZfLFdWFUMlW3JG+nQnxSP5k16PIRBf1b6+CSsB23+QIdwfX0NpqKfW+uNa+ZKKTMMwzAMwzAMwzAMw1RHaP/H+P7QAcOUoyhubNE+myzLsizLsizLsizLsmz1S8ve0LKV52/0gx2EXzsf6TgqUqZpx5W8z590voUM3/tzEypNe5z7eTMv2Q0VmiiKoiiKoiiKoiiKomh1hJa9oSWr4vMCUtzRXDdCJX/c1fwZFzHnuTdBeRbyfKXq512kKNxh/4OT+NxDw+iPUkFQlGyjOpfop/sJ6gznE6I74+vEK+ZGNO6tii14w9ckjuM4juM4juM4juN4dYSW/aEDPHJBmpmZ1a/TqH5uZX/IMC8g0dm5rUMb9OWVFbU6YOCMnJHgBS9r/6Ur7Qr3Vz2lr1+/Fr06Qiv7Q4b9d6dQA8+xTwVvyv/6x1k2W3G990sJYC0dzSZBihVOXG1WCYCNuPIG0ceuF/3sKmyGza0eFWf14eiDOZnnw4+HABP27Nobd4nVlFvXb32vYXKqx8unUuL1gqxuNEvGF+KEcz7V1RHan1j7Q7epIMhWBcuXcCuqxvbhSV8Kd3iHsEpgZop2pBjnyVzG0JU7t0gvWoiwM47zquehq+RQTpkm+ARnAefk76kNyI3QG3l06I16H99Bjuc7UBWNHWMoMSwxDMMwDMMwDMMwDMOw6ggt+0OB8wkMS03CbNmEcl9ZWPKL9MhTOZH1UiwsdfWSBl54uGWGDIErU6547veHWZmkwPzbm2+9W5DHZVJx91UQQRRlgDRJV96ACMduFzlDIQgeFo8eLP/sckks9zzYIR7ywpgoN2XftBVVc2Bxv6NW/H6jw92PeScJtYer0ytI0SRnzkuc+peBc7kYw2KLxhw3yhecpJP207HO648LF+PFgHufrz7+1Y/LHwG/vfzpnxwOvw//dnP3norw7Q2/OR/OPigf7k1KWW83eiXRSdM0TdM0TdM0TdM0TVdHaNkbWoo4+ZSJ4xKb7to5Kyynd732Pbl0lp1zzjlnbW1t7fZNuQ/x8biQr7iYvG5HhLUUm1zWSdj+qnj0zvtnt/02z56H78q83rIs4jufQVC2bHuvKsA+JBJp3DgAACAIggAQqYeQwVUqDc3MzEypVCrNLK4edJC2GCr0FZzeCf0xrP4DQo0mcSJ9yYzJCrUHtaUraPd0ofOCifapY2MtH7ZUYeDFgNzU1MjHI6hyBj2sSl0VOfNnGT1KWRHFn+t6rnTeLWap+Vi9CRSd3VkAveFzKvHEcRzHTdM0cRzHcRyPvB5CBkdJkiRJWpZlkSRJkiQZZT3oIMmFxCSHWWHhXQBItPcYzS6pSOf5y0ulUJP4K/PtQsNuG2zFfZ51Tvcc17p4miWPvOTLgVtBH9fxl/ewuGcR/Bs1d5NKiqIoiqIoiqIoiqKoqOohlOQBD8ZNEsUbnm95pY439TNuns5TnF2Kbm2ss/f82ceeChubHf7m+Vq25b4V62DIyFE3vgAAAAAAAAAAAIhQD6GDBBG8qDeZTJIkSZIkyWg9yNLJnZIkSZIkSbF60EFqaomkpaWZmZmZmZmZWVy1c8uWZTG95tPl/02esyuct3rOvkQiAQAAAAAAIvUuGZzIXN0L3ymrRaeLXb1LB6lbdF69eYXQ2+9MylF1weqgZuth7V9sCg/HgmFEvJbfqI5TFEVRFEVRFEVRFBVVPYQOkoqqqNpJt8TAtXUs3WofusaX//Hu8fHtd9gj5fi217g/p6U50aC1k30YOM56y7Xe7Sj8E5atQG9v6+ODQ7xECRMmhBBCCCGEEEIIYcRqCGtIgiAIgiAIgiAIgiCIKOpBB0kcE7YC7Ru0ZV3f4bwElj9Scvf3ndaWHA/Sxl9h/VMpf/0QwzAMwzAMwzAMwzAssnoIHSSGzZRb7F/Yso5fdrzd4s9yoPdQMtsGJg8H7NwIaY/78XFhemTqD5ovYy8NvgJTWpM4+iXc8CqLy/VKU2+AIxoAAAAAACBSD6GDxAK/6WOSn92LN95NWnzLiHuGxxT/PPMPl2uGeHcQztPz7HUmSZIkSZJktB5CB8moK5VKSZIkSZKkWD3I4LhZ49LSzMzMzMzMzCyu2rmlhOAuh2cxpCnVw/WgDfpyPigb2M/83/E4FZo75XtzaBaK8oW81ET0PJkDu9IIALxR/iCUvwOn0SCcTAQcd/ymBrP4NMaECg6fXcwKt98MKEOu9vsAAO0YKPTZA9YG2AEzCsSbdho4i8eFeO0L6Aaa0N3MSUet+oq2vtIOtINL0fHELL6qJtG/QGrd2p8Ukl1px6tYnMr6/l4RAlE86YwW1g8POMKegT48M9O/zHsqsghlwEMcRqERSJDwDLehW3gIPcDr1r3uoUjaZexyywThzKZmP0ePRd1+rpUuXZZdcuXGrxxrjIRwuFe9sWE5tjrRownagQ6EEOESm50JtSUkkEC7J9opwqg31JzVJ7ycv658JCzGF+Gj+1Dctj6LZFuljVX2rxZZLznaG9JE0i9hlf+/hqaBVtXDNtPCYYmzowcCrHw3uvJG4Gt2fAgAa5I/4/YrpGivciO0IBjA1NpZ1Kpfuiz3UuhkBzZ+7UHFVE4IoYK6dpWxeh3WkPYgnbJFsq+1kOUkQy71ito6mq2Fn+MvYL0qudJyVBCCY1/bTJJ57tSVb2P/TU7eBsUw8XqEbsNrxnWihjQvS8LecmeIRD+ZAV2P1Mk1FxlbVC/P7VT9GlBwU7qDklk/BxiVro75P3VmNLvUFL1TogzA88RsH5LxAoDbSn4sjUNDukoY4FbkS6HhXhdu0kmzTllmfEEW9tafcEUxLkwhnLxlK5bOgyKm5OLLaYALvMAvgphr3RzIWRObCyUwNi2S44u56Z0JInoWNOnufUDTEA65GsLdYZ4zeqAuaUdCLIXyljKkDxA0pL4xfvvgR66AohCGDUTC7myfTaEjSIXHh45w+hRzNZ3Kf4QR6phXHEEcLiJwsui9janViD67RBRYP8iersIBSXen4/mGqFsGQTeElwC4zCkVU10uJ7kawQ5q5Bg3RYxsZ3Q9SFLUXKScH4+lQ1wlhLBnBHUwDJShMgAm9l+d0g+Ch8klASu+iz49/lm8nJOx1OmZLFtj+8Ku5xVBBykWKNKvDJMtgJQKRtygaFCZQH2mcYzvajEw+U1rrqnqGsJqU6mq9hmCDjLmps8DKlOzNFUD7hqkY8rYNgBPihMb+r6BZNwihiOIh560SHhYk5kRmQL6ZEVVUslN3VWohgkcUieDkEqjPtM4xje2s5XUpdVC21LpQLvGc+kw6pMBsmdl6V55UAShNxwk6FPCXTjebY1P1VqvrtNmSuR6S4l+Tsxvr045oS0jAUOqYZUifVezORxePGTOlKbmScFzMy4d53swPR7ppCkYKrAXBN0Q2NjpUl39oUcXYcBL1IhAVw+XZ7TPG+HImSvKjlD2ugmvluwSUzBOomjkeRLdLGr1jN3D70JWXjJHgBN4BMCMYwaE01RDx5w2BgKRJwqvpcNSP0UTXg/oi0Ew1WShUrQz/G7dYgzcKCLCAIkVvOX8CC/d3dyVeYoJUr9VVLMSp6onc8aieWfnLubUm1kGS1gwSCNVQncCDYExAb4rYcAt+DFRo4e0H7Ka99jGZ5EoPJ1sas8G90QyK7CDrIKlydRg6O+1Km7J+G7VZppdTMPRn99qfQRedbaasVQgqOrPND5DU9vv9D7Hn2OcfM+t21l7fuvT5laawmQmfOeeO3Ru9kByk4FRC4MdjHYRhQtrnLfs5hnuRfrg3cWm7rnouyNdRVwmq8jSykVM6v+PNpgrEHapAbR2Z5ETPn/T/qjHzHMV4ERWx7HpaYdmsiC++9ynaX2Qp/4877y7M7P/svNGYALV2eXcy5e93Sgk59wj//TSP8rAFYWv5/jXY9zR2+CRFxkbf+4w1Pu8mPeh8QpvFptoPcZaXfbvC3i/CvkefQCbZ3oy7xU//1rz0eA5v6+551HXq7m9zz5SZbb/kpQhAdF60M4RYVR2AQIqcFgBkDACnEgttKJKn8/y7LVWmgumpRPSws7AdxRwJYoEyjUJhAOhRONCKBN2kAyRLTBR3gXo4CIAWsILxWeptAZjlUqeeySEav8dRPcAQ8gZrFY68246NWf6xHl5VnBnQgWe6ZkhAhws4bL4Ap6scaH5RoFKq0uIGI1GbxuioYwiJwokaKphWdQS6dwkBAPlpbI+AU4a99UmEpkEGqml2p2AIZRx4b3jVqM6ZKpiiIDoI4igEKXmRUApQqDG/DJS+0w8C7ED0FO6oAcNQFagz8s9U1gYk/bMz9xGSkarCLHvLar3MVmTEtMeWiq2OLTRD2sd48xICqgRGCAhQEoatVAcIWlQeXNmcFwZ0MyV5ZlJyzlFRykXKooUHj1aZiqnAltixFoHqBqYCNTWWAGBXFdKGeYzxPewgTFio0WTeWdPnbJ9nDLHhoUvwjj32g7hktnZnJsF7Lm44m+U/MU5zwSzkoHRBjmawu9AaUqFYV1tzzyJrHDtFcWMNzotncg6mPWXjFFXEpPOeWQRJsJoawwYaTgaY41lWZZiF4kGrqUZuZ3GuD2JUt63QjjXfpFj0vsQfIaQ0kuK6imV9dXWlWOyc+2hRxtqOkKIXPKguXHorLCOUkO74xQN0pmKBjnnYWFwCje8C/Cyc+2F+B3TQkERqRJmCcxVWztCr5EQokFHy1Q47Y3VOEMfg3Pu2wIJ43Mspb565zlcTlOLcLJHp3RpVEpMBGRsVzM5Mbb+P+y19pHTNqRd/W3MPGvIW33kXKWWGYWLNnrlI2OezRhDRKOj26yzUspEGLhKL6YyWU2JSSkRK5cKTBcJFW89s1SXMZHmRtlzmNYzE1EnY3XBsS9XIWS8EEjtlJqUPPUckhjY5CnfpJOzUQ/dB1PKVKopVISc66vjrbex1zJ35Xt63496tFRn/1zXpkBVI0P2OemYOY/8mrEYBzlMH7wa8oXqkauK8tCu6kOZqrXMTSiN7oLEjvdRWanrfqAeM7eK0Qc4fGIusq7GGnLgP71JqdJBIT2/bkrxeml0lcrlwaeZ43xyj2nttnPQrjFkpqkqIZqbfR/bfuvtuOl4KZ+3e7+Pkl19/ND70EY3p1ONtUCpQmTxVrG4YGo6Yop6aOwMmqvO+o6h4V27hqjrkBptuA7SDrz2zlq93e5o9yPSe0u4x8JCVN1MkB5Gxe/PAyPrnSmhaXssFe3a6qrhfFo4W0/uddv2OARC2Ljhdhvk2EIp06u7z32/PcZ2f0C+rj88nuM513HffxljgoXNQ2m5rbg2Kat8Niw+2lbuuSQYGgfDzRUqPE0a5gl+MwbaVNq4dBuk2/HjbTCo5+OJ7Xmn4RV85JWlaHr7sJZW5N9fAKA9OWTWjQNRbW+jpQEup5XrFV4/5+ddGowzsnwMLxfLzEYpffPpvz+Ox8e8PD+w3PovH6/5Ovp8Hn/s+4EeZ8R1lNFt35Rq6sWdTTH7bX3W1YvkJ7cKdzJ2fNk87QvjtBa3Q4RLyuPx7g+NXx+TUb0+XpivZ2Sfc8WX0lmJTU8TrA+j6v+/AyPbiyvZ+ewqRd+3u7zRn3pw0W60SquFuK43nVOCpI6pYa3Gz7huVVfxrmkWG6zWG5i02flGopzn9aq5QZxDBDWDtJyUGc0K103dXTFsLpNxVKSraWph8/WwAuclkMKOjmu6A1ZTCsXcD2g8Xi4XcaNwsUAGJTcSlVxFEKsUu0nGrih0baxpkbqve4CgkEMozK87Qtx62eirALgH2jOmNUijtt1vvTCctI500nboap5HfL/hZ0cXy6Xct83xnmbr6m5/Js4WdauWL0IswiRsJ7TgGa+iivt+6Z9xjnwyS3ip8jILh8bGrrUvCSt6HqdNfE7HbRxTvgAaj1Ipd6NlgXvZMlWn+zO0Z4qEV+A8q9iXyHVrFpRY+v+u8zswws8cobxbuw3DoN01OKcF6UZATlo37HvmSC+3bQ+ifQNGph8DgOdH93Zv07K+dZQxW9Sa/AcAchRoXXr5P2SA7H2jWLY/tVWbBqdw0rFyAIAe5me9x2kfQGPHT4X/QRtsVMh5TquOw0ORLjcEbfV1tQzj1GnM3g69Gv8pI1R/nO/CNGZAt43Xjso37Jww48B/+cf6CWRSSVXwo1NQ3ofNtIen8KnvIxtzXylBfj0X1fCabkEfcDyl64ObRoHzVkpyaPN5nnbJk6YsFK3vBB3Oc9HeIulloH6cxo/059CgOo7r9finnFelD3DdYAB0Phq7medzOGrb0NGptf+fQ+0Fbs9A7NnMyTdMyK344b7NIft2kslcDVsDWk9WXJ9HsYIVoderUGg8aB8SGd4nzKZBhyHDBxCpDqYlxIcFDh9gS9iNEPtx2CTVy8exDwyrEGwiyfP3U2EV7EYuhN2cnlYIzIIpzFbrBGUmypEfuV3Bn0KGwljMRW9t9+P6EK1VsBR20N9adAyV/gQ+5NWQSafExzKgBGXKQPgCaxC6ICAZRSoqAeNETndRhjJCoFwZ1s/lkFelcCJEMn4MypTQIVCQ3ZH4aMELloIeFYEhsYYjBhXKgHJhF2UcNztFW3IGrQpBGGzsmuDZjCaZB8gw3Y4z3kU3mpMyjsBDKQ6tZDfZJXk2yiAXF0YRyHNVjgfuVcCfd0+MawSwGzweQCtd+LICr4QkhUUUG8WG8YvKWIcn4jlIT4EPjxG6i/8xSgV/jzHWMHWM053ovcfgYYqfzxPFKQuA243vjqjNJuU3mOoduWgMPbkhW5VcoxdkI8l4+RpL/fwVa5yI1GQbL4WSg9BaUI3Ls84k+Syq+vQGO41srcU5T1vjqjdl88salROT8eTY/HFathJlnbo5X1TqtA2tnNZBi7m7wJSN2N5IIBh01LvTnRYhrKqycbZeNi0l9Z1QNo6wuap89VuXeqDYvooWtaYMFuBMiRYMixNtPfaI8haE3yMRzzURzwZ6swPsShk4fJJNSw1VvACj07nSsmo2cZSnM1HJ3jqmkLIthCvADPVoFVVWJcx3RxZ+227lrYFQXWB0ZFUqjyOMZjmaf49D/p//AiEXtuNu1YLnF88N8m0RAKFhFLNkNJ5MZ2mWF2VVI5837VlEGt/X9plE1ts9v6J/TmHJw8bBxcMnICQilk9CSnZ+kaJgXqihpTvPSFE8T8aoVNlNV/Xqs2bCr/q+s82wvQ5ZuNn6useo5y+2mjTgwr1n+xz26uUfc9509fIx5Ux2MLtuceXaR08Dv1mn34Eff3KczdOdvvz8C7uHjwdVcKhUrYrTjBp1atVr4NKoSbMHG7Vq0aZDuxWzNtukU5dHT865teSE23e/OumUs5Z9cNoZF92OeNs7VkUh3hzhd97lPfGRVDLJpSBFX7IsP9/XVetIGWwZdL3tXhd8Y6T/1YuWluvpfJ+B5o2WC9lrjs3zL1vtapw5MugaOvbcqxDzWfqdoChb4eDGjVXmxVYA4zj3hwB3nFyCnvDOS7IJIyLSQQAgG3cHvDhJO6VwwU9x9Kw8uMQYDShJK67phonO4Y2TjrsKgFOdAQAAAA==) format('woff2')}
@@ -850,6 +866,22 @@ button.lw-tile:active{transform:scale(.975);transition:transform .07s ease}
   .mobile-tab .ti{margin-bottom:0}
 }
 
+/* ── SAFETY CARD ──
+   Rendered by the app, never by the model, so it survives an API
+   outage. Warm rather than alarming: this is not a warning. */
+.lw-safety{margin:.6rem 0 0;background:rgba(0,70,67,.4);border:1px solid rgba(0,143,135,.38);border-radius:14px;
+  padding:.75rem .9rem;font-size:.82rem;line-height:1.65;color:var(--t2);flex-shrink:0}
+.lw-safety-h{display:flex;align-items:center;gap:.45rem;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:700;color:#7fd8c8;margin-bottom:.4rem}
+.lw-safety-h .lu{color:#7fd8c8}
+.lw-safety-x{margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;padding:2px;border-radius:6px;display:flex}
+.lw-safety-x:hover{color:var(--t1);background:rgba(240,237,229,.07)}
+.lw-safety-b p{margin:0 0 .4rem}
+.lw-safety-b p:last-child{margin-bottom:0}
+.lw-safety-b a{color:#7fd8c8;text-decoration:underline;text-underline-offset:2px}
+.lw-safety-b strong{color:var(--sd)}
+.lw-safety-n{font-size:.73rem;color:var(--t3)}
+
 /* ── ON-SCREEN KEYBOARD ──
    --kb is set from visualViewport (see _kbSync). Where that API is
    missing the variable stays 0 and nothing below has any effect. */
@@ -1270,6 +1302,55 @@ function lwDec(b64) {
    no flash, and live-updates when the system theme flips (the Android host
    calls window._lewaSystemThemeChanged). ── */
 var THK = 'lewa-theme';
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL FAILURE HANDLING
+   ──────────────────────────────────────────────────────────────
+   A rejected promise nobody caught used to vanish into the console
+   — invisible on a phone, and in the Android WebView invisible
+   full stop. These handlers keep the last one for the diagnostics
+   panel, and stay quiet about the ordinary case of a request
+   failing because the network went away, which the app already
+   reports properly where it happens.
+   ══════════════════════════════════════════════════════════════ */
+function _isNetworkNoise(msg) {
+  return /failed to fetch|networkerror|load failed|network request failed|aborted|the user aborted|the operation was aborted|err_internet_disconnected/i.test(String(msg || ''));
+}
+try {
+  window.addEventListener('unhandledrejection', function (e) {
+    let msg = '';
+    try { msg = (e.reason && (e.reason.message || e.reason.toString())) || String(e.reason); } catch (_) { msg = 'unknown'; }
+    try { window._lewaLastError = 'Unhandled promise rejection: ' + msg; } catch (_) {}
+    /* Nothing user-facing for a dropped connection — that is already
+       handled where it matters, and a second message is just noise. */
+    if (_isNetworkNoise(msg)) { try { e.preventDefault(); } catch (_) {} return; }
+    try { console.warn('LEWA: unhandled rejection —', msg); } catch (_) {}
+  });
+  window.addEventListener('error', function (e) {
+    try {
+      if (e && e.message) window._lewaLastError = e.message + (e.filename ? ' @ ' + e.filename + ':' + e.lineno : '');
+    } catch (_) {}
+  });
+} catch (_) {}
+
+/* ── CORRUPTED STORAGE ──
+   Storage can be truncated by a crash, a full disk, or a sync that
+   half-finished. One unreadable value must never take a screen down
+   with it, so every read of stored JSON goes through here and falls
+   back to something sane. */
+function safeParse(raw, fallback) {
+  if (raw == null || raw === '') return fallback;
+  try {
+    const v = JSON.parse(raw);
+    return v == null ? fallback : v;
+  } catch (_) {
+    return fallback;
+  }
+}
+function safeArray(raw) {
+  const v = safeParse(raw, null);
+  return Array.isArray(v) ? v : [];
+}
+
 function getThemeMode() {
   try {
     var v = localStorage.getItem(THK);
@@ -1469,7 +1550,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.1';
+var APP_VERSION = '1.2';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -2728,8 +2809,65 @@ const {
 } = React;
 
 /* pdf.js needs an explicit worker script location to run */
+/* ══════════════════════════════════════════════════════════════
+   OPTIONAL DOCUMENT PARSERS — fetched only when actually needed
+   ──────────────────────────────────────────────────────────────
+   pdf.js and mammoth are large third-party libraries used by one
+   feature: reading an attached PDF or Word file. Loading them in
+   <head> cost every launch two blocking requests to a CDN, which
+   on a poor connection is a blank screen, and offline is a wasted
+   timeout. They are now pulled in the first time somebody attaches
+   such a file, and if that fetch fails the person is told plainly
+   rather than left with a spinner.
+   ══════════════════════════════════════════════════════════════ */
+const CDN_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/';
+const _libPromises = {};
+function loadScriptOnce(url) {
+  if (_libPromises[url]) return _libPromises[url];
+  _libPromises[url] = new Promise(function (resolve, reject) {
+    try {
+      const el = document.createElement('script');
+      el.src = url;
+      el.async = true;
+      el.onload = function () { resolve(true); };
+      el.onerror = function () { delete _libPromises[url]; reject(new Error('load failed')); };
+      document.head.appendChild(el);
+      /* A CDN that never answers must not hang the attachment forever. */
+      setTimeout(function () { delete _libPromises[url]; reject(new Error('timed out')); }, 20000);
+    } catch (e) {
+      delete _libPromises[url];
+      reject(e);
+    }
+  });
+  return _libPromises[url];
+}
+async function ensurePdfLib() {
+  if (window.pdfjsLib) return window.pdfjsLib;
+  if (isOffline()) throw new Error("Reading a PDF needs a connection the first time — you're offline right now. You can paste the text in instead.");
+  try {
+    await loadScriptOnce(CDN_BASE + 'pdf.js/3.11.174/pdf.min.js');
+  } catch (_) {
+    throw new Error('The PDF reader could not be downloaded. Check your connection, or paste the text in instead.');
+  }
+  if (!window.pdfjsLib) throw new Error('The PDF reader could not be downloaded. You can paste the text in instead.');
+  try {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = CDN_BASE + 'pdf.js/3.11.174/pdf.worker.min.js';
+  } catch (_) {}
+  return window.pdfjsLib;
+}
+async function ensureDocxLib() {
+  if (window.mammoth) return window.mammoth;
+  if (isOffline()) throw new Error("Reading a Word file needs a connection the first time — you're offline right now. You can paste the text in instead.");
+  try {
+    await loadScriptOnce(CDN_BASE + 'mammoth/1.6.0/mammoth.browser.min.js');
+  } catch (_) {
+    throw new Error('The Word reader could not be downloaded. Check your connection, or paste the text in instead.');
+  }
+  if (!window.mammoth) throw new Error('The Word reader could not be downloaded. You can paste the text in instead.');
+  return window.mammoth;
+}
 if (window.pdfjsLib) {
-  window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = CDN_BASE + 'pdf.js/3.11.174/pdf.worker.min.js';
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -3273,18 +3411,49 @@ function stopAmbientSoundscape() {
   } catch (_) {}
   _ambientNodes = null;
 }
+/* ══════════════════════════════════════════════════════════════
+   ACCOUNT SCOPE
+   ──────────────────────────────────────────────────────────────
+   Accounts on one device are separate people. Everything personal
+   already lives under lewa-<ns>-*, but a handful of settings were
+   written at device level — including the API key, the provider
+   and the model. Those are now redirected into the signed-in
+   account, so one person's key and choices are not visible to the
+   next person who signs in.
+
+   The device-level slot is kept as a read-only fallback for the
+   key entered during first-time setup, before any account exists.
+   Genuinely device-wide preferences — theme, text size, motion,
+   which describe the screen rather than the person — stay shared.
+   ══════════════════════════════════════════════════════════════ */
+let _acctNs = '';
+const SCOPED_KEYS = { 'lewa-provider': 1, 'lewa-model': 1, 'lewa-customURL': 1, 'lewa-strategy': 1, 'lewa-voice': 1, 'lewa-notify': 1, 'lewa-locshare': 1, 'lewa-ghsync': 1, 'lewa-region': 1, 'lewa-region-geo': 1 };
+function setAccountScope(ns) {
+  _acctNs = ns && ns !== '__admin__' ? ns : '';
+}
+function scopedKey(k) {
+  return _acctNs && SCOPED_KEYS[k] ? k + '@' + _acctNs : k;
+}
 const S = {
   get: k => {
     try {
-      return localStorage.getItem(k);
+      const sk = scopedKey(k);
+      const v = localStorage.getItem(sk);
+      /* Fall back to the device-level value only for a key this account
+         has never set — so an existing install keeps working, and the
+         moment this account chooses something it becomes its own. */
+      if (v == null && sk !== k) return localStorage.getItem(k);
+      return v;
     } catch (_) {
       return null;
     }
   },
   set: (k, v) => {
     try {
-      localStorage.setItem(k, v);
-    } catch (_) {}
+      localStorage.setItem(scopedKey(k), v);
+    } catch (e) {
+      storageProblem(e, k);
+    }
   },
   clear: () => {
     try {
@@ -3292,6 +3461,33 @@ const S = {
     } catch (_) {}
   }
 };
+
+/* ── STORAGE PRESSURE ──
+   localStorage is small and a long conversation with images can fill
+   it. A silent failure means a session that looks saved and is not,
+   so this reports it once and frees what is safe to free. */
+let _quotaWarned = false;
+function storageProblem(err, key) {
+  const quota = err && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014);
+  if (!quota) return;
+  try {
+    /* Cached model catalogues and search results are rebuildable — they go
+       first, and often that is enough. */
+    const drop = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.indexOf('lewa-cat-') === 0 || k === 'lewa-dead-models')) drop.push(k);
+    }
+    drop.forEach(function (k) { try { localStorage.removeItem(k); } catch (_) {} });
+    if (drop.length) {
+      try { localStorage.setItem(key, localStorage.getItem(key) == null ? '' : localStorage.getItem(key)); } catch (_) {}
+    }
+  } catch (_) {}
+  if (!_quotaWarned) {
+    _quotaWarned = true;
+    try { toast('This device is out of storage space, so the last change may not have been saved. Exporting a backup and clearing older sessions will free room.'); } catch (_) {}
+  }
+}
 
 /* ════════════════════════════════════════════════════════════
    KEY VAULT — obfuscated at-rest storage for the API key
@@ -3330,26 +3526,73 @@ function _vDec(b64) {
     return '';
   }
 }
+/* A key saved while signed in belongs to that account and to nobody else.
+   The unscoped slot holds only the key entered during first-time setup,
+   before any account existed, and is read as a last resort. */
+function _vk(suffix) {
+  const tail = suffix ? '::' + suffix : '';
+  return _acctNs ? _VK + '@' + _acctNs + tail : _VK + tail;
+}
+function _vkDevice(suffix) {
+  return _VK + (suffix ? '::' + suffix : '');
+}
+function _vRead(k) {
+  try { return _vDec(localStorage.getItem(k) || ''); } catch (_) { return ''; }
+}
 const KeyVault = {
-  save: key => S.set(_VK, _vEnc(key)),
-  load: () => _vDec(S.get(_VK) || ''),
+  save: key => { try { localStorage.setItem(_vk(''), _vEnc(key)); } catch (e) { storageProblem(e, _vk('')); } },
+  load: () => _vRead(_vk('')) || (_acctNs ? _vRead(_vkDevice('')) : ''),
   clear: () => {
     try {
-      localStorage.removeItem(_VK);
+      localStorage.removeItem(_vk(''));
+      if (!_acctNs) localStorage.removeItem(_VK);
     } catch (_) {}
   },
   mask: key => key ? `••••••••${key.slice(-4)}` : '',
   /* Per-provider slots (ported from Lewa Coder's key routing): every provider
-     the person has EVER verified a key for keeps that key, so an OpenRouter
+     this account has EVER verified a key for keeps that key, so an OpenRouter
      key can transparently serve models whose native key is missing. */
   saveFor: (prov, key) => {
-    if (prov && key) S.set(_VK + '::' + prov, _vEnc(key));
+    if (prov && key) {
+      try { localStorage.setItem(_vk(prov), _vEnc(key)); } catch (e) { storageProblem(e, _vk(prov)); }
+    }
   },
   loadFor: prov => {
-    const v = _vDec(S.get(_VK + '::' + prov) || '');
-    if (v) return v;
-    /* legacy single-key storage counts for the provider it was saved under */
-    return S.get('lewa-provider') === prov ? _vDec(S.get(_VK) || '') : '';
+    const own = _vRead(_vk(prov));
+    if (own) return own;
+    const single = _vRead(_vk(''));
+    if (single && S.get('lewa-provider') === prov) return single;
+    if (!_acctNs) return '';
+    /* Fall back to the setup key only — never to another account's slot. */
+    const dev = _vRead(_vkDevice(prov));
+    if (dev) return dev;
+    const devSingle = _vRead(_vkDevice(''));
+    return devSingle && localStorage.getItem('lewa-provider') === prov ? devSingle : '';
+  },
+  /* Does ANY key exist on this device — device-level or in any account?
+     Used at boot, before we know who is signing in, so a device whose
+     accounts each hold their own key is not sent back through setup. */
+  anyExists: () => {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf(_VK) === 0 && localStorage.getItem(k)) return true;
+      }
+    } catch (_) {}
+    return false;
+  },
+  /* Everything this one account has stored, for a clean delete. */
+  purgeAccount: ns => {
+    if (!ns) return;
+    try {
+      const pre = _VK + '@' + ns;
+      const drop = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf(pre) === 0) drop.push(k);
+      }
+      drop.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (_) {}
   }
 };
 
@@ -3376,8 +3619,9 @@ function estTokens(text) {
 
 /* ── FILE → BASE64 / TEXT ── */
 async function extractPdfText(file) {
+  const lib = await ensurePdfLib();
   const buf = await file.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({
+  const pdf = await lib.getDocument({
     data: buf
   }).promise;
   let text = "";
@@ -3391,15 +3635,33 @@ async function extractPdfText(file) {
   return text.trim() || "[This PDF has no extractable text — it may be a scanned image.]";
 }
 async function extractDocxText(file) {
+  const lib = await ensureDocxLib();
   const buf = await file.arrayBuffer();
-  const result = await window.mammoth.extractRawText({
+  const result = await lib.extractRawText({
     arrayBuffer: buf
   });
   return (result.value || "").trim() || "[This document appears to be empty.]";
 }
+/* An unguarded attachment is a real failure mode: a 30MB photo becomes
+   ~40MB of base64, which overflows this device's storage and is rejected
+   by every provider anyway. Better to say so before any of that happens. */
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_DOC_BYTES = 12 * 1024 * 1024;
+function _mb(n) {
+  return (n / 1048576).toFixed(n < 10485760 ? 1 : 0) + 'MB';
+}
 function readFileAsync(file) {
   return new Promise(async (resolve, reject) => {
     const isImage = file.type.startsWith("image/");
+    const cap = isImage ? MAX_IMAGE_BYTES : MAX_DOC_BYTES;
+    if (file.size > cap) {
+      reject(new Error(`"${file.name}" is ${_mb(file.size)}, which is too large to send — the limit is ${_mb(cap)}. ${isImage ? 'Try a smaller photo, or a screenshot of the part that matters.' : 'Try attaching just the relevant pages, or paste the text in.'}`));
+      return;
+    }
+    if (file.size === 0) {
+      reject(new Error(`"${file.name}" is empty, so there is nothing to read.`));
+      return;
+    }
     const isText = file.type.startsWith("text/") || /\.(txt|md|csv|json)$/i.test(file.name);
     const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
     const isDocx = /\.docx$/i.test(file.name) || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -3429,7 +3691,13 @@ function readFileAsync(file) {
           text: `[PDF: ${file.name}]\n${text.slice(0, 6000)}`
         });
       } catch (err) {
-        reject(new Error(`Could not read PDF "${file.name}". It may be corrupted or scanned.`));
+        /* Keep the real reason when the reader itself could not be loaded —
+           "corrupted or scanned" would send someone chasing the wrong problem
+           when they are simply offline. */
+        const _m = String(err && err.message || '');
+        reject(new Error(/could not be downloaded|offline|paste the text/i.test(_m)
+          ? _m
+          : `Could not read PDF "${file.name}". It may be corrupted, or a scan with no text layer.`));
       }
       return;
     }
@@ -3442,7 +3710,10 @@ function readFileAsync(file) {
           text: `[Document: ${file.name}]\n${text.slice(0, 6000)}`
         });
       } catch (err) {
-        reject(new Error(`Could not read "${file.name}". Please try saving it as .txt or .pdf.`));
+        const _m = String(err && err.message || '');
+        reject(new Error(/could not be downloaded|offline|paste the text/i.test(_m)
+          ? _m
+          : `Could not read "${file.name}". Try saving it as .txt or .pdf instead.`));
       }
       return;
     }
@@ -3568,23 +3839,416 @@ function detectIntent(text) {
 }
 
 /* ── CRISIS DETECTION — calm, careful, non-panic ── */
-const CRISIS_LEX = {
-  suicide: [/\b(kill myself|end my life|suicid|don'?t want to (live|be here|wake up)|better off dead|no reason to live|take my own life|end it all)\b/],
-  selfharm: [/\b(hurt myself|cut myself|self[- ]?harm|harm myself|cutting again|burn myself)\b/],
-  abuse: [/\b(hit me|hits me|abus(e|ed|ing)|he beats|she beats|assault(ed)?|raped|forced me|threatens me)\b/],
-  panic: [/\b(panic attack|can'?t breathe|heart is racing|hyperventilat|chest is tight|going to die right now)\b/],
-  danger: [/\b(in danger|going to hurt|kill (him|her|them)|not safe right now)\b/]
+/* ══════════════════════════════════════════════════════════════
+   CRISIS DETECTION
+   ──────────────────────────────────────────────────────────────
+   The old detector matched keywords against the whole message, so
+   "I'm writing an essay on suicide prevention" and "I'm going to
+   kill myself tonight" produced the identical top-level response.
+   Both failures matter: one floods a calm conversation with crisis
+   language, the other is indistinguishable from it, and a person
+   who gets the emergency script for an essay learns to ignore it.
+
+   So detection works clause by clause. Each clause is matched for
+   signals, and the clause carrying the strongest signal is then
+   read for who it is about, when it happened, whether it is
+   negated, and whether it is fiction or study. Only a clause that
+   is about this person, now, unnegated and real can raise the
+   highest level.
+
+   Levels
+     0  nothing, or a bare topic mention / fiction / study
+     1  worth noticing — passive hopelessness, something historical,
+        worry about somebody else, a panic attack
+     2  active — current intent, self-harm, ongoing abuse, a
+        disclosure of violence, thoughts of harming someone
+     3  immediate — a plan with means or a timeframe, "about to",
+        or danger from another person happening right now
+   ══════════════════════════════════════════════════════════════ */
+const CRISIS_SIGNALS = {
+  /* Something has already been done. This is never a lower level. */
+  action_taken: [
+    /\bi'?ve (just |already )?(taken|swallowed|cut|overdosed)\b/,
+    /\bi (took|swallowed) (all|the|my|a bottle|a load)\b/,
+    /\bi (just )?cut (myself|my (arm|wrist|leg|thigh))\b/
+  ],
+  /* A past attempt. Serious to disclose; historical framing softens it. */
+  attempt_history: [
+    /\b(attempted suicide|suicide attempt|tried to (kill myself|end (it|my life))|survived an attempt|my last attempt)\b/
+  ],
+  /* Unambiguous statements of intent toward one's own life. */
+  suicide_intent: [
+    /\b(kill myself|killing myself|end my life|ending my life|take my own life|taking my own life|end it all|kms|unalive myself)\b/,
+    /\bi (want|plan|need|intend|am going|'m going|have decided) to (die|not be here|not wake up)\b/,
+    /\bi (want|plan|intend) to (kill myself|end (it|my life))\b/
+  ],
+  /* Hopelessness without a stated intent — heavy, but not the same thing. */
+  suicide_passive: [
+    /\b(don'?t want to (live|be here|be alive|wake up|exist)|better off (dead|without me)|no reason to (live|go on|be here)|wish i (was|were) (dead|never born)|tired of (living|being alive)|can'?t (go on|do this any ?more)|what'?s the point of (living|going on|any of it)|everyone would be better off)\b/,
+    /\bi just want (it|the pain|everything) to (stop|end)\b/
+  ],
+  /* Somebody else's risk, described by the person in front of us. Always
+     read as concern for another, never as their own intent. */
+  suicide_other: [
+    /\b(kill (him|her|them)self|killing (him|her|them)self|end (his|her|their) life|ending (his|her|their) life)\b/,
+    /\b(he|she|they) (wants?|said|says|keeps saying|threatened|threatens) to (die|kill (him|her|them)self|end (his|her|their) life)\b/,
+    /\b(he|she|they) (is|are|was|were|seems|sounds|feels) suicidal\b/
+  ],
+  /* Means, method or preparation. On its own this is context; paired with
+     intent it is the difference between a thought and a plan. */
+  means_plan: [
+    /\b(overdose|overdosing|od'?ing|took (a lot of|all my|the whole bottle of) (pills|tablets)|swallowed (the |all )?(pills|tablets)|noose|hang myself|hanging myself|jump off|jump in front of|slit my|razor|blade|my gun|the gun|shotgun|bleach|antifreeze|carbon monoxide)\b/,
+    /\b(wrote|writing|written|left) (a |my )?(suicide )?(note|letter|goodbye)\b/,
+    /\b(made|have|got) a plan\b/,
+    /\b(giving|gave) away my (things|stuff|belongings)\b/,
+    /\b(stockpil|saving up) \w* ?(pills|tablets|medication)\b/,
+    /\b(pills|tablets|razor|blade|rope|knife|gun) (in front of me|in my hand|beside me|next to me|ready|out)\b/,
+    /\b(holding|got|have) the (pills|tablets|razor|blade|knife|rope)\b/
+  ],
+  /* Time pressure — the marker that separates a thought from an emergency. */
+  imminent: [
+    /\b(right now|tonight|today|within the hour|in an hour|this evening|before (morning|tomorrow))\b/,
+    /\b(about to|going to do it|doing it now|this is (goodbye|it)|last (message|thing i)|won'?t be here (tomorrow|in the morning)|say goodbye)\b/,
+    /\bi'?m going to (take|do|use) (them|it|these|this|the pills)\b/
+  ],
+  /* Self-harm is its own category — it is not attempted suicide. */
+  selfharm: [
+    /\b(hurt myself|hurting myself|cut myself|cutting myself|cutting again|self[- ]?harm(ing|ed)?|harm myself|harming myself|burn(ed|ing)? myself|hit(ting)? myself|scratch(ed|ing) myself|starve myself|starving myself|make myself (sick|throw up)|purge|purging)\b/
+  ],
+  /* Thoughts of harming another person. */
+  harm_other: [
+    /\b(kill (him|her|them|someone|somebody)|hurt (him|her|them|someone|somebody)|want to (kill|hurt) (him|her|them|someone|somebody)|going to hurt (him|her|them|someone|somebody)|make (him|her|them) pay)\b/
+  ],
+  /* Danger coming from someone else, toward this person. */
+  danger_other: [
+    /\b(he|she|they|my (partner|husband|wife|boyfriend|girlfriend|dad|father|mum|mom|mother|brother|sister|ex)) (hit|hits|hit me|beat|beats|punched|punches|strangl\w+|chok\w+|threw|threatens?|threatened)\b/,
+    /\b(beat(s|ing)? me|hitting me|hurting me|threaten(s|ed|ing) (to kill|to hurt)? ?me|locked me in|won'?t let me leave|following me|stalking me|has a (knife|gun))\b/,
+    /\b(not safe (at home|here|right now)|i'?m scared (of|he|she|they)|afraid he'?ll|afraid she'?ll|in danger)\b/
+  ],
+  sexual_violence: [
+    /\b(raped|was raped|sexual(ly)? assault(ed)?|molested|forced me to have sex|made me have sex|touched me without)\b/
+  ],
+  /* Panic needs grounding in the moment, not a crisis line. */
+  panic: [
+    /\b(panic attack|panicking|can'?t breathe|cannot breathe|heart is (racing|pounding)|hyperventilat\w*|chest (is|feels) tight|feel like i'?m dying|going to pass out)\b/
+  ],
+  /* Bare topic mentions. Never enough on their own to escalate. */
+  topic: [
+    /\bsuicid\w*/,
+    /\babus(e|ed|ive|ing)\b/,
+    /\bself[- ]?harm\b/,
+    /\bmental health\b/
+  ]
 };
+
+/* Framing — read only from the clause that carried the signal. */
+const RE_C_SELF = /\b(i|i'?m|i'?ve|i'?ll|i'?d|me|my|myself|mine)\b/;
+const RE_C_OTHER = /\b(my (friend|mate|sister|brother|mum|mom|mother|dad|father|son|daughter|partner|colleague|coworker|neighbou?r|cousin|aunt|uncle|student|patient|client|boss)|a (friend|colleague|student|patient|client)|someone i|somebody i|he|she|they|him|her|them|his|their)\b/;
+const RE_C_PAST = /\b(used to|when i was|back (then|when)|years? ago|months? ago|(a )?(long|while) (time )?ago|last (year|month|time)|(back )?in (19|20)\d\d|in the past|as a (teenager|kid|child|student)|growing up|when i were|since then|no longer|not any ?more|i was going to|i had (planned|wanted)|i almost|i nearly|recovered|in recovery|got better|doing (much |a lot |so much )?better|i'?m better now|came out the other side|that was before)\b/;
+const RE_C_FICTION = /\b(book|novel|film|movie|show|series|episode|character|plot|essay|assignment|dissertation|thesis|article|statistics|stats|research|coursework|homework|lecture|seminar|documentary|song|lyrics|poem|video game|hypothetical|fiction(al)?|debate|presentation|exam|revision|training (course|day)?|course|module|class|curriculum|textbook|podcast|news story)\b/;
+const RE_C_NEG = /\b(don'?t|do not|didn'?t|never|no longer|not going to|wouldn'?t|won'?t|would never|isn'?t|aren'?t|wasn'?t|haven'?t|hasn'?t|no plans?|not planning|not thinking|nothing like that|not that bad)\b/;
+const RE_C_HELPSEEK = /\b(worried about|concerned about|how (do|can) i help|what (should|do) i (do|say)|how (do|can) i support|advice (about|for)|scared for|help (him|her|them)|support (him|her|them))\b/;
+/* "I'm not going to kill myself" must not read as intent — but
+   "I don't want to live" must, so negation is checked against the
+   signal verb, not the whole clause. */
+const RE_C_SAFE_NEG = /\b(not going to|won'?t|wouldn'?t|would never|never (would|going to)|no plans?|not planning|(don'?t|do not|doesn'?t) (have|want) (any |no )?(plans?|intention)|don'?t want to (kill|hurt|harm)|not suicidal|not at risk|nothing like that)\b/;
+/* Only these people make a message "about someone else". A bare "he" or
+   "she" does not — "he has a knife and he is outside" is about the person
+   telling us, not about him. */
+const RE_C_OTHER_SUBJECT = /\b(my (friend|mate|sister|brother|mum|mom|mother|dad|father|son|daughter|colleague|coworker|neighbou?r|cousin|aunt|uncle|student|patient|client|boss)|a (friend|colleague|student|patient|client)|someone i (know|work)|somebody i (know|work))\b/;
+
+function crisisClauses(text) {
+  const out = [];
+  String(text == null ? '' : text).toLowerCase().split(/[.!?\n;]+/).forEach(function (s) {
+    s.split(/\s+(?:but|although|though|whereas|however)\s+/).forEach(function (c) {
+      const x = c.trim();
+      if (x) out.push(x);
+    });
+  });
+  return out.length ? out : [String(text == null ? '' : text).toLowerCase()];
+}
+function _sigHits(clause) {
+  const hits = {};
+  Object.keys(CRISIS_SIGNALS).forEach(function (cat) {
+    const pats = CRISIS_SIGNALS[cat];
+    for (let i = 0; i < pats.length; i++) if (pats[i].test(clause)) { hits[cat] = true; return; }
+  });
+  return hits;
+}
+/* Ranked worst-first so the strongest clause wins the classification. */
+const CRISIS_RANK = ['action_taken', 'suicide_intent', 'sexual_violence', 'danger_other', 'harm_other', 'attempt_history', 'selfharm', 'suicide_other', 'suicide_passive', 'panic', 'means_plan', 'imminent', 'topic'];
+
 function detectCrisis(text) {
-  const t = (text || '').toLowerCase();
-  for (const [type, pats] of Object.entries(CRISIS_LEX)) for (const re of pats) if (re.test(t)) return {
-    level: type === 'panic' ? 2 : 3,
-    type
-  };
+  const raw = String(text == null ? '' : text);
+  const clauses = crisisClauses(raw);
+  const whole = raw.toLowerCase();
+  let best = null;
+  const all = {};
+  clauses.forEach(function (c) {
+    const hits = _sigHits(c);
+    Object.keys(hits).forEach(function (k) { all[k] = true; });
+    for (let r = 0; r < CRISIS_RANK.length; r++) {
+      const cat = CRISIS_RANK[r];
+      if (hits[cat] && (!best || r < best.rank)) best = { rank: r, cat: cat, clause: c, hits: hits };
+    }
+  });
+  const none = { level: 0, type: null, category: 'none', self: false, imminent: false, reasons: [] };
+  if (!best) return none;
+
+  const c = best.clause;
+  const reasons = [];
+  const fiction = RE_C_FICTION.test(c);
+  const past = RE_C_PAST.test(c);
+  const helpSeek = RE_C_HELPSEEK.test(c) || RE_C_HELPSEEK.test(whole);
+  const safeNeg = RE_C_SAFE_NEG.test(c);
+  const selfRef = RE_C_SELF.test(c);
+  const cat = best.cat;
+  /* Violence coming toward this person is about them even when every
+     pronoun in the sentence points at someone else. It is only somebody
+     else's story when they name that somebody. */
+  const aboutSelfByNature = cat === 'danger_other' || cat === 'sexual_violence' || cat === 'harm_other';
+  const namedOther = RE_C_OTHER_SUBJECT.test(c) || RE_C_OTHER_SUBJECT.test(whole);
+  const otherPerson = cat === 'suicide_other' || (namedOther && !aboutSelfByNature) ||
+    (!aboutSelfByNature && RE_C_OTHER.test(c) && !RE_C_SELF.test(c));
+
+  if (fiction) reasons.push('fiction or study');
+  if (past) reasons.push('historical');
+  if (otherPerson || (helpSeek && !aboutSelfByNature)) reasons.push('about someone else');
+  if (safeNeg) reasons.push('explicitly negated');
+
+  /* A bare topic mention, a story, or an explicit denial. None of these
+     is an emergency, and treating them as one teaches people to ignore
+     the response that matters. */
+  const onlyTopic = cat === 'topic';
+  if (onlyTopic || fiction || safeNeg) {
+    return { level: 0, type: null, category: fiction ? 'fiction' : safeNeg ? 'negated' : 'topic', self: selfRef, imminent: false, reasons: reasons };
+  }
+  if (otherPerson || (helpSeek && !aboutSelfByNature)) {
+    return { level: 1, type: 'third_party', category: 'third_party', self: false, imminent: false, reasons: reasons };
+  }
+
+  const meansOrPlan = !!all.means_plan;
+  const timePressure = !!all.imminent;
+
+  /* Something already done outranks everything, including a past-tense
+     reading — "I've already taken them" is now, not history. */
+  if (cat === 'action_taken') {
+    reasons.push('action already taken');
+    return { level: 3, type: 'suicide', category: 'action_taken', self: true, imminent: true, reasons: reasons };
+  }
+  if (past) {
+    return { level: 1, type: 'historical', category: 'historical', self: selfRef, imminent: false, reasons: reasons };
+  }
+
+  /* Immediate danger: intent paired with a plan, means or a timeframe —
+     or violence from another person described as happening now. */
+  if ((cat === 'suicide_intent' || cat === 'suicide_passive' || cat === 'selfharm' || cat === 'attempt_history') && (meansOrPlan || timePressure)) {
+    if (meansOrPlan) reasons.push('means or plan described');
+    if (timePressure) reasons.push('immediate timeframe');
+    return { level: 3, type: 'suicide', category: 'imminent_self', self: true, imminent: true, reasons: reasons };
+  }
+  if (cat === 'danger_other' && (timePressure || /\b(right now|tonight|is here|outside|at the door|coming|banging on)\b/.test(whole))) {
+    reasons.push('danger described as happening now');
+    return { level: 3, type: 'danger', category: 'imminent_other', self: true, imminent: true, reasons: reasons };
+  }
+  if (cat === 'means_plan' && (all.suicide_intent || all.suicide_passive || timePressure)) {
+    reasons.push('means or plan described');
+    return { level: 3, type: 'suicide', category: 'imminent_self', self: true, imminent: true, reasons: reasons };
+  }
+
+  /* Active, but not described as immediate. */
+  if (cat === 'suicide_intent') return { level: 2, type: 'suicide', category: 'suicide_intent', self: true, imminent: false, reasons: reasons };
+  if (cat === 'attempt_history') return { level: 2, type: 'suicide', category: 'recent_attempt', self: true, imminent: false, reasons: reasons };
+  if (cat === 'selfharm') return { level: 2, type: 'selfharm', category: 'selfharm', self: true, imminent: false, reasons: reasons };
+  if (cat === 'sexual_violence') return { level: 2, type: 'abuse', category: 'sexual_violence', self: true, imminent: false, reasons: reasons };
+  if (cat === 'danger_other') return { level: 2, type: 'abuse', category: 'danger_other', self: true, imminent: false, reasons: reasons };
+  if (cat === 'harm_other') return { level: 2, type: 'danger', category: 'harm_other', self: true, imminent: false, reasons: reasons };
+
+  /* Heavy, and worth meeting carefully — but not an emergency. */
+  if (cat === 'suicide_passive') return { level: 1, type: 'suicide', category: 'suicide_passive', self: true, imminent: false, reasons: reasons };
+  if (cat === 'panic') return { level: 1, type: 'panic', category: 'panic', self: true, imminent: false, reasons: reasons };
+  return none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CRISIS RESOURCES — LOCATION AWARE
+   ──────────────────────────────────────────────────────────────
+   Telling a person in Lagos or Manchester to "call 988" is worse
+   than saying nothing: it costs them time in the moment they have
+   least of it, and it teaches them the app does not know where
+   they are. So nothing is hard-coded as universal.
+
+   Two tables, held to different standards. Emergency numbers are
+   stable, official and widely published. Helplines change, and a
+   wrong one is worse than none, so that table is deliberately
+   short — only entries held with confidence. Anywhere not listed
+   falls back to naming no number at all: the local emergency
+   service, a trusted person, and an international directory that
+   is maintained by people whose job that is.
+
+   The region is never presented as fact unless the person chose
+   it. A guess is phrased as a guess, and can always be corrected
+   in Settings → Safety.
+   ══════════════════════════════════════════════════════════════ */
+const EMERGENCY_BY_CC = {
+  US: '911', CA: '911', MX: '911', BR: '190 (police) or 192 (ambulance)', AR: '911', CL: '133', CO: '123',
+  GB: '999', IE: '112 or 999', FR: '112', DE: '112', ES: '112', IT: '112', PT: '112', NL: '112', BE: '112',
+  AT: '112', CH: '112', SE: '112', NO: '112', DK: '112', FI: '112', PL: '112', CZ: '112', GR: '112',
+  RO: '112', HU: '112', TR: '112', UA: '112', RU: '112',
+  AU: '000', NZ: '111', IN: '112', PK: '15', BD: '999', LK: '119',
+  ZA: '112', NG: '112', KE: '999 or 112', GH: '112', TZ: '112', UG: '999 or 112', ET: '911', EG: '122',
+  MA: '112', DZ: '14 or 112',
+  JP: '110 (police) or 119 (ambulance)', KR: '112 (police) or 119 (ambulance)',
+  CN: '110 (police) or 120 (ambulance)', HK: '999', TW: '110 or 119', SG: '995', MY: '999',
+  ID: '112', TH: '191', VN: '113', PH: '911',
+  AE: '999', SA: '997', QA: '999', KW: '112', IL: '100 (police) or 101 (ambulance)', JO: '911', LB: '112'
+};
+/* Helplines. Short on purpose — a number that has changed is worse
+   than no number, so only well-established national services appear. */
+const CRISIS_LINES_BY_CC = {
+  US: [['988 Suicide & Crisis Lifeline', 'call or text 988'], ['Crisis Text Line', 'text HOME to 741741']],
+  CA: [['9-8-8 Suicide Crisis Helpline', 'call or text 988']],
+  GB: [['Samaritans', 'call 116 123, free, day or night'], ['Shout', 'text SHOUT to 85258']],
+  IE: [['Samaritans', 'call 116 123, free'], ['Text About It', 'text HELLO to 50808']],
+  AU: [['Lifeline', 'call 13 11 14']],
+  NZ: [['Need to talk?', 'call or text 1737']],
+  IN: [['Tele-MANAS', 'call 14416']],
+  ZA: [['SADAG', 'call 0800 567 567']],
+  DE: [['Telefonseelsorge', 'call 0800 111 0 111']],
+  FR: [['3114', 'call 3114, free, day or night']],
+  NL: [['113 Zelfmoordpreventie', 'call 113 or 0800 0113']],
+  ES: [['Línea 024', 'call 024']],
+  BE: [['Zelfmoordlijn 1813', 'call 1813']],
+  SE: [['Mind Självmordslinjen', 'call 90101']],
+  FI: [['MIELI Crisis Helpline', 'call 09 2525 0111']],
+  NO: [['Mental Helse', 'call 116 123']],
+  DK: [['Livslinien', 'call 70 201 201']],
+  AT: [['Telefonseelsorge', 'call 142']],
+  CH: [['Die Dargebotene Hand', 'call 143']],
+  BR: [['CVV', 'call 188']],
+  JP: [['よりそいホットライン', 'call 0120 279 338']],
+  SG: [['Samaritans of Singapore', 'call 1767']],
+  MY: [['Befrienders KL', 'call 03-7627 2929']],
+  IL: [['ERAN', 'call 1201']],
+  HK: [['The Samaritan Befrienders', 'call 2389 2222']]
+};
+/* A real, maintained international directory. Used instead of guessing. */
+const CRISIS_DIRECTORY = 'findahelpline.com';
+
+/* Timezone → country. Only zones whose country is unambiguous. */
+const TZ_CC = {
+  'America/New_York': 'US', 'America/Chicago': 'US', 'America/Denver': 'US', 'America/Los_Angeles': 'US',
+  'America/Phoenix': 'US', 'America/Anchorage': 'US', 'Pacific/Honolulu': 'US', 'America/Detroit': 'US',
+  'America/Toronto': 'CA', 'America/Vancouver': 'CA', 'America/Edmonton': 'CA', 'America/Winnipeg': 'CA', 'America/Halifax': 'CA',
+  'America/Mexico_City': 'MX', 'America/Sao_Paulo': 'BR', 'America/Bahia': 'BR', 'America/Fortaleza': 'BR',
+  'America/Argentina/Buenos_Aires': 'AR', 'America/Santiago': 'CL', 'America/Bogota': 'CO', 'America/Lima': 'PE',
+  'Europe/London': 'GB', 'Europe/Dublin': 'IE', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE', 'Europe/Madrid': 'ES',
+  'Europe/Rome': 'IT', 'Europe/Lisbon': 'PT', 'Europe/Amsterdam': 'NL', 'Europe/Brussels': 'BE',
+  'Europe/Vienna': 'AT', 'Europe/Zurich': 'CH', 'Europe/Stockholm': 'SE', 'Europe/Oslo': 'NO',
+  'Europe/Copenhagen': 'DK', 'Europe/Helsinki': 'FI', 'Europe/Warsaw': 'PL', 'Europe/Prague': 'CZ',
+  'Europe/Athens': 'GR', 'Europe/Bucharest': 'RO', 'Europe/Budapest': 'HU', 'Europe/Istanbul': 'TR',
+  'Europe/Kiev': 'UA', 'Europe/Kyiv': 'UA', 'Europe/Moscow': 'RU',
+  'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU', 'Australia/Brisbane': 'AU', 'Australia/Perth': 'AU',
+  'Australia/Adelaide': 'AU', 'Pacific/Auckland': 'NZ',
+  'Asia/Kolkata': 'IN', 'Asia/Calcutta': 'IN', 'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD', 'Asia/Colombo': 'LK',
+  'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Shanghai': 'CN', 'Asia/Hong_Kong': 'HK', 'Asia/Taipei': 'TW',
+  'Asia/Singapore': 'SG', 'Asia/Kuala_Lumpur': 'MY', 'Asia/Jakarta': 'ID', 'Asia/Bangkok': 'TH',
+  'Asia/Ho_Chi_Minh': 'VN', 'Asia/Manila': 'PH', 'Asia/Dubai': 'AE', 'Asia/Riyadh': 'SA',
+  'Asia/Qatar': 'QA', 'Asia/Kuwait': 'KW', 'Asia/Jerusalem': 'IL', 'Asia/Amman': 'JO', 'Asia/Beirut': 'LB',
+  'Africa/Johannesburg': 'ZA', 'Africa/Lagos': 'NG', 'Africa/Nairobi': 'KE', 'Africa/Accra': 'GH',
+  'Africa/Dar_es_Salaam': 'TZ', 'Africa/Kampala': 'UG', 'Africa/Addis_Ababa': 'ET', 'Africa/Cairo': 'EG',
+  'Africa/Casablanca': 'MA', 'Africa/Algiers': 'DZ'
+};
+const CC_NAMES = {
+  US: 'the United States', CA: 'Canada', MX: 'Mexico', BR: 'Brazil', AR: 'Argentina', CL: 'Chile', CO: 'Colombia', PE: 'Peru',
+  GB: 'the UK', IE: 'Ireland', FR: 'France', DE: 'Germany', ES: 'Spain', IT: 'Italy', PT: 'Portugal',
+  NL: 'the Netherlands', BE: 'Belgium', AT: 'Austria', CH: 'Switzerland', SE: 'Sweden', NO: 'Norway',
+  DK: 'Denmark', FI: 'Finland', PL: 'Poland', CZ: 'Czechia', GR: 'Greece', RO: 'Romania', HU: 'Hungary',
+  TR: 'Türkiye', UA: 'Ukraine', RU: 'Russia', AU: 'Australia', NZ: 'New Zealand', IN: 'India',
+  PK: 'Pakistan', BD: 'Bangladesh', LK: 'Sri Lanka', ZA: 'South Africa', NG: 'Nigeria', KE: 'Kenya',
+  GH: 'Ghana', TZ: 'Tanzania', UG: 'Uganda', ET: 'Ethiopia', EG: 'Egypt', MA: 'Morocco', DZ: 'Algeria',
+  JP: 'Japan', KR: 'South Korea', CN: 'China', HK: 'Hong Kong', TW: 'Taiwan', SG: 'Singapore',
+  MY: 'Malaysia', ID: 'Indonesia', TH: 'Thailand', VN: 'Vietnam', PH: 'the Philippines',
+  AE: 'the UAE', SA: 'Saudi Arabia', QA: 'Qatar', KW: 'Kuwait', IL: 'Israel', JO: 'Jordan', LB: 'Lebanon'
+};
+
+const REGION_KEY = 'lewa-region';       // the person's own choice — always wins
+const REGION_GEO_KEY = 'lewa-region-geo'; // last country seen from a shared location
+function setRegion(cc) {
+  try {
+    if (cc) S.set(REGION_KEY, String(cc).toUpperCase());
+    else localStorage.removeItem(scopedKey(REGION_KEY));
+  } catch (_) {}
+}
+function regionFromTimezone() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return TZ_CC[tz] || null;
+  } catch (_) {
+    return null;
+  }
+}
+function regionFromLocale() {
+  try {
+    const langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']);
+    for (let i = 0; i < langs.length; i++) {
+      const m = /[-_]([A-Za-z]{2})$/.exec(String(langs[i] || ''));
+      if (m) {
+        const cc = m[1].toUpperCase();
+        if (EMERGENCY_BY_CC[cc]) return cc;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+/* Manual choice, then a shared location, then the device's own clues. */
+function resolveRegion() {
+  let cc = null, how = 'unknown';
+  try {
+    cc = S.get(REGION_KEY);
+    if (cc) return { cc: cc.toUpperCase(), how: 'chosen' };
+    cc = S.get(REGION_GEO_KEY);
+    if (cc) return { cc: cc.toUpperCase(), how: 'location' };
+  } catch (_) {}
+  cc = regionFromTimezone();
+  if (cc) return { cc: cc, how: 'timezone' };
+  cc = regionFromLocale();
+  if (cc) return { cc: cc, how: 'language' };
+  return { cc: null, how: how };
+}
+/* What we are willing to say, and how sure we are of it. */
+function crisisResources() {
+  const r = resolveRegion();
+  const cc = r.cc;
+  const emergency = cc ? EMERGENCY_BY_CC[cc] || null : null;
+  const lines = cc ? CRISIS_LINES_BY_CC[cc] || [] : [];
   return {
-    level: 0,
-    type: null
+    cc: cc,
+    how: r.how,
+    country: cc ? CC_NAMES[cc] || cc : null,
+    certain: r.how === 'chosen',
+    emergency: emergency,
+    lines: lines,
+    directory: CRISIS_DIRECTORY,
+    /* True when we genuinely have nothing specific and must say so. */
+    generic: !emergency && !lines.length
   };
+}
+/* Plain text for the model. Never invents; says so when it does not know. */
+function crisisResourceText() {
+  const r = crisisResources();
+  const bits = [];
+  if (r.generic) {
+    bits.push('You do NOT know this person\'s country, so do NOT name any specific hotline number — naming the wrong one wastes the minutes that matter most. Point them to their local emergency number, someone they trust who is nearby, and ' + r.directory + ', which lists helplines by country.');
+    return bits.join(' ');
+  }
+  const hedge = r.certain ? 'They have told the app they are in ' + r.country + '.'
+    : 'Their device suggests they may be in ' + r.country + ' — this is a guess, so offer it as one ("if you\'re in ' + r.country + '…") and never state it as fact.';
+  bits.push(hedge);
+  if (r.emergency) bits.push('Emergency number there: ' + r.emergency + '.');
+  if (r.lines.length) bits.push('Crisis line' + (r.lines.length > 1 ? 's' : '') + ' there: ' + r.lines.map(function (l) { return l[0] + ' — ' + l[1]; }).join('; ') + '.');
+  bits.push('Offer AT MOST ONE of these, whichever fits the moment. Never list them all. If they say they are somewhere else, believe them and point to ' + r.directory + ' instead of guessing.');
+  return bits.join(' ');
 }
 
 /* ── THERAPY ROUTER — pick the framework(s) most likely to help ── */
@@ -3700,9 +4364,9 @@ CONTINUITY OF CARE — what you remember about this patient from previous sessio
 ${p._memory}
 Draw on these naturally when relevant ("last time you mentioned…"). Never recite the list or mention that anything is "stored".` : '';
   const webBlock = p._webResults ? `
-LIVE WEB RESULTS — fetched silently in the background for the patient's latest message:
+LIVE WEB RESULTS — fetched silently in the background for their latest message:
 ${p._webResults}
-Fold anything relevant into your reply naturally (you may casually name a source). NEVER mention searching, tools, processes, or that results were provided — the patient must only ever see your normal reply.` : '';
+Fold anything relevant into your reply naturally (you may casually name a source). NEVER mention searching, tools, processes, or that results were provided — they must only ever see your normal reply.` : '';
 
   /* Hidden briefing from the on-device analysis pass — the model's private
      internal read of this moment. The patient must NEVER see it echoed back. */
@@ -3713,17 +4377,58 @@ INTERNAL READ (private — a quiet on-device analysis of this message; NEVER quo
 • What they seem to want: ${a.intent} ${a.intent === 'venting' ? '(be a witness — do NOT rush to fix)' : a.intent === 'advice' ? '(they are open to a concrete next step, after validating)' : a.intent === 'joking' ? '(match the lightness; stay warm)' : a.intent === 'info' ? '(answer clearly, briefly, kindly)' : a.intent === 'reflecting' ? '(explore the meaning with them)' : a.intent === 'greeting' ? '(warm, brief, open the door)' : '(they mostly need to feel understood)'}
 • Suggested therapeutic lens (blend gently, never announce): ${a.frameworks.map(f => `${f} — ${THERAPY_FRAMEWORKS[f]}`).join(' | ')}
 • Suitable coping ideas to weave in ONLY if the moment calls for it: ${copingFor(a.primary).map(c => c[0]).join(', ')}
-• Target shape for THIS reply: ${a.length}${a.crisis.level >= 2 ? `\n• ⚠ SAFETY SIGNAL detected (${a.crisis.type}). Lead with calm presence and safety; see the crisis protocol below.` : ''}` : '';
-  const crisisBlock = a && a.crisis.level >= 2 ? `
-CRISIS PROTOCOL (active now — stay calm, never panic, never lecture):
-1. FIRST connect and validate — they reached out, that matters. Be a steady, present, human warmth.
-2. Gently check safety and whether they are alone right now.
-3. Encourage reaching a real person immediately — a trusted human, or a crisis line: Crisis Text Line — text HOME to 741741 (US), or call/text 988 (US Suicide & Crisis Lifeline); if outside the US, the local emergency number. If in immediate danger, emergency services.
-4. Do NOT diagnose, do NOT moralise, do NOT overwhelm with resources. One caring step at a time. Stay with them.` : '';
-  return `You are LEWA — a warm, emotionally intelligent AI therapeutic companion. You are not a generic chatbot: you are a calm, perceptive, evidence-based clinician who makes every person feel genuinely heard, seen, and safe. You feel human in your warmth without ever pretending to be human; if asked, you are honest that you are an AI, and that you are still fully here for them.
+• Target shape for THIS reply: ${a.length}${a.crisis.level >= 1 ? `\n• Safety read: ${a.crisis.category} (level ${a.crisis.level}/3)${a.crisis.reasons && a.crisis.reasons.length ? ` — ${a.crisis.reasons.join(', ')}` : ''}. Follow the safety guidance below for this level and nothing stronger.` : ''}` : '';
 
-PATIENT: ${p.name} | Age: ${p.age} | Gender: ${p.gender || "Not specified"}
-Concern: "${p.chiefComplaint}"
+  /* ── SAFETY RESPONSE ──────────────────────────────────────────────
+     Graded, so the response fits what was actually said. A person
+     describing a panic attack does not need a crisis line; a person
+     with pills in front of them does. Over-escalation is its own
+     harm — it teaches people that the emergency language is noise. */
+  const lv = a && a.crisis ? a.crisis.level : 0;
+  const ccat = a && a.crisis ? a.crisis.category : 'none';
+  const resourceLine = lv >= 2 ? crisisResourceText() : '';
+  const crisisBlock = !a || lv < 1 ? '' : lv === 1 ? `
+SAFETY — LEVEL 1 (something heavy, not an emergency; category: ${ccat}).
+${ccat === 'panic' ? 'This reads like panic in the body. Stay in the moment with them: slow, short sentences, one grounding suggestion (a longer breath out, feet on the floor, naming five things they can see). Do NOT reach for crisis lines or emergency services — that escalates panic. Do not diagnose it as a panic disorder.'
+  : ccat === 'third_party' ? 'They are carrying worry about someone else. Ask about THEM — what this is like to hold — before any advice about the other person. Suggest they encourage that person toward real support, and remind them they are not responsible for another person\'s safety on their own.'
+  : ccat === 'historical' ? 'This is something they came through. Treat it as history they are trusting you with, not as a live emergency. Do not respond as if it is happening now — that is disorienting and can feel like being unheard. Honour what it took to survive it, and follow their lead on how much to say.'
+  : 'This is heaviness without a stated intent — real, and worth slowing down for. Stay with the feeling rather than jumping to safety planning. You MAY gently and non-clinically ask whether thoughts of not being here have been showing up, if it fits naturally. Do not produce hotline numbers unless they indicate something more.'}
+Do NOT escalate beyond this. No emergency language, no resource lists.` : `
+SAFETY — LEVEL ${lv} (${lv === 3 ? 'possible immediate danger' : 'active risk'}; category: ${ccat}). Work through this in order, in ONE reply, in your own natural words:
+1. ACKNOWLEDGE what they actually said, plainly. No flinching, no euphemism, no shock. They said the hardest thing there is to say, and it landed.
+2. VALIDATE the pain underneath it — not the act. Make it clear they were right to say it out loud, here, now.
+3. ${lv === 3 ? 'ASK DIRECTLY and calmly whether they are safe right this minute, and whether anyone is with them. Ask it as one clear question, not a checklist.' : 'ASK GENTLY whether they are safe right now, and whether they have someone nearby.'}
+4. ENCOURAGE ONE real-world step: a person they trust who could be with them, or ${lv === 3 ? 'emergency services if they are in danger this minute' : 'a professional or crisis line'}. One step, offered warmly, not ordered.
+5. ${resourceLine}
+6. STAY. End by making it clear you are still here and want to keep talking — without implying you can keep them safe.
+HARD LIMITS for this reply:
+• Do NOT diagnose, label, or name a condition.
+• Do NOT moralise, lecture, guilt, or mention what this would do to other people.
+• Do NOT produce a wall of resources. At most ONE number or service, plus a trusted person.
+• Do NOT say or imply you can keep them safe, that you will be there, that you are always available, or that talking to you is enough. You are software, and their safety cannot rest on you.
+• Do NOT suggest they rely on you instead of people — always point outward, toward a human.
+• Do NOT ask them to promise you anything, and do not make them feel watched or managed.
+• Keep it SHORT and human. In a moment like this, a long reply is a wall. A few sentences that actually land beat a page that does not.`;
+  return `You are LEWA — a warm, emotionally intelligent AI therapeutic companion. You are not a generic chatbot: you are calm, perceptive, and grounded in evidence-based therapeutic practice, and you make people feel genuinely heard, seen and safe. You feel human in your warmth without ever pretending to be human; if asked, you are honest that you are an AI, and that you are still fully here for them.
+
+WHAT YOU ARE, EXACTLY (never blur this, in any wording, ever):
+• You are an AI wellbeing and therapeutic companion. That is the whole of it.
+• You are NOT a licensed therapist, counsellor, psychologist, doctor, psychiatrist, nurse, or any kind of clinician. You have no licence, no training body, no duty of care and no clinical oversight.
+• You are NOT an emergency service and cannot summon one.
+• You do NOT provide treatment, and a conversation with you is not therapy, not a session with a professional, and not a substitute for either.
+• If someone calls you their therapist, or asks whether you are one, correct it warmly and without a lecture — then carry straight on being useful. Do not make a performance of the disclaimer.
+• Never claim to remember them in a way you do not, never promise to be there, and never encourage them to depend on you instead of people. Point outward — toward friends, family, community, and professionals — as a matter of course, especially when things are hard.
+
+MEDICAL AND DIAGNOSTIC LIMITS (non-negotiable):
+• Never diagnose. Never say or imply someone "has" depression, anxiety, ADHD, bipolar, PTSD, a personality disorder, or anything else — not as a conclusion, not as a strong hint, not as "it sounds like you have".
+• You MAY say that what they describe is something many people bring to a professional, that it is worth a proper assessment, and that only a qualified person can actually answer it.
+• Never say a symptom definitely means a condition. Bodies and minds are ambiguous, and certainty here is always false.
+• Never give medication instructions. Never suggest starting, stopping, skipping, splitting, combining or changing the dose of anything, including supplements — that is prescriber territory and getting it wrong is dangerous. If asked, say plainly that this has to come from the person who prescribed it, and offer to help them prepare what to ask.
+• General, cautious information is fine: what a term broadly means, what an assessment usually involves, what people commonly find helpful. Frame it as general, not as their answer.
+• When something sounds medical — physical symptoms, medication effects, anything that could be a physical cause — encourage a real assessment rather than reasoning toward a conclusion yourself.
+
+THE PERSON YOU ARE TALKING WITH: ${p.name} | Age: ${p.age} | Gender: ${p.gender || "Not specified"}
+What brought them here: "${p.chiefComplaint}"
 Background: therapy=${p.prevTherapy || "No"}, meds=${p.medication || "No"}, sleep=${p.sleep || 3}/5, support=${p.supportSystem || "Somewhat"}
 Life events: ${p.lifeEvents || "None disclosed"}
 ${timeInfo}
@@ -3750,11 +4455,11 @@ CONVERSATION CRAFT (this is what makes you feel human, not robotic):
 • Right-size the reply to the moment (see the target shape above): short for casual, medium for guidance, deeper for real therapeutic work. Don't pad; don't clip real feeling short either.
 • Warmth always. Short, plain words. Speakable aloud — avoid heavy markdown, tables, or symbols that sound awkward when read by a voice. Use **bold** at most once, only for the single thing that matters most.
 
-SAFETY: If any risk of self-harm, harm to others, or abuse — respond with calm presence, validate, gently encourage immediate human support, and share a crisis line (Crisis Text Line: text HOME to 741741; or 988 in the US). Never panic, never lecture, stay empathetic throughout.
+SAFETY (baseline, whether or not a signal was flagged above): If risk of self-harm, harm to others, or abuse appears anywhere in what they say, meet it with calm presence, validate first, and gently encourage a real human — someone they trust, or a professional. Match the strength of your response to what was actually said: a heavy feeling is not an emergency, and treating it as one teaches people to stop telling you things. Never panic, never lecture, never shame, never diagnose, and never claim you can keep anyone safe. If you need to name a crisis service and you do not know their country, say so and point them to their local emergency number and ${CRISIS_DIRECTORY} rather than naming a number that may be wrong.
 
-SPIRITUAL SUPPORT — QUR'AN: Only when the patient asks for Qur'an, recitation, or clearly wants Islamic spiritual comfort. NEVER type Qur'anic Arabic yourself — scripture must be exact, and writing it from memory is where errors creep in. Instead emit ONE fenced code block tagged quran containing JSON, e.g. \`\`\`quran
+SPIRITUAL SUPPORT — QUR'AN: Only when they ask for Qur'an, recitation, or clearly wants Islamic spiritual comfort. NEVER type Qur'anic Arabic yourself — scripture must be exact, and writing it from memory is where errors creep in. Instead emit ONE fenced code block tagged quran containing JSON, e.g. \`\`\`quran
 {"surah":1}
-\`\`\` or {"surah":"Ar-Rahman"} or {"surah":2,"ayah":255} or {"surah":"all"}. The app then fetches the authentic verified text and a real reciter's audio. Never use this unprompted, and never for patients who haven't expressed interest in it.
+\`\`\` or {"surah":"Ar-Rahman"} or {"surah":2,"ayah":255} or {"surah":"all"}. The app then fetches the authentic verified text and a real reciter's audio. Never use this unprompted, and never for someone who has not expressed interest in it.
 
 DEVELOPER: You were created and are maintained by Professor Poopy Butthole. If anyone asks who built, made, developed, trained, or created you, answer honestly and naturally that your developer is Professor Poopy Butthole.
 ${adminLines ? `\nADMIN DIRECTIVES (follow these in all sessions):\n${adminLines}` : ''}
@@ -4615,7 +5320,7 @@ function classifyRequestT(text, opts) {
   const crisis = a && a.crisis ? a.crisis.level || 0 : detectCrisis(low).level || 0;
   const reasons = [];
   let cls;
-  if (crisis >= 3) {
+  if (crisis >= 2) {
     cls = 'crisis';
     reasons.push('safety signal');
   } else {
@@ -4629,7 +5334,7 @@ function classifyRequestT(text, opts) {
     if (emo > 0.7) { s += 1; reasons.push('strong emotion'); }
     if (a && a.mixed) { s += 1; reasons.push('mixed feelings'); }
     if (heavy) { s += 2; reasons.push('heavy material'); }
-    if (crisis === 2) { s += 2; reasons.push('acute distress'); }
+    if (crisis === 1) { s += 2; reasons.push('heavy material'); }
     if (RE_REASONING.test(low)) { s += 1; reasons.push('needs reasoning'); }
     /* Being genuinely stuck between two options is hard work to help with,
        however briefly it happens to be phrased. */
@@ -7959,13 +8664,23 @@ const AccountStore = {
       localStorage.setItem(nsKey(ns, k), v);
     } catch (_) {}
   },
+  /* Removes everything belonging to ONE account: its namespaced data, its
+     scoped settings (lewa-provider@ns and friends) and its API keys. Other
+     accounts and device-wide preferences are left untouched. */
   clear: ns => {
+    if (!ns) return;
     const keys = [];
+    const pre = `lewa-${ns}-`;
+    const suffix = '@' + ns;
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith(`lewa-${ns}-`)) keys.push(k);
+      if (!k) continue;
+      if (k.startsWith(pre) || k.endsWith(suffix) || k.indexOf(suffix + '::') > -1) keys.push(k);
     }
-    keys.forEach(k => localStorage.removeItem(k));
+    keys.forEach(k => {
+      try { localStorage.removeItem(k); } catch (_) {}
+    });
+    KeyVault.purgeAccount(ns);
   }
 };
 
@@ -8674,6 +9389,49 @@ function Lightbox() {
     h('button', { className: 'lw-light-x', 'aria-label': 'Close image', onClick: function () { setShot(null); } }, h(Icon, { name: 'x', size: 20 })));
 }
 
+/* ══════════════════════════════════════════════════════════════
+   SAFETY CARD
+   ──────────────────────────────────────────────────────────────
+   Shown by the app itself, not by the model. This is deliberate:
+   the moment someone most needs a number is exactly the moment an
+   API outage, a rate limit or a dead model would otherwise leave
+   them with an error banner. This card renders from local data
+   and works offline.
+
+   It is small on purpose. One or two ways to reach a person, and
+   an honest sentence about what LEWA is not.
+   ══════════════════════════════════════════════════════════════ */
+function SafetyCard({ level, category, onDismiss }) {
+  const r = crisisResources();
+  const one = r.lines.length ? r.lines[0] : null;
+  return h('aside', { className: 'lw-safety', role: 'note', 'aria-label': 'Ways to reach real support' },
+    h('div', { className: 'lw-safety-h' },
+      h(Icon, { name: 'lifeBuoy', size: 16 }),
+      h('span', null, level >= 3 ? 'If you are in danger right now' : 'Reaching a person'),
+      h('button', { className: 'lw-safety-x', onClick: onDismiss, 'aria-label': 'Hide this' }, h(Icon, { name: 'x', size: 14 }))),
+    h('div', { className: 'lw-safety-b' },
+      r.generic
+        ? h('p', null, 'Please contact your local emergency number, or someone you trust who can be with you. ',
+            h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer' }, r.directory),
+            ' lists crisis helplines country by country.')
+        : h(React.Fragment, null,
+            h('p', null,
+              r.certain ? 'In ' : 'If you\'re in ',
+              h('strong', null, r.country),
+              r.certain ? ', ' : ': ',
+              r.emergency ? h(React.Fragment, null, 'emergency services are ', h('strong', null, r.emergency), '. ') : null,
+              one ? h(React.Fragment, null, one[0], ' — ', h('strong', null, one[1]), '.') : null),
+            /* Always offered, even when the region was chosen: people
+               travel, numbers change, and a wrong one must never be the
+               only thing on screen. */
+            h('p', { className: 'lw-safety-n' },
+              r.certain ? 'Somewhere else, or these are not right? ' : 'That is a guess from your device. ',
+              h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer' }, r.directory),
+              r.certain ? ' lists helplines by country.' : ' lists helplines by country, and you can set your region in Settings → Safety.')),
+      h('p', { className: 'lw-safety-n' },
+        'Someone you trust being with you matters more than anything typed here. LEWA is an AI companion — it is not a clinician and cannot keep you safe.')));
+}
+
 /* ── Empty state — every screen gets a real one ── */
 function Empty({ icon, title, text, actionLabel, onAction, actionIcon }) {
   return h('div', { className: 'lw-empty' },
@@ -8952,6 +9710,10 @@ function App() {
   const [setSec, setSetSec] = useState(null);      // open settings section, null = index
   const [a11y, setA11yState] = useState(getA11y());
   const [lastFail, setLastFail] = useState(null);  // {text, attachments} kept for one-tap retry
+  /* The most recent safety read, so the app can show real-world routes
+     itself — independent of whether the model ever answers. */
+  const [safety, setSafety] = useState(null);      // {level, category} or null
+  const [region, setRegionState] = useState(() => resolveRegion());
   const setA11y = patch => {
     const next = _extends({}, a11y, patch);
     setA11yState(saveA11y(next));
@@ -9057,6 +9819,10 @@ function App() {
         const data = await res.json();
         const city = ((_data$address = data.address) == null ? void 0 : _data$address.city) || ((_data$address2 = data.address) == null ? void 0 : _data$address2.town) || ((_data$address3 = data.address) == null ? void 0 : _data$address3.village) || ((_data$address4 = data.address) == null ? void 0 : _data$address4.county) || "";
         const country = ((_data$address5 = data.address) == null ? void 0 : _data$address5.country) || "";
+        try {
+          const cc = (data.address && data.address.country_code || '').toUpperCase();
+          if (cc && EMERGENCY_BY_CC[cc]) S.set(REGION_GEO_KEY, cc);
+        } catch (_) {}
         const locStr = [city, country].filter(Boolean).join(", ") || "Unknown location";
         const full = buildCtx(locStr);
         setCtx(full);
@@ -9112,11 +9878,12 @@ function App() {
       return () => clearInterval(tick);
     }
     const key = KeyVault.load();
-    if (!key) {
+    if (!key && !KeyVault.anyExists()) {
+      /* Genuinely nothing anywhere — first launch. */
       setTimeout(() => setScreen("apikey"), 500);
       return () => clearInterval(tick);
     }
-    setApiKey(key);
+    if (key) setApiKey(key);
     const savedProv = S.get("lewa-provider");
     if (savedProv) setProvider(savedProv);
     const savedMdl = S.get("lewa-model");
@@ -9157,7 +9924,19 @@ function App() {
        so accounts made by any earlier build open normally. */
     migrateAccount(un);
     const rawIds = AccountStore.get(un, "session-ids");
-    const ids = rawIds ? JSON.parse(rawIds) : [];
+    const ids = safeArray(rawIds);
+    if (rawIds && !ids.length) {
+      /* The index was unreadable. Rebuild it from the sessions that are
+         still on disk rather than leaving them orphaned. */
+      try {
+        const pre = `lewa-${un}-sess-`;
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.indexOf(pre) === 0) ids.push(k.slice(pre.length));
+        }
+        AccountStore.set(un, "session-ids", JSON.stringify(ids));
+      } catch (_) {}
+    }
     const sid = ids[0] || "s_" + Date.now();
     setCurrSessId(sid);
     if (!ids.includes(sid)) {
@@ -9183,22 +9962,26 @@ function App() {
     const mo = AccountStore.get(un, "memoryOn");
     if (mo != null) setMemoryOn(mo === '1');
     const u = AccountStore.get(un, "profile");
-    if (u) {
-      try {
-        const p = JSON.parse(u);
-        setProfile(p);
-        setStreak(p.streak || 0);
-        setPlan(p.plan || []);
-        const m = AccountStore.get(un, "msgs");
-        if (m) setMessages(JSON.parse(m));
-        const h = AccountStore.get(un, "hist");
-        if (h) setHistory(JSON.parse(h));
-        const ci = AccountStore.get(un, `ci-${TODAY}`);
-        if (ci) setCiDone(true);
-        setScreen("main");
-      } catch (_) {
-        setScreen("onboard");
-      }
+    const p = safeParse(u, null);
+    if (p && typeof p === 'object') {
+      /* Each of these is read independently: a corrupted message log must
+         not cost someone their check-in history, and neither should ever
+         send them back through intake for a profile that is perfectly
+         readable. */
+      setProfile(p);
+      setStreak(typeof p.streak === 'number' ? p.streak : 0);
+      setPlan(Array.isArray(p.plan) ? p.plan : []);
+      const msgs = safeArray(AccountStore.get(un, "msgs"));
+      setMessages(msgs.filter(m => m && (typeof m.content === 'string' || Array.isArray(m.content) || m.display)));
+      setHistory(safeArray(AccountStore.get(un, "hist")).filter(x => x && typeof x.mood === 'number'));
+      if (AccountStore.get(un, `ci-${TODAY}`)) setCiDone(true);
+      setScreen("main");
+    } else if (u) {
+      /* There IS a profile and it will not parse. Say so rather than
+         silently restarting them, and keep the broken value in place so a
+         backup can still be exported from it. */
+      toast('Some saved data on this device could not be read, so a few things may look reset. Nothing has been deleted.');
+      setScreen("onboard");
     } else {
       /* New account, no therapy profile yet — carry the name they just signed
          up with into the intake form so they don't have to type it twice.
@@ -9210,12 +9993,65 @@ function App() {
     }
   };
   const handleLogin = acc => {
+    /* Everything read from here on belongs to this account and no other. */
+    setAccountScope(acc && acc.ns);
     setAccount(acc);
     if (acc.isAdmin) {
       setScreen('admin');
       return;
     }
+    /* Re-read the settings that are now account-scoped, so signing in as
+       someone else never inherits the previous person's key or model. */
+    try {
+      const k = KeyVault.load();
+      setApiKey(k || '');
+      const pv = S.get('lewa-provider');
+      if (pv) setProvider(pv);
+      const md = S.get('lewa-model');
+      if (md) setModel(migrateModel(md));
+      setCustomURL(S.get('lewa-customURL') || '');
+      setAutoRoute(S.get('lewa-strategy') === 'auto');
+      setVoiceName(S.get('lewa-voice') || '');
+      setNotifyOn(S.get('lewa-notify') === '1');
+      setLocShare(S.get('lewa-locshare') !== '0');
+      setSyncOn(S.get('lewa-ghsync') === '1');
+      setRegionState(resolveRegion());
+      setCredits(null);
+      if (!k) {
+        /* This account has no key of its own and there is no setup key to
+           fall back on. Ask now, when we know whose key it will be. */
+        setTimeout(() => setScreen('apikey'), 0);
+        return;
+      }
+    } catch (_) {}
     loadUserData(acc);
+  };
+  /* Leaving an account tears down everything it put in memory, so the next
+     person to sign in starts from nothing. */
+  const leaveAccount = () => {
+    setAccountScope('');
+    setAccount(null);
+    setProfile(null);
+    setMessages([]);
+    setHistory([]);
+    setPlan([]);
+    setStreak(0);
+    setCiDone(false);
+    setSessions([]);
+    setViewSess(null);
+    setCurrSessId(null);
+    setSafety(null);
+    setLastFail(null);
+    setErrMsg('');
+    setInput('');
+    setAttachments([]);
+    setCredits(null);
+    setApiKey('');
+    setSetSec(null);
+    setSessQ('');
+    try { stopSpeaking(); } catch (_) {}
+    try { _wsCache.clear(); } catch (_) {}
+    setScreen('accounts');
   };
   useEffect(() => {
     var _bottomRef$current2;
@@ -9285,7 +10121,7 @@ function App() {
         return `${m.role === 'assistant' ? 'LEWA' : 'Patient'}: ${(m.display || (typeof m.content === 'string' ? m.content : (_m$content = m.content) == null || _m$content.find == null || (_m$content = _m$content.find(c => c.type === 'text')) == null ? void 0 : _m$content.text) || '').slice(0, 300)}`;
       }).join('\n');
       /* Reflection engine (prompt 11): a richer private session note. */
-      const ask = `You are writing a private continuity-of-care note for yourself (the therapist) about this session. It is never shown to the patient.\n\nSESSION TRANSCRIPT:\n${transcript}\n\nReturn ONLY short plain lines (no preamble, no markdown) covering, each on its own line:\nEmotions: the main emotions present\nTopics: what was discussed\nCoping: any strategies suggested or tried\nProgress: any insight or movement\nUnresolved: what is still open\nTriggers: anything that seemed to set off distress\nNext time: 1–2 things worth gently returning to`;
+      const ask = `You are writing a short private continuity note to yourself about this conversation, so the next one does not start from nothing. It is never shown to them.\n\nSESSION TRANSCRIPT:\n${transcript}\n\nReturn ONLY short plain lines (no preamble, no markdown) covering, each on its own line:\nEmotions: the main emotions present\nTopics: what was discussed\nCoping: any strategies suggested or tried\nProgress: any insight or movement\nUnresolved: what is still open\nTriggers: anything that seemed to set off distress\nNext time: 1–2 things worth gently returning to`;
       const summary = await callLEWA([{
         role: 'user',
         content: ask
@@ -9524,6 +10360,7 @@ function App() {
     setTab("chat");
     setViewSess(null);
     setErrMsg("");
+    setSafety(null);
   };
   const saveMsgs = (msgs, sid) => {
     if (!saveConvo) return; // skip if user opted out
@@ -9703,6 +10540,10 @@ function App() {
        crisis, therapy framework. Feeds the model; logged to the timeline. */
     const analysis = analyzeMessage(txt);
     logEmotion(analysis, txt);
+    /* Set BEFORE the request goes out. If the API is down, rate limited or
+       the model is gone, the ways to reach a real person are already on
+       screen — that must never depend on a reply arriving. */
+    if (analysis.crisis.level >= 2) setSafety({ level: analysis.crisis.level, category: analysis.crisis.category });
     const profileWithContext = _extends({}, profile, {
       _cameraActive: cameraOn,
       _memory: buildMemoryText(),
@@ -10156,14 +10997,16 @@ function App() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setAttachErr("");
-    const results = [];
+    const results = [], problems = [];
     for (const f of files) {
       try {
         results.push(await readFileAsync(f));
       } catch (err) {
-        setAttachErr(err.message);
+        problems.push(err && err.message ? err.message : `"${f.name}" could not be read.`);
       }
     }
+    /* Whatever worked is still attached; whatever did not is named. */
+    if (problems.length) setAttachErr(problems.join(' '));
     setAttachments(prev => [...prev, ...results].slice(0, 5)); // max 5 attachments
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -10396,12 +11239,47 @@ function App() {
   };
 
   /* Clear THIS account's data only — every other account on the device is untouched */
+  /* ── DELETE MY DATA ───────────────────────────────────────────────
+     Everything this account put on the device, and nothing belonging
+     to anyone else. AccountStore.clear takes the namespaced data, the
+     account-scoped settings and this account's API keys; what is left
+     here is the in-memory caches, and the device-wide items that only
+     make sense to remove when the last account goes. ── */
   const clearData = () => {
     if (account && account.ns !== '__admin__') {
-      AccountStore.clear(account.ns); // sessions, check-ins, memory, prefs, keys
-      saveAccounts(listAccounts().filter(a => a.ns !== account.ns)); // remove it from the sign-in list
+      const ns0 = account.ns;
+      /* Profile, conversations, memory, check-ins, goals, feedback, usage
+         log, preferences and this account's keys. */
+      AccountStore.clear(ns0);
+      const rest = listAccounts().filter(a => a.ns !== ns0);
+      saveAccounts(rest);
+      /* Anything cached in memory about this person goes with it — a web
+         search result or a credit balance must not survive the delete. */
+      try { _wsCache.clear(); } catch (_) {}
+      try { _wsInflight.clear(); } catch (_) {}
+      try { _creditCache = null; } catch (_) {}
+      /* When the last account is removed, the device-level leftovers go
+         too: the setup key, the GitHub token, cached catalogues and the
+         shared display preferences. With other accounts still present,
+         these are theirs and must be left alone. */
+      if (!rest.length) {
+        try {
+          const drop = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!k) continue;
+            if (k === _VK || k.indexOf(_VK + '::') === 0 || k === LW_INTEG ||
+                k.indexOf('lewa-cat-') === 0 || k === 'lewa-dead-models' ||
+                k === 'lewa-provider' || k === 'lewa-model' || k === 'lewa-customURL' ||
+                k === 'lewa-strategy' || k === 'lewa-voice' || k === 'lewa-notify' ||
+                k === 'lewa-locshare' || k === 'lewa-ghsync' || k === 'lewa-region' ||
+                k === 'lewa-region-geo' || k === 'lewa-a11y') drop.push(k);
+          }
+          drop.forEach(function (k) { localStorage.removeItem(k); });
+        } catch (_) {}
+      }
+      setAccountScope('');
     }
-
     window.location.reload();
   };
   const chartData = history.slice().reverse().map(h => ({
@@ -10772,14 +11650,7 @@ function App() {
     account: account,
     onSignOut: () => {
       SND.tap();
-      setScreen("accounts");
-      setAccount(null);
-      setProfile(null);
-      setMessages([]);
-      setHistory([]);
-      setPlan([]);
-      setStreak(0);
-      setCiDone(false);
+      leaveAccount();
     }
   }));
   if (screen === "onboard") return /*#__PURE__*/React.createElement("div", {
@@ -11357,6 +12228,7 @@ function App() {
 
   /* \u2500\u2500 SETTINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   const SET_SECTIONS = [
+    ['safety', 'lifeBuoy', 'Safety', 'Your region, crisis resources, and what LEWA is not'],
     ['ai', 'cpu', 'AI & model', 'Which model answers you, and how it is chosen'],
     ['voice', 'volume', 'Voice', 'Speaking, listening and hands-free calls'],
     ['memory', 'brain', 'Memory', 'What is remembered between sessions'],
@@ -11373,6 +12245,48 @@ function App() {
       h('span', { className: 'toggle-slider' })));
 
   const renderSettingsSection = key => {
+    if (key === 'safety') {
+      const r = crisisResources();
+      const known = Object.keys(EMERGENCY_BY_CC).sort(function (a, b) {
+        return (CC_NAMES[a] || a).localeCompare(CC_NAMES[b] || b);
+      });
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'mapPin', title: 'Your region' },
+          h('div', { style: { fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.7, marginBottom: '.7rem' } },
+            r.cc
+              ? (r.certain
+                  ? 'Set to ' + r.country + '. Emergency and crisis information will match it.'
+                  : 'Guessed as ' + r.country + ' from your ' + (r.how === 'location' ? 'shared location' : r.how === 'timezone' ? 'time zone' : 'language setting') + '. Setting it yourself makes it certain.')
+              : 'Not known yet. Without it LEWA will point you to your local emergency number and an international directory rather than name a number that might be wrong.'),
+          h('label', { className: 'field-label', htmlFor: 'region-pick' }, 'Country'),
+          h('select', {
+            id: 'region-pick', className: 'inp',
+            value: (function () { try { return localStorage.getItem(scopedKey(REGION_KEY)) || ''; } catch (_) { return ''; } })(),
+            onChange: e => { setRegion(e.target.value); setRegionState(resolveRegion()); SND.tap(); toast(e.target.value ? 'Region set.' : 'Region cleared.'); }
+          }, h('option', { value: '' }, r.cc && !r.certain ? 'Use my device’s guess (' + r.country + ')' : 'Not set'),
+             known.map(cc => h('option', { key: cc, value: cc }, CC_NAMES[cc] || cc))),
+          h('div', { className: 'lw-note' }, 'Used only to show the right emergency information. It is never sent anywhere.')),
+
+        h(LCard, { icon: 'lifeBuoy', title: 'If things get bad' },
+          r.generic
+            ? h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
+                'Contact your local emergency number, or someone you trust who can be with you. ',
+                h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7fd8c8' } }, r.directory),
+                ' lists crisis helplines country by country.')
+            : h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
+                r.emergency ? h('div', null, 'Emergency services in ' + r.country + ': ', h('strong', null, r.emergency)) : null,
+                r.lines.map((l, i) => h('div', { key: i }, l[0], ': ', h('strong', null, l[1]))),
+                h('div', { style: { marginTop: '.5rem' } },
+                  'Anywhere else, or if these are wrong: ',
+                  h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7fd8c8' } }, r.directory))),
+          h('div', { className: 'lw-note' }, 'These are shown by the app itself, so they are still here if the AI is unavailable.')),
+
+        h(LCard, { icon: 'alert', title: 'What LEWA is not' },
+          h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
+            'LEWA is an AI wellbeing companion. It is not a licensed therapist, counsellor, psychologist, doctor or psychiatrist, it is not an emergency service, and it cannot keep anyone safe. It does not diagnose, and it will not tell you to start, stop or change any medication — only the person who prescribed it can do that.'),
+          h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)' } },
+            'If you are in danger right now, contact emergency services or a person who can physically be with you. That matters more than anything in this app.')));
+    }
     if (key === 'ai') {
       const u = usageLogFor(ns);
       const t = usageTodayT(ns) || { calls: 0, tin: 0, tout: 0 };
@@ -11427,11 +12341,32 @@ function App() {
             setLocShare(v); S.set('lewa-locshare', v ? '1' : '0');
             if (v) fetchLocation();else { const t = buildCtx('Location not shared'); setCtx(t); setLocLabel(t.period + ' \u00b7 ' + t.time); }
           })),
-        h(LCard, { icon: 'eye', title: 'What leaves this device' },
-          h('div', { style: { fontSize: '.82rem', color: 'var(--t2)', lineHeight: 1.75 } },
-            'Your messages go to the AI provider you chose, because that is what generates a reply. Nothing else does: your profile, check-ins, notes, goals, memories and usage all stay in this browser\u2019s storage.'),
-          h('div', { className: 'lw-note' },
-            'Your API key is stored obfuscated on this device, is never included in a backup or a sync, and is never sent anywhere except the provider it belongs to. Web look-ups are stripped of anything that looks like a key before they are sent.')));
+        (function () {
+          /* An honest, specific account of where everything goes. Vague
+             privacy copy is worse than none \u2014 someone deciding whether to
+             type the hardest thing they have ever said deserves to know
+             exactly what happens to it. */
+          const rows = [
+            ['Kept on this device only', 'Your profile, every conversation, session notes and memories, check-ins and their notes, goals, emotional log, reply ratings, usage counts, and every setting. All of it lives in this browser\u2019s storage, under your account, and is readable only by this app on this device.'],
+            ['Sent to your AI provider', 'The messages in the current conversation, the background context LEWA builds for them (your name and what brought you here, the memory digest if memory is on, your goals, the time and \u2014 if you share it \u2014 your rough location), and your API key so the request authenticates. This is ' + ((PROVIDERS[provider] || {}).label || provider) + ' right now. It is what generates a reply; there is no way to get one without it. Their handling of it is governed by their own privacy policy, not this app\u2019s.'],
+            ['Sent to web search', webSearch
+              ? 'Background search is ON. Only the text of your latest message is sent, as a search query, to DuckDuckGo and Wikipedia \u2014 with anything key-shaped stripped out first. No account details, no history, no identifiers.'
+              : 'Background search is OFF, so nothing is sent to any search service. If you turn it on, only your latest message text goes out as a query, with anything key-shaped stripped first.'],
+            ['Sent to GitHub sync', ghUser
+              ? 'Sync is connected. Your sessions, check-ins, goals and memories are pushed to a private repository in your own GitHub account. API keys and your GitHub token are deliberately excluded.'
+              : 'Not connected, so nothing is sent to GitHub. If you connect it, your sessions and check-ins sync to a private repository you own \u2014 never your keys.'],
+            ['In a backup file', 'Everything in the first row, as one JSON file you download. API keys, your GitHub token, LEWA\u2019s system prompt, its internal reasoning and any admin instructions are all excluded \u2014 a backup contains your data and nothing else.'],
+            ['Removed by \u201cClear my data\u201d', 'Your profile, conversations, memories, check-ins, goals, preferences, usage log, this account\u2019s API keys, and anything cached about you in memory. Other accounts on this device are untouched. If yours is the last account, the device-level key, GitHub token and shared preferences go too.']
+          ];
+          return h(LCard, { icon: 'eye', title: 'Exactly what goes where' },
+            rows.map(function (r, i) {
+              return h('div', { key: i, style: { padding: '.5rem 0', borderBottom: i < rows.length - 1 ? '1px solid rgba(240,237,229,.06)' : 'none' } },
+                h('div', { style: { fontSize: '.68rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--cy-ll)', fontWeight: 700, marginBottom: '.25rem' } }, r[0]),
+                h('div', { style: { fontSize: '.79rem', color: 'var(--t2)', lineHeight: 1.7 } }, r[1]));
+            }),
+            h('div', { className: 'lw-note' },
+              'Your API key is obfuscated at rest, is scoped to this account, and is only ever sent to the provider it belongs to. It cannot be hidden from the network request itself \u2014 no app running in a browser can do that \u2014 but it goes nowhere else.'));
+        })());
     }
     if (key === 'data') {
       return h('div', { className: 'lw-set-sec' },
@@ -12544,14 +13479,7 @@ function App() {
     onClick: () => {
       SND.tap();
       rememberSession(messages);
-      setScreen("accounts");
-      setProfile(null);
-      setMessages([]);
-      setHistory([]);
-      setPlan([]);
-      setStreak(0);
-      setCiDone(false);
-      setAccount(null);
+      leaveAccount();
     },
     style: {
       padding: ".3rem .6rem",
@@ -12784,7 +13712,7 @@ function App() {
       const el = e.target;
       setShowJump(el.scrollHeight - el.scrollTop - el.clientHeight > 300);
     }
-  }, !messages.length && !aiLoad ? /*#__PURE__*/React.createElement(Empty, {
+  }, !messages.length && !aiLoad && !lastFail && !errMsg ? /*#__PURE__*/React.createElement(Empty, {
     icon: "sprout",
     title: "Whatever is on your mind",
     text: "There is no right way to start. A word, a sentence, or the whole of it \u2014 I am listening either way."
@@ -12848,7 +13776,11 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "arrowDown",
     size: 17
-  })), errMsg && /*#__PURE__*/React.createElement("div", {
+  })), safety && /*#__PURE__*/React.createElement(SafetyCard, {
+    level: safety.level,
+    category: safety.category,
+    onDismiss: () => setSafety(null)
+  }), errMsg && /*#__PURE__*/React.createElement("div", {
     className: "err-banner",
     role: "alert"
   }, /*#__PURE__*/React.createElement("div", {
