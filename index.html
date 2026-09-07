@@ -1550,7 +1550,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.2';
+var APP_VERSION = '1.3';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -3278,7 +3278,13 @@ function speakText(text, onEnd, genderPref, voiceName) {
     };
     u.onend = adv;
     u.onerror = adv;
-    window.speechSynthesis.speak(u);
+    try {
+      window.speechSynthesis.speak(u);
+    } catch (_) {
+      /* Some engines throw outright. Move on rather than leaving the
+         reply stuck showing as "speaking" with no way to clear it. */
+      adv();
+    }
   };
   next(0);
 }
@@ -5018,7 +5024,12 @@ function orEquivalentT(provider, model) {
       model → route through OpenRouter, silently.
    3. A custom endpoint → use it as given.
    4. Nothing usable → say exactly what is missing, in plain words. ── */
-function resolveRouteT(provider, model, passedKey) {
+/* `strict` means "use exactly the key I handed you". Verification depends
+   on it: without it a stored key wins over the one being tested, so a
+   person pasting a fresh key would keep re-verifying the old broken one
+   and be told, over and over, that their good key is invalid. */
+function resolveRouteT(provider, model, passedKey, strict) {
+  if (strict && passedKey) return { provider: provider, model: model, key: passedKey };
   if (provider === 'custom') {
     const ck = passedKey || KeyVault.loadFor('custom');
     if (!ck) throw new Error('Your custom endpoint has no key saved. Open Settings → API and add the key your endpoint expects.');
@@ -5874,7 +5885,7 @@ async function streamAnthropicT(msgs, profile, key, ctx, maxT, ctxLimit, model, 
 }
 /* Streaming router — same shape as callLEWA plus {signal, onDelta}. */
 async function streamLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, model, opts = {}) {
-  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey);
+  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey);
   const {
     signal,
     onDelta
@@ -5900,7 +5911,7 @@ async function streamLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, 
 async function callLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, model, opts = {}) {
   /* Key routing: transparently re-route through OpenRouter when the
      model's native key is missing (ported from Lewa Coder). */
-  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey);
+  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey);
   const _provider = rt.provider;
   const _model = rt.model;
   const _key = rt.key;
@@ -7456,7 +7467,149 @@ ${getAdminNotes() || 'None.'}`;
     }
     setLoading(false);
   };
-  const ADMIN_TABS = [['instruct', 'clipboard', 'Instructions'], ['patterns', 'sparkles', 'Patterns'], ['notes', 'edit', 'Notes'], ['api', 'target', 'API'], ['usage', 'trending', 'Usage'], ['users', 'user', 'Users'], ['chat', 'message', 'Direct Chat']];
+  const ADMIN_TABS = [['instruct', 'clipboard', 'Instructions'], ['patterns', 'sparkles', 'Patterns'], ['notes', 'edit', 'Notes'], ['api', 'target', 'API'], ['usage', 'trending', 'Usage'], ['users', 'user', 'Users'], ['chat', 'message', 'Direct Chat'], ['dev', 'cpu', 'Developer']];
+
+  /* ══════════════════════════════════════════════════════════════
+     DEVELOPER PANEL — admin only
+     ──────────────────────────────────────────────────────────────
+     Everything you need to answer "why is it doing that on THEIR
+     phone" without a cable: what the runtime actually supports,
+     what is in storage, how much room is left, and — because this
+     is a safety-critical app — a live window onto the crisis
+     classifier so its judgement can be checked against real
+     phrasing rather than assumed.
+     ══════════════════════════════════════════════════════════════ */
+  const [crisisProbe, setCrisisProbe] = React.useState('');
+  const [devTick, setDevTick] = React.useState(0);
+
+  const devFacts = () => {
+    const yes = v => v ? '✓ available' : '✗ not available';
+    const has = (o, k) => { try { return !!(o && o[k]); } catch (_) { return false; } };
+    let storeBytes = 0, storeKeys = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        storeKeys++;
+        storeBytes += (k || '').length + (localStorage.getItem(k) || '').length;
+      }
+    } catch (_) {}
+    let region = { cc: null, how: 'unknown' };
+    try { region = resolveRegion(); } catch (_) {}
+    const cats = Object.keys(PROVIDERS).map(pv => {
+      let n = 0, age = '—';
+      try {
+        const raw = JSON.parse(localStorage.getItem('lewa-cat-' + pv) || 'null');
+        if (raw && raw.list) { n = raw.list.length; age = Math.round((Date.now() - (raw.at || 0)) / 6e4) + ' min old'; }
+      } catch (_) {}
+      return pv + ': ' + (n ? n + ' models, ' + age : 'not cached');
+    });
+    return [
+      ['Build', 'App v' + runningVersion() + (has(window, 'LewaAndroid') ? ' · Android shell v' + (function () { try { return window.LewaAndroid.appVersion() || '?'; } catch (_) { return '?'; } })() : ' · browser')],
+      ['Runtime', (navigator.userAgent || '').slice(0, 110)],
+      ['Viewport', window.innerWidth + '×' + window.innerHeight + ' @ ' + (window.devicePixelRatio || 1) + 'x · ' + (window.visualViewport ? 'visualViewport ✓' : 'visualViewport ✗')],
+      ['Secure context', yes(window.isSecureContext)],
+      ['Web Speech (output)', yes(typeof HAS_WEBSPEECH !== 'undefined' && HAS_WEBSPEECH)],
+      ['Native TTS bridge', yes(has(window, 'LewaAndroid') && typeof window.LewaAndroid.speak === 'function')],
+      ['Speech in (STT)', yes(typeof STT_SUPPORTED !== 'undefined' && STT_SUPPORTED)],
+      ['Speech out resolved', yes(typeof TTS_SUPPORTED !== 'undefined' && TTS_SUPPORTED)],
+      ['Camera', yes(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)],
+      ['Clipboard API', yes(navigator.clipboard && navigator.clipboard.writeText)],
+      ['Notifications', yes(typeof Notification !== 'undefined' || has(window, 'LewaAndroid'))],
+      ['Geolocation', yes(navigator.geolocation)],
+      ['Network', (typeof isOffline === 'function' && isOffline()) ? 'offline' : 'online'],
+      ['Storage in use', (storeBytes / 1024).toFixed(0) + ' KB across ' + storeKeys + ' keys'],
+      ['Accounts on device', String(listAccounts().length)],
+      ['Crisis region', region.cc ? region.cc + ' (' + region.how + ')' : 'unknown — generic guidance only'],
+      ['Model catalogues', cats.join(' · ')],
+      ['Last captured error', (window._lewaLastError || 'none').slice(0, 160)]
+    ];
+  };
+
+  const devPanel = () => {
+    const facts = devFacts();
+    let probe = null;
+    if (crisisProbe.trim()) {
+      try { probe = analyzeMessage(crisisProbe); } catch (e) { probe = { error: e.message }; }
+    }
+    const box = { background: 'rgba(240,237,229,.04)', border: '1px solid var(--bdr)', borderRadius: 12, padding: '.85rem .95rem', marginBottom: '.7rem' };
+    const label = { fontSize: '.6rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--cy-ll)', fontWeight: 700, marginBottom: '.5rem' };
+    return h('div', { className: 'panel' },
+      h('div', { style: box },
+        h('div', { style: label }, 'Runtime diagnostics'),
+        facts.map(function (f, i) {
+          return h('div', {
+            key: i,
+            style: { display: 'flex', gap: '.7rem', padding: '.3rem 0', borderBottom: i < facts.length - 1 ? '1px solid rgba(240,237,229,.05)' : 'none', fontSize: '.75rem', lineHeight: 1.5 }
+          },
+            h('span', { style: { color: 'var(--t3)', minWidth: 132, flexShrink: 0, fontWeight: 700 } }, f[0]),
+            h('span', { style: { color: 'var(--t2)', wordBreak: 'break-word' } }, f[1]));
+        }),
+        h('button', {
+          className: 'btn-back', style: { marginTop: '.7rem' },
+          onClick: function () { SND.tap(); setDevTick(devTick + 1); }
+        }, 'Refresh')),
+
+      h('div', { style: box },
+        h('div', { style: label }, 'Crisis classifier — live check'),
+        h('div', { style: { fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.6, marginBottom: '.6rem' } },
+          'Type anything a person might actually say. This runs the on-device classifier only — nothing is sent anywhere.'),
+        h('textarea', {
+          className: 'inp', rows: 3, value: crisisProbe,
+          placeholder: 'e.g. I used to cut myself years ago but I stopped',
+          onChange: function (e) { setCrisisProbe(e.target.value); }
+        }),
+        probe ? (probe.error
+          ? h('div', { style: { color: '#f2a4a4', fontSize: '.8rem', marginTop: '.6rem' } }, 'Classifier error: ' + probe.error)
+          : h('div', { style: { marginTop: '.7rem', fontSize: '.78rem', lineHeight: 1.7, color: 'var(--t2)' } },
+              h('div', null, h('strong', { style: { color: probe.crisis.level >= 2 ? '#f2a4a4' : probe.crisis.level === 1 ? '#e0b48a' : '#7fd8c8' } },
+                'Level ' + probe.crisis.level + ' / 3'), ' · ', probe.crisis.category),
+              probe.crisis.reasons && probe.crisis.reasons.length
+                ? h('div', { style: { color: 'var(--t3)' } }, 'Why: ' + probe.crisis.reasons.join(', ')) : null,
+              h('div', { style: { color: 'var(--t3)' } }, 'Emotion: ' + probe.primary + ' (' + Math.round((probe.confidence || 0) * 100) + '%) · intent: ' + probe.intent),
+              h('div', { style: { color: 'var(--t3)' } }, 'Frameworks: ' + (probe.frameworks || []).join(', ')),
+              h('div', { style: { color: 'var(--t3)' } }, 'Reply shape: ' + probe.length),
+              h('div', { style: { color: 'var(--t4)', marginTop: '.4rem', fontStyle: 'italic' } },
+                probe.crisis.level >= 2 ? 'The in-app safety card would appear for this message.' : 'No safety card for this message.')))
+          : null),
+
+      h('div', { style: box },
+        h('div', { style: label }, 'Crisis resources as this device would show them'),
+        h('div', { style: { fontSize: '.77rem', color: 'var(--t2)', lineHeight: 1.7, whiteSpace: 'pre-wrap' } },
+          (function () { try { return crisisResourceText(); } catch (e) { return 'error: ' + e.message; } })())),
+
+      h('div', { style: box },
+        h('div', { style: label }, 'Maintenance'),
+        h('div', { style: { display: 'flex', gap: '.5rem', flexWrap: 'wrap' } },
+          h('button', {
+            className: 'btn-back',
+            onClick: function () {
+              SND.tap();
+              try {
+                let n = 0;
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                  const k = localStorage.key(i);
+                  if (k && (k.indexOf('lewa-cat-') === 0 || k === 'lewa-dead-models')) { localStorage.removeItem(k); n++; }
+                }
+                toast('Cleared ' + n + ' cached catalogue entries.');
+                setDevTick(devTick + 1);
+              } catch (_) { toast('Could not clear the caches.'); }
+            }
+          }, 'Clear model caches'),
+          h('button', {
+            className: 'btn-back',
+            onClick: function () {
+              SND.tap();
+              try {
+                const report = devFacts().map(function (f) { return f[0] + ': ' + f[1]; }).join('\n');
+                downloadText('lewa-diagnostics-' + new Date().toISOString().slice(0, 10) + '.txt',
+                  'LEWA Therapist diagnostics\n\n' + report + '\n');
+                toast('Diagnostics saved. It contains no keys and no conversation content.');
+              } catch (_) { toast('Could not save the report.'); }
+            }
+          }, 'Save diagnostics')),
+        h('div', { style: { fontSize: '.7rem', color: 'var(--t4)', lineHeight: 1.55, marginTop: '.55rem', fontStyle: 'italic' } },
+          'The diagnostics file carries device capabilities and storage totals only — never an API key, never anything anyone has written.')));
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "app"
   }, /*#__PURE__*/React.createElement("div", {
@@ -7563,7 +7716,7 @@ ${getAdminNotes() || 'None.'}`;
   }, /*#__PURE__*/React.createElement(Icon, {
     name: ic,
     size: 15
-  }), " ", lb))), activeTab === 'instruct' && /*#__PURE__*/React.createElement("div", {
+  }), " ", lb))), activeTab === 'dev' && devPanel(), activeTab === 'instruct' && /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       minHeight: 0,
@@ -9616,7 +9769,7 @@ function App() {
   /* Token counter — resets to 0 every page load, never stored */
   const [tokensUsed, setTokensUsed] = useState(0);
   /* User prefs — reset to defaults on every page load */
-  const [saveConvo, setSaveConvo] = useState(false);
+  const [saveConvo, setSaveConvo] = useState(true);
   const [sendHistory, setSendHistory] = useState(true);
   /* Credits — fetched live from OpenRouter */
   const [credits, setCredits] = useState(null); // {used, limit, remaining}
@@ -9719,6 +9872,10 @@ function App() {
     setA11yState(saveA11y(next));
   };
   const stopRef = useRef(null); // AbortController for the in-flight AI call
+  /* Who the in-flight work belongs to. A reply that arrives after someone
+     has signed out must be discarded, not shown to whoever signed in
+     next — aborting is the first line of defence, this is the second. */
+  const acctRef = useRef(null);
   const syncTRef = useRef(null);
   const importRef = useRef(null);
   const bottomRef = useRef(null);
@@ -9957,6 +10114,10 @@ function App() {
     if (mdl) setModel(migrateModel(mdl));
     const curl = AccountStore.get(un, "customURL");
     if (curl) setCustomURL(curl);
+    const sc = AccountStore.get(un, "saveConvo");
+    setSaveConvo(sc == null ? true : sc === '1');
+    const sh = AccountStore.get(un, "sendHistory");
+    setSendHistory(sh == null ? true : sh === '1');
     const ws = AccountStore.get(un, "webSearch");
     if (ws != null) setWebSearch(ws === '1');
     const mo = AccountStore.get(un, "memoryOn");
@@ -9971,8 +10132,21 @@ function App() {
       setProfile(p);
       setStreak(typeof p.streak === 'number' ? p.streak : 0);
       setPlan(Array.isArray(p.plan) ? p.plan : []);
-      const msgs = safeArray(AccountStore.get(un, "msgs"));
-      setMessages(msgs.filter(m => m && (typeof m.content === 'string' || Array.isArray(m.content) || m.display)));
+      let msgs = safeArray(AccountStore.get(un, "msgs"))
+        .filter(m => m && (typeof m.content === 'string' || Array.isArray(m.content) || m.display));
+      /* The live-message key can be empty while the session it points at is
+         not — a crash between writes, an import, or a build that saved
+         sessions but not the working copy. Recover from the session itself,
+         otherwise the person opens the app to a blank chat that claims to be
+         a conversation they can see in their list. */
+      if (!msgs.length && sid) {
+        const fromSess = safeParse(AccountStore.get(un, "sess-" + sid), null);
+        if (fromSess && Array.isArray(fromSess.messages) && fromSess.messages.length) {
+          msgs = fromSess.messages.filter(m => m && (typeof m.content === 'string' || Array.isArray(m.content) || m.display));
+          if (msgs.length) AccountStore.set(un, "msgs", JSON.stringify(msgs.slice(-80)));
+        }
+      }
+      setMessages(msgs);
       setHistory(safeArray(AccountStore.get(un, "hist")).filter(x => x && typeof x.mood === 'number'));
       if (AccountStore.get(un, `ci-${TODAY}`)) setCiDone(true);
       setScreen("main");
@@ -9994,6 +10168,7 @@ function App() {
   };
   const handleLogin = acc => {
     /* Everything read from here on belongs to this account and no other. */
+    acctRef.current = acc && acc.ns ? acc.ns : null;
     setAccountScope(acc && acc.ns);
     setAccount(acc);
     if (acc.isAdmin) {
@@ -10029,6 +10204,7 @@ function App() {
   /* Leaving an account tears down everything it put in memory, so the next
      person to sign in starts from nothing. */
   const leaveAccount = () => {
+    acctRef.current = null;
     setAccountScope('');
     setAccount(null);
     setProfile(null);
@@ -10049,7 +10225,19 @@ function App() {
     setApiKey('');
     setSetSec(null);
     setSessQ('');
+    /* Anything still running belongs to the account that is leaving.
+       An in-flight reply must be abandoned, not delivered to whoever
+       signs in next — and the camera and microphone must be released
+       before another person is in front of them. */
+    try { if (stopRef.current) stopRef.current.abort(); } catch (_) {}
+    stopRef.current = null;
+    busyRef.current = false;
+    setAiLoad(false);
+    setStreamText('');
+    setStreamThink(false);
     try { stopSpeaking(); } catch (_) {}
+    try { if (callRef.current) endCall(); } catch (_) {}
+    try { stopCamera(); } catch (_) {}
     try { _wsCache.clear(); } catch (_) {}
     setScreen('accounts');
   };
@@ -10279,8 +10467,7 @@ function App() {
       messages: msgs
     };
     AS.set("sess-" + sid, JSON.stringify(sess));
-    const rawIds = AS.get("session-ids");
-    const ids = rawIds ? JSON.parse(rawIds) : [];
+    const ids = safeArray(AS.get("session-ids"));
     if (!ids.includes(sid)) {
       ids.unshift(sid);
       AS.set("session-ids", JSON.stringify(ids));
@@ -10322,7 +10509,7 @@ function App() {
     setCurrSessId(sess.id);
     setMessages(msgs);
     AS.set('msgs', JSON.stringify(msgs.slice(-80)));
-    const ids = JSON.parse(AS.get('session-ids') || '[]').filter(i => i !== sess.id);
+    const ids = safeArray(AS.get('session-ids')).filter(i => i !== sess.id);
     ids.unshift(sess.id);
     AS.set('session-ids', JSON.stringify(ids));
     setViewSess(null);
@@ -10332,7 +10519,7 @@ function App() {
   };
   const deleteSession = id => {
     localStorage.removeItem(nsKey(ns, "sess-" + id));
-    const ids = JSON.parse(AS.get("session-ids") || "[]").filter(i => i !== id);
+    const ids = safeArray(AS.get("session-ids")).filter(i => i !== id);
     AS.set("session-ids", JSON.stringify(ids));
     const list = ids.map(i => {
       try {
@@ -10351,7 +10538,7 @@ function App() {
       rememberSession(messages);
     }
     const nid = genId();
-    const ids = JSON.parse(AS.get("session-ids") || "[]");
+    const ids = safeArray(AS.get("session-ids"));
     ids.unshift(nid);
     AS.set("session-ids", JSON.stringify(ids));
     setCurrSessId(nid);
@@ -10398,7 +10585,12 @@ function App() {
         sleep: '3',
         supportSystem: '',
         lifeEvents: ''
-      }, k, null, 10, 1, provider, resolvedModel);
+      }, k, null, 10, 1, provider, resolvedModel, {
+        /* Test THIS key, not whatever is already stored for the provider.
+           Without this a stale key wins and a perfectly good new one is
+           reported invalid, with no way for the person to get past it. */
+        strictKey: true
+      });
       KeyVault.save(k);
       KeyVault.saveFor(provider, k); // key routing: this provider stays reachable
       ensureModelsT(provider, k, true); // pull its live model catalogue
@@ -10410,9 +10602,17 @@ function App() {
         if (c) setCredits(c);
       });
       setApiLoading(false);
-      /* First-time setup (no account chosen yet) → go to account picker.
-         If already logged in and just swapping providers mid-session → return to main. */
-      setScreen(account ? "main" : "accounts");
+      if (!account) {
+        /* First-time setup — no account chosen yet. */
+        setScreen("accounts");
+      } else if (!profile) {
+        /* This account was sent here because it had no key of its own, so
+           its data was never loaded. Load it now rather than dropping them
+           on a main screen with no profile behind it. */
+        loadUserData(account);
+      } else {
+        setScreen("main");
+      }
     } catch (e) {
       setApiErr(e.message || "Invalid key or model. Please check and try again.");
       setApiLoading(false);
@@ -10429,7 +10629,7 @@ function App() {
     setProfile(fp);
     saveProfile(fp);
     const sid = genId();
-    const ids = JSON.parse(AS.get("session-ids") || "[]");
+    const ids = safeArray(AS.get("session-ids"));
     ids.unshift(sid);
     AS.set("session-ids", JSON.stringify(ids));
     setCurrSessId(sid);
@@ -10568,6 +10768,9 @@ function App() {
        stream can't start. */
     const ctrl = new AbortController();
     stopRef.current = ctrl;
+    const sendingAs = acctRef.current;
+    /* True only while the same person is still signed in. */
+    const stillMine = () => acctRef.current === sendingAs;
     setStreamText("");
     setStreamThink(false);
     let liveText = "";
@@ -10685,6 +10888,12 @@ function App() {
           } catch (_) {/* keep the original on any failure */}
         }
       }
+      if (!stillMine()) {
+        /* They signed out while this was in flight. Drop it silently —
+           nothing of theirs may appear on the next person's screen. */
+        busyRef.current = false;
+        return;
+      }
       stopRef.current = null;
       setStreamText("");
       setStreamThink(false);
@@ -10743,6 +10952,7 @@ function App() {
         }, voiceGender, voiceName);
       }
     } catch (e) {
+      if (!stillMine()) { busyRef.current = false; return; }
       stopRef.current = null;
       setStreamText("");
       setStreamThink(false);
@@ -11510,7 +11720,25 @@ function App() {
     }
   }), /*#__PURE__*/React.createElement("style", null, `@keyframes lewa-spin { to { transform: rotate(360deg); } }`)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "lewa-desc"
-  }, "Choose your AI provider and model, then enter your API key. Your key stays on this device only."), oauthErr && /*#__PURE__*/React.createElement("div", {
+  }, "Choose your AI provider and model, then enter your API key. Your key stays on this device only."), (account || KeyVault.anyExists()) && /*#__PURE__*/React.createElement("button", {
+    className: "btn-back",
+    style: {
+      marginBottom: "1rem",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: ".35rem"
+    },
+    onClick: () => {
+      SND.tap();
+      setApiErr("");
+      setApiInput(apiKey || "");
+      /* Back to wherever they actually came from. */
+      if (account && profile) setScreen("main");else if (account) loadUserData(account);else setScreen("accounts");
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "chevronLeft",
+    size: 14
+  }), account && profile ? "Back to LEWA" : "Back"), oauthErr && /*#__PURE__*/React.createElement("div", {
     style: {
       color: '#e8a090',
       fontSize: '.8rem',
@@ -12298,7 +12526,10 @@ function App() {
             setAutoRoute(v); S.set('lewa-strategy', v ? 'auto' : 'fixed');
             if (v && !catModels(provider)) ensureModelsT(provider, apiKey, true);
           }),
-          setToggle('Send conversation history', 'Off means each message is answered on its own, with no context.', sendHistory, setSendHistory),
+          setToggle('Send conversation history', 'Off means each message is answered on its own, with no context.', sendHistory, v => {
+            setSendHistory(v);
+            AS.set('sendHistory', v ? '1' : '0');
+          }),
           setToggle('Background web search', 'Silent, free look-ups when a question needs current information.', webSearch, v => { setWebSearch(v); AS.set('webSearch', v ? '1' : '0'); })),
         u && u.calls ? h(LCard, { icon: 'sliders', title: 'Usage on this device' },
           h(LRow, { title: 'All time', sub: u.calls + ' calls \u00b7 ' + fmtTok(u.tin) + ' in / ' + fmtTok(u.tout) + ' out' }),
@@ -12336,7 +12567,10 @@ function App() {
     if (key === 'privacy') {
       return h('div', { className: 'lw-set-sec' },
         h(LCard, { icon: 'lock', title: 'On this device' },
-          setToggle('Save conversations', 'Keeps your sessions on this device so you can return to them.', saveConvo, setSaveConvo),
+          setToggle('Save conversations', 'Keeps your sessions on this device so you can return to them. Turning this off means nothing is kept and you cannot pick a conversation back up.', saveConvo, v => {
+            setSaveConvo(v);
+            AS.set('saveConvo', v ? '1' : '0');
+          }),
           setToggle('Share rough location', 'Adds your general whereabouts to the session context \u2014 city level, never an address.', locShare, v => {
             setLocShare(v); S.set('lewa-locshare', v ? '1' : '0');
             if (v) fetchLocation();else { const t = buildCtx('Location not shared'); setCtx(t); setLocLabel(t.period + ' \u00b7 ' + t.time); }
@@ -12742,6 +12976,7 @@ function App() {
     onChange: v => {
       SND.toggle();
       setSaveConvo(v);
+      AS.set('saveConvo', v ? '1' : '0');
     }
   }), /*#__PURE__*/React.createElement(Toggle, {
     label: "Send history to AI",
@@ -12750,6 +12985,7 @@ function App() {
     onChange: v => {
       SND.toggle();
       setSendHistory(v);
+      AS.set('sendHistory', v ? '1' : '0');
     }
   }), /*#__PURE__*/React.createElement(Toggle, {
     label: "Web search",
