@@ -1550,7 +1550,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.3';
+var APP_VERSION = '1.4';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -4488,7 +4488,7 @@ const PROVIDERS = {
   },
   openrouter: {
     label: 'OpenRouter',
-    models: ['nvidia/nemotron-3-super-120b-a12b:free', 'anthropic/claude-fable-5', 'anthropic/claude-opus-4.8', 'anthropic/claude-sonnet-5', 'anthropic/claude-haiku-4.5', 'openai/gpt-5.5', 'openai/gpt-5.4-mini', 'google/gemini-3.5-flash', 'google/gemini-3-flash-preview', 'x-ai/grok-4.1', 'moonshotai/kimi-k2.6', 'deepseek/deepseek-v3.2'],
+    models: ['nvidia/nemotron-3-super-120b-a12b:free', 'minimax/minimax-m3:free', 'minimax/minimax-m2.7:free', 'anthropic/claude-fable-5', 'anthropic/claude-opus-4.8', 'anthropic/claude-sonnet-5', 'anthropic/claude-haiku-4.5', 'openai/gpt-5.5', 'openai/gpt-5.4-mini', 'google/gemini-3.5-flash', 'google/gemini-3-flash-preview', 'x-ai/grok-4.1', 'moonshotai/kimi-k2.6', 'deepseek/deepseek-v3.2'],
     needsKey: true
   },
   anthropic: {
@@ -4511,6 +4511,8 @@ const PROVIDERS = {
 /* Friendly names shown in the model pickers */
 const MODEL_LABELS = {
   'nvidia/nemotron-3-super-120b-a12b:free': 'Nemotron 3 Super · free',
+  'minimax/minimax-m3:free': 'MiniMax M3 · free · 1M context',
+  'minimax/minimax-m2.7:free': 'MiniMax M2.7 · free',
   'anthropic/claude-fable-5': 'Claude Fable 5 · most intelligent',
   'anthropic/claude-opus-4.8': 'Claude Opus 4.8',
   'anthropic/claude-sonnet-5': 'Claude Sonnet 5',
@@ -4735,6 +4737,36 @@ function reasoningControl(sysText, model) {
   if (/nemotron/i.test(String(model || ''))) return sysText + '\n\ndetailed thinking off';
   return sysText;
 }
+/* Models that think before answering. They spend part of the output budget
+   on reasoning, so a cap sized for a plain chat model leaves nothing for the
+   actual reply — which is how a bubble ends up empty. */
+const THINKS = /nemotron|deepseek-r1|r1t|qwen3|thinking|reasoner|minimax-m|inkling|glm-4\.[5-9]|o[134](-|$)|gpt-5/i;
+function isThinkingModel(model) {
+  return THINKS.test(String(model || ''));
+}
+function capFor(model, maxT) {
+  if (maxT) return maxT;
+  return isThinkingModel(model) ? Math.max(CFG.MAX_TOKENS, 2048) : CFG.MAX_TOKENS;
+}
+/* OpenRouter's reasoning options. `exclude` is deliberately NOT set: the
+   model spends the tokens either way, and having the reasoning back is the
+   only way to recover an answer when the budget ran out mid-thought. It is
+   never shown — it only drives the "reflecting…" indicator and the salvage
+   below. */
+function reasoningOpts(model) {
+  return isThinkingModel(model) ? { reasoning: { effort: 'low' } } : {};
+}
+/* Pull a usable answer out of a reasoning stream: whatever follows the last
+   closed think block. Unfinished thinking is never returned. */
+function salvageFromReasoning(raw) {
+  const s = String(raw == null ? '' : raw);
+  if (!s) return '';
+  const m = s.match(new RegExp('[\\s\\S]*<\\/(?:' + THINK_TAGS + ')>', 'i'));
+  if (!m) return '';
+  const after = s.slice(m[0].length);
+  const cleaned = cleanModelOutput(after);
+  return cleaned && cleaned.trim().length > 12 ? cleaned : '';
+}
 
 /* ════════════════════════════════════════════════════════════
    API RESILIENCE LAYER
@@ -4884,7 +4916,7 @@ async function callOpenAICompat(msgs, profile, key, ctx, maxT, ctxLimit, model, 
     'Authorization': `Bearer ${key}`
   }, extraHeaders);
   const isOR = baseURL.includes('openrouter');
-  const cap = maxT || CFG.MAX_TOKENS;
+  const cap = capFor(model, maxT);
   const res = await fetch(baseURL, {
     method: 'POST',
     headers,
@@ -4892,12 +4924,7 @@ async function callOpenAICompat(msgs, profile, key, ctx, maxT, ctxLimit, model, 
       model,
       max_tokens: cap,
       messages: [sysPart, ...trimmed]
-    }, isOR ? {
-      reasoning: {
-        effort: 'low',
-        exclude: true
-      }
-    } : {}))
+    }, isOR ? reasoningOpts(model) : {}))
   });
   if (!res.ok) {
     /* OpenRouter reserves the full output cap against the balance up front.
@@ -4918,11 +4945,17 @@ async function callOpenAICompat(msgs, profile, key, ctx, maxT, ctxLimit, model, 
   /* If reasoning ate the whole budget, content comes back empty. Only
      salvage text that appears AFTER a fully closed think block — raw,
      unfinished thoughts must never reach the patient. */
-  if (!_out && _msg.reasoning) {
-    const _parts = String(_msg.reasoning).split(/<\/think>/i);
-    _out = _parts.length > 1 ? cleanModelOutput(_parts.pop()) : '';
+  if (!_out && _msg.reasoning) _out = salvageFromReasoning(_msg.reasoning);
+  /* An empty answer is a failure, not a reply. Throwing lets the recovery
+     ladder retry and fall back to another model instead of posting a blank
+     bubble into somebody's therapy session. */
+  if (!_out || !_out.trim()) {
+    const err = new Error('The model returned an empty reply. Trying another one.');
+    err.status = 502;
+    err.emptyReply = true;
+    throw err;
   }
-  return _out || "I'm having trouble responding. Please try again.";
+  return _out;
 }
 
 /* ── ANTHROPIC DIRECT CALL ── */
@@ -5186,7 +5219,7 @@ const MODEL_TIER_RULES = [
   /* cheapest patterns first — "gpt-5.4-mini" must read as small, not as GPT-5 */
   { re: /(nano|flash[-\s]?lite|[-\s]lite\b|haiku|mini|tiny|small|gemma|instant)/i, tier: 0 },
   { re: /-(?:[1-9]|1[0-2])b(?:\b|-)/i, tier: 0 },
-  { re: /(flash|turbo|nemotron|deepseek|kimi|glm|qwen|llama|scout|air|mixtral)/i, tier: 1 },
+  { re: /(flash|turbo|nemotron|deepseek|kimi|glm|qwen|llama|scout|air|mixtral|minimax|inkling|ling-)/i, tier: 1 },
   { re: /(sonnet|gpt-5\.[0-4]|gpt-4o|gpt-4\.|grok|command|mistral[-\s]large|pro\b|pro[-\s])/i, tier: 2 },
   { re: /(opus|fable|gpt-5\.[5-9]|gpt-6|ultra|o[13][-\s]?pro|reasoner|thinking)/i, tier: 3 }
 ];
@@ -5728,15 +5761,10 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
   }, extraHeaders);
   const body = _extends({
     model,
-    max_tokens: maxT || CFG.MAX_TOKENS,
+    max_tokens: capFor(model, maxT),
     stream: true,
     messages: [sysPart, ...trimmed]
-  }, baseURL.includes('openrouter') ? {
-    reasoning: {
-      effort: 'low',
-      exclude: true
-    }
-  } : {}, baseURL.includes('api.openai.com') ? {
+  }, baseURL.includes('openrouter') ? reasoningOpts(model) : {}, baseURL.includes('api.openai.com') ? {
     stream_options: {
       include_usage: true
     }
@@ -5798,9 +5826,14 @@ async function streamOpenAICompatT(msgs, profile, key, ctx, maxT, ctxLimit, mode
      and if there is no such marker, treat it as reasoning and keep it
      hidden rather than showing raw internal monologue. */
   let out = cleanModelOutput(text) || text;
-  if (!out.trim() && reasonBuf) {
-    const after = reasonBuf.split(/<\/(?:think|thinking|thought|reasoning|analysis)>/i).pop();
-    if (after && after.trim().length > 12 && after.length < reasonBuf.length) out = cleanModelOutput(after) || after.trim();
+  if (!out.trim() && reasonBuf) out = salvageFromReasoning(reasonBuf);
+  if (!out || !out.trim()) {
+    /* Nothing usable came back. Fail loudly so the recovery ladder can try
+       again or switch model — never hand an empty bubble to the person. */
+    const err = new Error('The model returned an empty reply. Trying another one.');
+    err.status = 502;
+    err.emptyReply = true;
+    throw err;
   }
   return {
     text: out,
@@ -5947,6 +5980,7 @@ async function callLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, mo
 const RETRYABLE_STATUS = { 408: 1, 409: 1, 425: 1, 429: 1, 500: 1, 502: 1, 503: 1, 504: 1, 529: 1 };
 function isRetryableT(err) {
   if (!err) return false;
+  if (err.emptyReply) return true;
   if (RETRYABLE_STATUS[err.status]) return true;
   return /timeout|timed out|temporarily|overload|try again|capacity|rate limit/i.test(String(err.message || ''));
 }
@@ -10893,6 +10927,14 @@ function App() {
            nothing of theirs may appear on the next person's screen. */
         busyRef.current = false;
         return;
+      }
+      /* Belt and braces. Nothing above should be able to produce an empty
+         reply any more, but an empty bubble in a therapy conversation is
+         bad enough that it gets its own guard. */
+      if (!reply || !String(reply).trim()) {
+        const _e = new Error('The model sent an empty reply. Tap to try again.');
+        _e.emptyReply = true;
+        throw _e;
       }
       stopRef.current = null;
       setStreamText("");
