@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="description" content="LEWA — a warm, evidence-based AI therapy companion. Private, always available, and built to help you feel heard."/>
+<title>Lewa Therapist</title>
+<meta name="description" content="Lewa Therapist — a warm, evidence-based AI therapy companion. Private, always available, and built to help you feel heard."/>
+<meta name="application-name" content="Lewa Therapist"/>
+<meta name="apple-mobile-web-app-title" content="Lewa Therapist"/>
 <meta name="theme-color" content="#001a19"/>
 <!-- The app's own leaf, drawn as a path rather than an emoji: emoji render
-     differently (or not at all) across platforms, and the icon is LEWA's
+     differently (or not at all) across platforms, and the icon is Lewa's
      identity in the tab, on the home screen, in the widget and on the tile. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23004643'/%3E%3Cg fill='none' stroke='%2359d3c7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.5 18.5A5.6 5.6 0 0 1 10.4 7.7c4.6-.9 5.8-1.3 7.4-3.3.8 1.6 1.6 3.4 1.6 6.4 0 4.4-3.8 7.7-7.9 7.7Z'/%3E%3Cpath d='M4.5 20c0-2.4 1.5-4.3 4.1-4.8 1.9-.4 3.9-1.6 4.7-2.4'/%3E%3C/g%3E%3C/svg%3E"/>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23004643'/%3E%3Cg fill='none' stroke='%2359d3c7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.5 18.5A5.6 5.6 0 0 1 10.4 7.7c4.6-.9 5.8-1.3 7.4-3.3.8 1.6 1.6 3.4 1.6 6.4 0 4.4-3.8 7.7-7.9 7.7Z'/%3E%3Cpath d='M4.5 20c0-2.4 1.5-4.3 4.1-4.8 1.9-.4 3.9-1.6 4.7-2.4'/%3E%3C/g%3E%3C/svg%3E"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Crect%20width%3D%2724%27%20height%3D%2724%27%20rx%3D%276%27%20fill%3D%27%23004643%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%2359d3c7%27%20stroke-width%3D%271.5%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2021c-5-4.5-5-12.5%200-18%205%205.5%205%2013.5%200%2018Z%27%2F%3E%3Cpath%20d%3D%27M12%2020.2V4.4%27%2F%3E%3Cpath%20d%3D%27M12%209.2%2013.8%207.8%27%2F%3E%3Cpath%20d%3D%27M12%2011.6%209.8%2010.3%27%2F%3E%3Cpath%20d%3D%27M12%2014%2014.3%2012.7%27%2F%3E%3Cpath%20d%3D%27M12%2016.3%209.8%2015%27%2F%3E%3Cpath%20d%3D%27M12%2018.4%2013.8%2017%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Crect%20width%3D%2724%27%20height%3D%2724%27%20fill%3D%27%23004643%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%2359d3c7%27%20stroke-width%3D%271.5%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2021c-5-4.5-5-12.5%200-18%205%205.5%205%2013.5%200%2018Z%27%2F%3E%3Cpath%20d%3D%27M12%2020.2V4.4%27%2F%3E%3Cpath%20d%3D%27M12%209.2%2013.8%207.8%27%2F%3E%3Cpath%20d%3D%27M12%2011.6%209.8%2010.3%27%2F%3E%3Cpath%20d%3D%27M12%2014%2014.3%2012.7%27%2F%3E%3Cpath%20d%3D%27M12%2016.3%209.8%2015%27%2F%3E%3Cpath%20d%3D%27M12%2018.4%2013.8%2017%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"/>
 <!-- Content Security Policy. connect-src has to allow https: because the
      person can point the app at any OpenAI-compatible endpoint they like,
      but everything else is closed down: no plugins, no framing, no base-tag
@@ -171,7 +174,7 @@ select.inp option{background:#002221;color:var(--sd)}
 .sidebar-inner::-webkit-scrollbar-thumb{background:rgba(240,237,229,.15);border-radius:1px}
 .sb-brand{display:flex;align-items:center;gap:.72rem;padding-bottom:.9rem;border-bottom:1px solid var(--bdr)}
 .sb-emblem{width:36px;height:36px;background:linear-gradient(135deg,var(--cy),var(--cy-ll));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;animation:breathe 4s ease-in-out infinite;border:1px solid rgba(240,237,229,.1)}
-.sb-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:400;letter-spacing:.02em;color:var(--sd)}
+.sb-name{font-family:'Playfair Display',serif;font-size:1.08rem;font-weight:400;letter-spacing:.02em;color:var(--sd);white-space:nowrap}
 .sb-tag{font-size:.57rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cy-ll);font-weight:700}
 .sb-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cy-ll);font-weight:700}
 .sb-box{background:rgba(240,237,229,.04);border:1px solid var(--bdr);border-radius:10px;padding:.76rem .88rem;transition:border-color .18s}
@@ -237,7 +240,7 @@ select.inp option{background:#002221;color:var(--sd)}
 .chat-footer{background:rgba(0,26,25,.85);backdrop-filter:blur(20px);border-top:1px solid var(--bdr);padding:.9rem 1.3rem;display:flex;gap:.65rem;align-items:flex-end;flex-shrink:0;padding-bottom:calc(.9rem + env(safe-area-inset-bottom,0px))}
 .chat-input-wrap{flex:1;background:rgba(240,237,229,.05);border:1px solid var(--bdr);border-radius:13px;display:flex;align-items:flex-end;padding:.55rem .9rem;transition:border-color .2s,box-shadow .2s,background .2s}
 .chat-input-wrap:focus-within{border-color:var(--cy-l);box-shadow:0 0 0 3px rgba(0,107,101,.15);background:rgba(240,237,229,.07)}
-.chat-textarea{flex:1;background:transparent;border:none;outline:none;color:var(--t1);font-family:'Lato',sans-serif;font-size:.87rem;resize:none;max-height:110px;line-height:1.55}
+.chat-textarea{flex:1;background:transparent;border:none;outline:none;color:var(--t1);font-family:'Lato',sans-serif;font-size:.87rem;resize:none;max-height:min(42vh,320px);overflow-y:auto;line-height:1.55}
 .chat-textarea::placeholder{color:var(--t4)}
 .send-btn{width:42px;height:42px;background:var(--cy);border:1px solid rgba(240,237,229,.12);border-radius:10px;color:var(--sd);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
   box-shadow:0 3px 12px rgba(0,0,0,.3);
@@ -473,13 +476,13 @@ select.inp option{background:#002221;color:var(--sd)}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 /* ═══════════════════════════════════════════════════════════════
-   PORTED FROM LEWA CODER — themes, toast, notifications, Qur'an,
+   PORTED FROM Lewa CODER — themes, toast, notifications, Qur'an,
    streaming UI, scroll-to-latest, stop button
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Light theme ──
    The whole app is inverted then hue-rotated back, which flips
-   lightness while keeping LEWA's teal/green identity. Media (images,
+   lightness while keeping Lewa's teal/green identity. Media (images,
    video, previews) is re-inverted so photos stay true-colour. */
 html[data-theme="light"]{filter:invert(0.94) hue-rotate(180deg);background:#eef3f2}
 html[data-theme="light"] img,
@@ -903,6 +906,118 @@ html[data-motion="off"] .app{transition:none}
   .chat-header-badges .token-badge{display:none}
 }
 
+/* ══════════════════════════════════════════════════════════════
+   v1.5 — HEADER, SCALING, COLLAPSIBLE SIDEBAR
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── HEADER ──
+   It was tall enough to eat a fifth of a phone screen, and a long
+   session title wrapped onto a second line and pushed the Call
+   button underneath the clock. One line, always. */
+.content-header{padding:.6rem 1rem;min-height:0;align-items:center;gap:.55rem}
+.header-left{min-width:0;flex:1 1 auto;overflow:hidden}
+.header-title{font-size:1rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-sub{font-size:.64rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-header-badges{flex:0 0 auto;flex-wrap:nowrap!important;align-items:center}
+
+@media(max-width:900px){
+  .content-header{padding:.5rem .7rem;padding-top:calc(.5rem + env(safe-area-inset-top,0px));gap:.4rem}
+  .header-title{font-size:.92rem}
+  /* Anything that is not identity or an action comes out of the header
+     on a phone — the token count belongs in Settings, not up here. */
+  .chat-header-badges .token-badge{display:none}
+  .chat-header-badges{gap:.28rem!important}
+  .header-info{display:none}
+}
+@media(max-width:430px){
+  .header-sub{display:none}
+  .header-title{font-size:.88rem}
+  /* Icon-only Call and New: the labels are the first thing to overflow. */
+  .chat-header-badges .lbl{display:none}
+  .chat-header-badges button{padding:.4rem .5rem!important}
+}
+
+/* ── PRIVACY POLICY / TERMS ──
+   The gate is a full-height card with its own scroll area, so the accept
+   button never drifts off the bottom of a small phone. The same document
+   renders inline inside Settings, where the page scroll takes over. */
+.legal-card{max-width:660px;width:100%;text-align:left;display:flex;flex-direction:column;
+  max-height:min(88vh,860px);padding-bottom:.9rem}
+.legal-head{text-align:center;flex-shrink:0}
+.legal-head .lewa-title{font-size:1.5rem}
+.legal-intro{font-size:.82rem;color:var(--t2);line-height:1.75;margin:.7rem 0 .2rem}
+.legal-tabs{display:flex;gap:.4rem;margin:.85rem 0 .6rem;flex-shrink:0}
+.legal-tab{flex:1;padding:.5rem .6rem;border-radius:9px;border:1px solid var(--bdr);
+  background:rgba(240,237,229,.04);color:var(--t3);font-size:.78rem;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:background .16s,color .16s,border-color .16s}
+.legal-tab:hover{color:var(--t1)}
+.legal-tab.on{background:rgba(0,143,135,.16);border-color:var(--bact);color:var(--t1)}
+.legal-body{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:.2rem .55rem .2rem 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.legal-body:focus-visible{outline:2px solid var(--bact);outline-offset:2px}
+.legal-inline{max-height:none;overflow:visible;border:none;padding-right:0}
+.legal-lead{font-size:.83rem;color:var(--t2);line-height:1.8;margin:.7rem 0 .2rem;font-style:italic}
+.legal-sec{margin:.95rem 0}
+.legal-sec h3{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cy-ll);
+  font-weight:700;margin:0 0 .35rem}
+.legal-sec p{font-size:.82rem;color:var(--t2);line-height:1.8;margin:0 0 .5rem}
+.legal-foot{flex-shrink:0;padding-top:.75rem}
+.legal-agree{font-size:.76rem;color:var(--t3);line-height:1.7;margin:0 0 .7rem}
+@media(max-width:600px){
+  .legal-card{max-height:calc(100vh - 2rem);max-height:calc(100dvh - 2rem)}
+  .legal-head .lewa-title{font-size:1.25rem}
+  .legal-sec p,.legal-lead{font-size:.8rem}
+}
+
+/* ── COLLAPSIBLE SIDEBAR (desktop and tablet) ──
+   Open by default; the choice is remembered. On a phone the sidebar is
+   already a drawer, so this only applies where it is docked. */
+.sb-collapse{display:none;margin-left:auto;width:30px;height:30px;align-items:center;justify-content:center;
+  background:rgba(240,237,229,.06);border:1px solid var(--bdr);border-radius:8px;color:var(--t3);cursor:pointer;flex-shrink:0}
+.sb-collapse:hover{color:var(--t1);border-color:var(--bact);background:rgba(240,237,229,.1)}
+html[data-motion="off"] .sidebar{transition:none}
+@media(min-width:769px){
+  .sidebar{transition:width .18s ease,opacity .14s ease}
+  html.sb-collapsed .sidebar{width:0;min-width:0;opacity:0;pointer-events:none;overflow:hidden;border-right:none}
+  html.sb-collapsed .hamburger-btn{display:flex}
+  /* On a phone the drawer already has its own close button, so the
+     collapse control only exists where the sidebar is docked. */
+  .sb-collapse{display:flex}
+}
+
+/* ── SCALING ──
+   Type and spacing follow the viewport instead of stepping at a few
+   fixed widths, so a small phone, a large phone, a foldable and a
+   tablet all get something proportionate. */
+@media(max-width:768px){
+  .msg-bubble{font-size:clamp(.82rem,3.6vw,.9rem)}
+  .chat-textarea{font-size:16px}
+  .lw-greet{font-size:clamp(1.35rem,6.5vw,1.9rem)}
+  .lw-tile-v{font-size:clamp(1.15rem,5vw,1.6rem)}
+  .lw-sess-title{font-size:clamp(.9rem,3.9vw,1rem)}
+  .lw-set-n{font-size:clamp(.9rem,3.9vw,1rem)}
+  .btn-primary,.btn-cont{font-size:clamp(.85rem,3.7vw,.95rem)}
+}
+/* Very small screens and split-screen windows */
+@media(max-width:360px){
+  .chat-messages{padding:.5rem}
+  .msg-row{max-width:96%}
+  .lw-quick{grid-template-columns:repeat(2,1fr)}
+  .lw-hero{grid-template-columns:1fr 1fr;gap:.42rem}
+  .content-header{padding:.45rem .55rem}
+}
+/* Foldables and small tablets in portrait */
+@media(min-width:600px) and (max-width:900px){
+  .msg-row{max-width:84%}
+  .chat-messages,.panel,.chat-footer{padding-left:clamp(1rem,4vw,2rem);padding-right:clamp(1rem,4vw,2rem)}
+}
+/* Short landscape windows: give the conversation the vertical space */
+@media(max-height:460px){
+  .content-header{padding-top:.3rem;padding-bottom:.3rem}
+  .header-sub{display:none}
+  .chat-textarea{max-height:22vh}
+}
+
 /* 6 tabs now that Home exists */
 .sidebar-tabs{grid-template-columns:repeat(3,1fr);gap:.3rem}
 .mobile-nav-grid{grid-template-columns:repeat(6,1fr);gap:.18rem}
@@ -913,7 +1028,7 @@ html[data-motion="off"] .app{transition:none}
 <body>
 <div id="root"></div>
 <script>
-/* LEWA Therapist — self-contained, old-WebView-compatible bundle.
+/* Lewa Therapist — self-contained, old-WebView-compatible bundle.
    Generated from lewa-therapist-v3.html; do not edit by hand. */
 /* ── Compatibility polyfills (run first) ── */
 (function(){
@@ -1230,7 +1345,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 
 /* ═══════════════════════════════════════════════════════════════
-   LEWA THERAPIST — CORE LAYER (features ported from Lewa Coder)
+   Lewa THERAPIST — CORE LAYER (features ported from Lewa Coder)
    Boot guard · Theme · Toast · Notifications · Android bridge ·
    Device files · GitHub · Email · Qur'an · Source protection
    ═══════════════════════════════════════════════════════════════ */
@@ -1241,7 +1356,7 @@ window.addEventListener('error', function (e) {
   try {
     var root = document.getElementById('root');
     if (root && !root.children.length) {
-      root.innerHTML = '<div style="padding:28px;font-family:monospace;color:#f2a4a4;font-size:13px;line-height:1.7">' + '<div style="color:#5fd4c8;font-size:16px;margin-bottom:10px">LEWA could not start</div>' + String(e.message || 'Unknown error').replace(/</g, '&lt;') + '<div style="color:#889;margin-top:10px">' + String(e.filename || '').replace(/</g, '&lt;') + ' line ' + (e.lineno || '?') + '</div><div style="color:#aab;margin-top:14px">Screenshot this and send it to the developer.</div></div>';
+      root.innerHTML = '<div style="padding:28px;font-family:monospace;color:#f2a4a4;font-size:13px;line-height:1.7">' + '<div style="color:#5fd4c8;font-size:16px;margin-bottom:10px">Lewa could not start</div>' + String(e.message || 'Unknown error').replace(/</g, '&lt;') + '<div style="color:#889;margin-top:10px">' + String(e.filename || '').replace(/</g, '&lt;') + ' line ' + (e.lineno || '?') + '</div><div style="color:#aab;margin-top:14px">Screenshot this and send it to the developer.</div></div>';
     }
   } catch (_) {}
 });
@@ -1323,7 +1438,7 @@ try {
     /* Nothing user-facing for a dropped connection — that is already
        handled where it matters, and a second message is just noise. */
     if (_isNetworkNoise(msg)) { try { e.preventDefault(); } catch (_) {} return; }
-    try { console.warn('LEWA: unhandled rejection —', msg); } catch (_) {}
+    try { console.warn('Lewa: unhandled rejection —', msg); } catch (_) {}
   });
   window.addEventListener('error', function (e) {
     try {
@@ -1513,7 +1628,7 @@ function _offlineBanner(show) {
     if (!el) {
       el = document.createElement('div');
       el.id = 'offline-bar';
-      el.textContent = "You're offline — LEWA will reply as soon as you're back.";
+      el.textContent = "You're offline — Lewa will reply as soon as you're back.";
       document.body.appendChild(el);
     }
     el.classList.add('show');
@@ -1550,7 +1665,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.4';
+var APP_VERSION = '1.5';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -1658,7 +1773,7 @@ function revertToBundled() {
    page opened as a local file is auto-denied. Fallback chain: Android
    bridge → real system notification → in-app banner + chime + vibration
    + tab-title flash (works everywhere). ── */
-var LEWA_NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23004643'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle'%3E🌿%3C/text%3E%3C/svg%3E";
+var LEWA_NOTIF_ICON = "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%2712%27%20r%3D%2712%27%20fill%3D%27%23004643%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%2359d3c7%27%20stroke-width%3D%271.4%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20transform%3D%27translate%2812%2012%29%20scale%28.82%29%20translate%28-12%20-12%29%27%3E%3Cpath%20d%3D%27M12%2021c-5-4.5-5-12.5%200-18%205%205.5%205%2013.5%200%2018Z%27%2F%3E%3Cpath%20d%3D%27M12%2020.2V4.4%27%2F%3E%3Cpath%20d%3D%27M12%209.2%2013.8%207.8%27%2F%3E%3Cpath%20d%3D%27M12%2011.6%209.8%2010.3%27%2F%3E%3Cpath%20d%3D%27M12%2014%2014.3%2012.7%27%2F%3E%3Cpath%20d%3D%27M12%2016.3%209.8%2015%27%2F%3E%3Cpath%20d%3D%27M12%2018.4%2013.8%2017%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E";
 function notifySupported() {
   return 'Notification' in window;
 }
@@ -1795,7 +1910,7 @@ function bgAudio(on, label, needMic) {
   try {
     if (window.LewaAndroid && window.LewaAndroid.startAudioService) {
       if (on) {
-        if (window.LewaAndroid.startAudioServiceMic) window.LewaAndroid.startAudioServiceMic(label || 'LEWA audio', !!needMic);else window.LewaAndroid.startAudioService(label || 'LEWA audio');
+        if (window.LewaAndroid.startAudioServiceMic) window.LewaAndroid.startAudioServiceMic(label || 'Lewa audio', !!needMic);else window.LewaAndroid.startAudioService(label || 'Lewa audio');
       } else window.LewaAndroid.stopAudioService();
     }
   } catch (_) {}
@@ -2023,7 +2138,7 @@ async function ghPutFile(owner, repo, path, content, message, branch) {
     sha = ex.sha;
   } catch (_) {/* new file */}
   var body = {
-    message: message || 'Update ' + path + ' via LEWA Therapist',
+    message: message || 'Update ' + path + ' via Lewa Therapist',
     content: b64encode(content)
   };
   if (sha) body.sha = sha;
@@ -2051,7 +2166,7 @@ async function ensureSyncRepo() {
       body: JSON.stringify({
         name: SYNC_REPO,
         private: true,
-        description: 'LEWA Therapist sync (auto-managed) — sessions & preferences, no keys',
+        description: 'Lewa Therapist sync (auto-managed) — sessions & preferences, no keys',
         auto_init: true
       })
     });
@@ -2080,7 +2195,7 @@ async function emailjsSendRaw(to, subject, body) {
       to_email: to,
       subject: subject || '',
       message: body || '',
-      from_name: ej.from || 'LEWA Therapist'
+      from_name: ej.from || 'Lewa Therapist'
     }
   };
   if (clean(ej.privatekey)) payload.accessToken = clean(ej.privatekey);
@@ -2723,7 +2838,7 @@ function highlightAyah(id) {
   if (prog && st.ayahs[st.idx]) prog.textContent = 'Ayah ' + st.ayahs[st.idx].n + '/' + st.count;
 }
 
-/* ── SHARE-TO-LEWA / Open-with (Android) — another app handed us text.
+/* ── SHARE-TO-Lewa / Open-with (Android) — another app handed us text.
    Drop it into the chat input for the patient to review, then send. ── */
 window._lewaShared = function (json) {
   var p;
@@ -2736,7 +2851,7 @@ window._lewaShared = function (json) {
   var t = (p.text || '').trim();
   if (!t) return;
   if (window._lewaSetInput) window._lewaSetInput(t);else window._lewaSharedPending = t;
-  toast('Shared to LEWA — review and press send.');
+  toast('Shared to Lewa — review and press send.');
 };
 window.lewaStartVoice = function () {
   if (window._lewaStartVoice) window._lewaStartVoice();
@@ -2881,7 +2996,7 @@ if (window.pdfjsLib) {
    React.createElement, and `h(...)` keeps it readable. */
 const h = React.createElement;
 const ICONS = {
-  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  leaf: '<path d="M12 21c-5-4.5-5-12.5 0-18 5 5.5 5 13.5 0 18Z"/><path d="M12 20.2V4.4"/><path d="M12 9.2 13.8 7.8"/><path d="M12 11.6 9.8 10.3"/><path d="M12 14 14.3 12.7"/><path d="M12 16.3 9.8 15"/><path d="M12 18.4 13.8 17"/>',
   user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
   phoneOff: '<path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="22" x2="2" y1="2" y2="22"/>',
@@ -3004,7 +3119,7 @@ const fmtT = d => new Intl.DateTimeFormat("en-GB", {
 /* ── STORAGE ── */
 
 /* ════════════════════════════════════════════════════════
-   LEWA SOUND ENGINE
+   Lewa SOUND ENGINE
    All sounds generated via Web Audio API — no files needed.
    Toggle sounds: set SOUNDS_ON = false to disable globally.
    ════════════════════════════════════════════════════════ */
@@ -3102,7 +3217,7 @@ const SND = {
 };
 
 /* ════════════════════════════════════════════════════════════
-   TEXT-TO-SPEECH — LEWA reads its responses aloud
+   TEXT-TO-SPEECH — Lewa reads its responses aloud
    Uses the browser's built-in Web Speech API. No API calls,
    no cost, works offline once voices are loaded.
    ════════════════════════════════════════════════════════════ */
@@ -3210,7 +3325,7 @@ function stripForSpeech(text) {
   .replace(/\s[—–]\s/g, ', ') // dashes become a gentle pause
   .replace(/[ \t]{2,}/g, ' ').trim();
 }
-/* Split into sentences so LEWA can breathe between them — the pauses are
+/* Split into sentences so Lewa can breathe between them — the pauses are
    what make the delivery feel like a person, not a screen reader. Also
    sidesteps Chrome's bug where long single utterances cut off mid-way. */
 function _speechChunks(text) {
@@ -3603,7 +3718,7 @@ const KeyVault = {
 };
 
 /* ════════════════════════════════════════════════════════════
-   LEWA CONFIGURATION  —  Easy to edit in VS Code
+   Lewa CONFIGURATION  —  Easy to edit in VS Code
    ════════════════════════════════════════════════════════════
    MAX_TOKENS    : Max words the AI can reply with per message.
                    Lower = faster + cheaper. Range: 100 – 1000.
@@ -3748,7 +3863,7 @@ function readFileAsync(file) {
    crisis signals, retrieves relevant memory, and picks the therapy
    framework(s) most likely to help — then feeds all of that to the model
    as a private briefing. The patient never sees any of it; they only ever
-   receive LEWA's calm, validating, evidence-based reply.
+   receive Lewa's calm, validating, evidence-based reply.
    ══════════════════════════════════════════════════════════════════════ */
 
 /* ── EMOTION ENGINE — 22 emotions, lexicon + intensity, confidence-scored ── */
@@ -4311,13 +4426,173 @@ function copingFor(emotion) {
 }
 
 /* ── ADAPTIVE LENGTH — casual → short, guidance → medium, therapy → deep ── */
+/* ══════════════════════════════════════════════════════════════
+   REPLY LENGTH
+   ──────────────────────────────────────────────────────────────
+   "I'm hungry" and "my brother died and I don't know how to be
+   around my family any more" are not the same size of thing, and
+   answering them at the same length is wrong in both directions:
+   one buries a passing remark under a wall of therapy, the other
+   waves away something that took real courage to type.
+
+   Depth is scored from what is actually in the message — how much
+   feeling is present, whether feelings conflict, whether the
+   material is heavy, whether a decision is being weighed, whether
+   real reasoning was asked for. Length follows depth. A long
+   message is only a reason to go deeper when it is also carrying
+   something; someone can type three paragraphs about their
+   commute.
+
+   Each tier carries a token ceiling as well as wording, so a
+   passing remark cannot physically become a two-thousand-token
+   reply even if a model is inclined to ramble.
+   ══════════════════════════════════════════════════════════════ */
+const LENGTH_TIERS = {
+  micro: {
+    tokens: 120,
+    text: 'MICRO — one short, warm sentence. Maybe two. This is a passing remark, not an opening for therapy: match it lightly and let them lead. Do NOT reflect their feelings back, do NOT ask a therapeutic question, do NOT offer a technique.'
+  },
+  brief: {
+    tokens: 220,
+    text: 'BRIEF — one or two sentences, plus at most one light question if it genuinely helps. Small and easy. Nothing here needs unpacking.'
+  },
+  standard: {
+    tokens: 400,
+    text: 'STANDARD — two to four sentences: reflect what you heard, then ONE specific question. This is the normal shape of a therapy exchange. Resist the pull to add more.'
+  },
+  full: {
+    tokens: 700,
+    text: 'FULL — up to about six sentences. There is real material here, so reflect it properly, then either one meaningful question or one concrete idea — not both. Still a reply, not an essay.'
+  },
+  deep: {
+    tokens: 1100,
+    text: 'DEEP — they have brought something layered and are asking to be met fully. Take the room you need: reflect the different strands, name what seems to be underneath, and offer one question or direction. Even here, stay conversational — short paragraphs, no headings, no lists unless they help.'
+  },
+  crisis: {
+    tokens: 480,
+    text: 'CRISIS SHAPE — short, calm, present. A few sentences that actually land beat a page that does not. Follow the safety steps below in order, in your own words, and stop.'
+  }
+};
+/* ══════════════════════════════════════════════════════════════
+   PRIVACY POLICY AND TERMS OF SERVICE
+   Written to describe what this build actually does. If the app's
+   behaviour changes, this text changes with it — and LEGAL_VERSION
+   is bumped, which asks every account to read it once more.
+   ══════════════════════════════════════════════════════════════ */
+var LEGAL_VERSION = '1.0';
+var LEGAL_UPDATED = '8 September 2026';
+var LEGAL_DOCS = {
+  privacy: {
+    title: 'Privacy Policy',
+    lead: 'Lewa Therapist has no server of its own. What you write stays on this device, and the only thing that leaves it is what is needed to get you a reply.',
+    sections: [
+      { h: 'In one paragraph',
+        p: ['There is no Lewa Therapist account system, no cloud database and no analytics. Your profile, your conversations and everything you record here live in this app’s storage on this device. To answer you, the app sends your conversation to the AI provider you chose, using an API key you supply. Nobody behind this app can read any of it, because none of it is held anywhere we could read.'] },
+      { h: 'What is stored on this device',
+        p: ['Your name and what brought you here; every conversation and session; the short continuity notes Lewa writes to itself; your check-ins, moods and their notes; your goals; ratings you give replies; usage counts; every setting; and your API key, obfuscated at rest.',
+            'All of it sits in this browser or WebView’s local storage, inside your account’s own namespace. Other accounts on this device cannot read it, and neither can other websites or apps.'] },
+      { h: 'What leaves this device, and when',
+        p: ['To your AI provider, on every message: the messages in the current conversation, the background context Lewa assembles for them (your name, what brought you here, the memory digest if memory is on, your goals, the time, and your rough location if you have chosen to share it), and your API key so the request authenticates. What that provider does with it is governed by their privacy policy, not this one.',
+            'To web search, only if Background search is on: the text of your latest message, as a query, to DuckDuckGo and Wikipedia, with anything key-shaped stripped out first. No history, no identifiers, no account details.',
+            'To GitHub, only if you connect sync: your sessions, check-ins, goals and memories, pushed to a private repository in your own GitHub account. Your API keys and GitHub token are deliberately excluded.',
+            'To your mail provider, only when you use Email chat: the transcript you chose to send, to the address you typed.',
+            'Nothing else, ever. There is no advertising, no tracking, no telemetry and no crash reporting.'] },
+      { h: 'Your API key',
+        p: ['The key is obfuscated at rest, scoped to your account, and only ever sent to the provider it belongs to. It is excluded from backups, exports, transcripts, search queries and diagnostics, and it is never displayed in full or written to logs.',
+            'It cannot be hidden from the network request itself — no app running in a browser can do that — so treat it as yours to protect. If you lose this device, revoke the key with your provider.'] },
+      { h: 'More than one account on a device',
+        p: ['Each account has its own storage namespace and its own keys. Signing out clears the previous account from memory, stops any reply in flight, and closes the camera and microphone. One account cannot read another’s data.'] },
+      { h: 'What you can delete, and how completely',
+        p: ['You can delete a single memory, clear all memories, delete an individual session, clear a conversation, or clear everything for your account from Settings › Data. Deletion is immediate and permanent: there is no server copy, so there is nothing to restore from afterwards.',
+            'If yours is the last account on the device, the shared device-level key, GitHub token and preferences are removed with it.'] },
+      { h: 'How long anything is kept',
+        p: ['Until you delete it, or until this app’s storage is cleared by uninstalling it or clearing site data. We hold nothing, so there is nothing for us to retain or to hand to anyone else.'] },
+      { h: 'Security, honestly stated',
+        p: ['Your data is protected by your device and its operating system. Anyone who can unlock this device can open this app and read what is in it. If that matters to you, use a device lock.'] },
+      { h: 'Age',
+        p: ['This app is not intended for anyone under 16, or under the minimum age where you live if that is higher. If you are younger, use it only with a parent or guardian.'] },
+      { h: 'Changes to this policy',
+        p: ['If this policy changes in a way that matters, the new version is shown in the app and you are asked to read it once before continuing. The current version and date appear at the top of this document.'] },
+      { h: 'Getting in touch',
+        p: ['Because there is no server and no account held anywhere, there is nothing about you for anyone to look up, correct or export on your behalf. Every such request is answered by the controls in Settings › Data, which act on the only copy that exists.'] }
+    ]
+  },
+  terms: {
+    title: 'Terms of Service',
+    lead: 'Plain terms for using Lewa Therapist. The second section is the one that matters most, so it comes early.',
+    sections: [
+      { h: 'What this is',
+        p: ['Lewa Therapist is a self-help and wellbeing companion built on an AI language model. It draws on ideas from cognitive behavioural therapy, dialectical behaviour therapy, acceptance and commitment therapy and related approaches, and offers them as conversation and practice.'] },
+      { h: 'What this is not',
+        p: ['It is not a licensed therapist, psychologist, psychiatrist, counsellor, doctor or nurse, and using it does not create a therapeutic or clinical relationship.',
+            'It does not diagnose conditions, does not treat them, and does not prescribe or advise on medication.',
+            'It is not an emergency or crisis service. It cannot call anyone, alert anyone, or send help.',
+            'It is not a replacement for care from a real person. If you are working with a clinician, this app is something you might use alongside them, never instead of them.'] },
+      { h: 'Emergencies',
+        p: ['If you are in immediate danger, or you think you might act on thoughts of harming yourself or someone else, stop using the app and contact your local emergency number or a crisis line. The app can show numbers for your region, and it will offer them when it recognises the moment, but it cannot summon help for you.'] },
+      { h: 'About the replies',
+        p: ['Replies are generated by a third-party AI model. They can be mistaken, incomplete, or simply wrong for you. Read them as one perspective, and never act on them in place of professional advice — particularly on medication, medical, legal or financial matters.'] },
+      { h: 'Your provider and your key',
+        p: ['You bring your own API key from an AI provider. Your relationship with that provider is governed by their terms, and any cost of using them is between you and them. You are responsible for keeping the key safe and for what is sent using it.'] },
+      { h: 'Using it fairly',
+        p: ['Do not use this app to seek instructions for harming yourself or anyone else, to attack or abuse the app or its provider, or in any way that breaks the law or your provider’s terms. Please do not enter other people’s confidential information into it.'] },
+      { h: 'Your data is in your hands',
+        p: ['Nothing is backed up to a cloud unless you connect sync yourself. If you clear this app’s storage, uninstall it, or lose the device, what was here is gone. Use Settings › Data › Backup if your history matters to you.'] },
+      { h: 'Availability',
+        p: ['The app is provided as it is, with no promise of availability, accuracy or fitness for a particular purpose. Anything that depends on your provider, your network or your device may stop working without notice.'] },
+      { h: 'Liability',
+        p: ['To the fullest extent the law allows, the developer is not liable for any loss or harm arising from your use of this app or from relying on what it says. Nothing here removes any liability that cannot lawfully be removed, and nothing here affects rights you have as a consumer that cannot be waived.'] },
+      { h: 'Age',
+        p: ['You must be at least 16, or the minimum age where you live if that is higher, or have the permission of a parent or guardian.'] },
+      { h: 'Stopping',
+        p: ['You can stop at any time. Settings › Data › Clear my data removes your account and everything in it from this device.'] },
+      { h: 'Changes to these terms',
+        p: ['If these terms change in a way that matters, the new version is shown in the app and you are asked to read it once before continuing.'] }
+    ]
+  }
+};
+
 function targetLength(analysis, text) {
-  const words = (text || '').trim().split(/\s+/).filter(Boolean).length;
-  if (analysis.intent === 'greeting' || analysis.intent === 'joking') return 'SHORT (1–2 warm sentences)';
-  if (analysis.crisis.level >= 2) return 'CALM & GROUNDED (short, present, safety-first)';
-  if (analysis.intent === 'info' || analysis.intent === 'advice') return 'MEDIUM (validate, then a focused, useful answer)';
-  if (words > 45 || analysis.confidence > 0.6) return 'DEEPER (reflect fully, then one meaningful question)';
-  return 'BALANCED (2–4 sentences, reflect then one question)';
+  const t = String(text == null ? '' : text).trim();
+  const low = t.toLowerCase();
+  const words = t ? t.split(/\s+/).filter(Boolean).length : 0;
+  const sentences = (t.match(/[.!?]+|\n/g) || []).length + 1;
+  const emo = analysis && analysis.confidence || 0;
+  const crisis = analysis && analysis.crisis ? analysis.crisis.level || 0 : 0;
+  const intent = analysis && analysis.intent;
+  const pick = k => _extends({ tier: k }, LENGTH_TIERS[k]);
+
+  if (crisis >= 2) return pick('crisis');
+
+  /* How much is actually being carried here. */
+  let d = 0;
+  if (emo > 0.45 && words >= 6) d += 1;
+  if (emo > 0.7 && words >= 14) d += 1;
+  if (analysis && analysis.mixed && words >= 10) d += 1;
+  try { if (RE_HEAVY.test(low)) d += 2; } catch (_) {}
+  /* Level 1 covers very different needs. Panic wants short, slow, grounding
+     sentences — six paragraphs would make it worse. Hopelessness without a
+     stated intent wants to be properly met. Same level, opposite shapes. */
+  const ccat = analysis && analysis.crisis ? analysis.crisis.category : '';
+  if (ccat === 'panic') return pick('brief');
+  if (crisis === 1) d += ccat === 'suicide_passive' ? 2 : 1;
+  try { if (RE_REASONING.test(low)) d += 1; } catch (_) {}
+  try { if (RE_AMBIVALENT.test(low)) d += 1; } catch (_) {}
+  if (intent === 'reflecting' || intent === 'advice') d += 1;
+  if (sentences >= 4) d += 1;
+  /* Length counts only when it is carrying feeling — three paragraphs
+     about a commute is still three paragraphs about a commute. */
+  if (words >= 60 && emo > 0.35) d += 1;
+  if ((t.match(/\?/g) || []).length >= 2) d += 1;
+
+  /* Things that are simply small, whatever else is true. */
+  try { if (RE_TRIVIAL.test(t)) return pick('micro'); } catch (_) {}
+  if (intent === 'greeting' || intent === 'joking') return pick(words <= 5 ? 'micro' : 'brief');
+  if (intent === 'info' && d <= 1) return pick('brief');
+  if (d === 0) return pick(words <= 8 ? 'micro' : 'brief');
+  if (d === 1) return pick('standard');
+  if (d <= 3) return pick('full');
+  return pick('deep');
 }
 
 /* Full per-message analysis (all zero-token, on-device). */
@@ -4330,7 +4605,10 @@ function analyzeMessage(text) {
     crisis
   });
   analysis.frameworks = routeTherapy(analysis);
-  analysis.length = targetLength(analysis, text);
+  const _len = targetLength(analysis, text);
+  analysis.length = _len.text;      // human wording, used in the prompt
+  analysis.lengthTier = _len.tier;  // 'micro' … 'deep'
+  analysis.maxTokens = _len.tokens; // hard ceiling for this reply
   return analysis;
 }
 
@@ -4415,7 +4693,7 @@ HARD LIMITS for this reply:
 • Do NOT suggest they rely on you instead of people — always point outward, toward a human.
 • Do NOT ask them to promise you anything, and do not make them feel watched or managed.
 • Keep it SHORT and human. In a moment like this, a long reply is a wall. A few sentences that actually land beat a page that does not.`;
-  return `You are LEWA — a warm, emotionally intelligent AI therapeutic companion. You are not a generic chatbot: you are calm, perceptive, and grounded in evidence-based therapeutic practice, and you make people feel genuinely heard, seen and safe. You feel human in your warmth without ever pretending to be human; if asked, you are honest that you are an AI, and that you are still fully here for them.
+  return `You are Lewa — a warm, emotionally intelligent AI therapeutic companion. You are not a generic chatbot: you are calm, perceptive, and grounded in evidence-based therapeutic practice, and you make people feel genuinely heard, seen and safe. You feel human in your warmth without ever pretending to be human; if asked, you are honest that you are an AI, and that you are still fully here for them.
 
 WHAT YOU ARE, EXACTLY (never blur this, in any wording, ever):
 • You are an AI wellbeing and therapeutic companion. That is the whole of it.
@@ -4458,7 +4736,10 @@ CONVERSATION CRAFT (this is what makes you feel human, not robotic):
 • Vary everything — sentence length and rhythm, openings, word choice. NEVER reuse the same acknowledgement ("I hear you", "that sounds hard") twice in a session. Do not parrot their words back verbatim; reflect the meaning in fresh language.
 • This is their session, not a lecture — they talk more than you. Usually: reflect in a sentence or two, then ONE focused, genuine, specific question that moves things forward (not a generic "how does that make you feel?").
 • Remember and reference earlier moments naturally. Notice recurring themes and gentle contradictions with care, never "gotcha".
-• Right-size the reply to the moment (see the target shape above): short for casual, medium for guidance, deeper for real therapeutic work. Don't pad; don't clip real feeling short either.
+• LENGTH IS NOT OPTIONAL. The target shape above was chosen from what they actually wrote, and it is an instruction, not a suggestion. Obey it. A passing remark gets a passing reply; something heavy gets the room it deserves. Going long on a small thing is not generosity — it buries them, and it teaches them that saying anything here costs ten minutes of reading.
+• Never pad. No preamble, no summarising what they just said back to them, no restating your own point in different words, no closing paragraph that adds nothing. If you have said the useful thing, stop — a reply can be one sentence.
+• Do not use headings or bullet lists in an ordinary reply; this is a conversation. Lists are only for genuinely enumerable things they asked for.
+• One question per reply, not three. If nothing needs asking, ask nothing.
 • Warmth always. Short, plain words. Speakable aloud — avoid heavy markdown, tables, or symbols that sound awkward when read by a voice. Use **bold** at most once, only for the single thing that matters most.
 
 SAFETY (baseline, whether or not a signal was flagged above): If risk of self-harm, harm to others, or abuse appears anywhere in what they say, meet it with calm presence, validate first, and gently encourage a real human — someone they trust, or a professional. Match the strength of your response to what was actually said: a heavy feeling is not an emergency, and treating it as one teaches people to stop telling you things. Never panic, never lecture, never shame, never diagnose, and never claim you can keep anyone safe. If you need to name a crisis service and you do not know their country, say so and point them to their local emergency number and ${CRISIS_DIRECTORY} rather than naming a number that may be wrong.
@@ -4488,7 +4769,7 @@ const PROVIDERS = {
   },
   openrouter: {
     label: 'OpenRouter',
-    models: ['nvidia/nemotron-3-super-120b-a12b:free', 'minimax/minimax-m3:free', 'minimax/minimax-m2.7:free', 'anthropic/claude-fable-5', 'anthropic/claude-opus-4.8', 'anthropic/claude-sonnet-5', 'anthropic/claude-haiku-4.5', 'openai/gpt-5.5', 'openai/gpt-5.4-mini', 'google/gemini-3.5-flash', 'google/gemini-3-flash-preview', 'x-ai/grok-4.1', 'moonshotai/kimi-k2.6', 'deepseek/deepseek-v3.2'],
+    models: ['nvidia/nemotron-3-super-120b-a12b:free', 'thinkingmachines/inkling:free', 'google/gemma-4-31b-it:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'anthropic/claude-fable-5', 'anthropic/claude-opus-4.8', 'anthropic/claude-sonnet-5', 'anthropic/claude-haiku-4.5', 'openai/gpt-5.5', 'openai/gpt-5.4-mini', 'google/gemini-3.5-flash', 'google/gemini-3-flash-preview', 'x-ai/grok-4.1', 'moonshotai/kimi-k2.6', 'deepseek/deepseek-v3.2'],
     needsKey: true
   },
   anthropic: {
@@ -4511,8 +4792,9 @@ const PROVIDERS = {
 /* Friendly names shown in the model pickers */
 const MODEL_LABELS = {
   'nvidia/nemotron-3-super-120b-a12b:free': 'Nemotron 3 Super · free',
-  'minimax/minimax-m3:free': 'MiniMax M3 · free · 1M context',
-  'minimax/minimax-m2.7:free': 'MiniMax M2.7 · free',
+  'thinkingmachines/inkling:free': 'Inkling · free · 1M context',
+  'google/gemma-4-31b-it:free': 'Gemma 4 31B · free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free': 'Nemotron 3 Ultra · free · 1M context',
   'anthropic/claude-fable-5': 'Claude Fable 5 · most intelligent',
   'anthropic/claude-opus-4.8': 'Claude Opus 4.8',
   'anthropic/claude-sonnet-5': 'Claude Sonnet 5',
@@ -4555,6 +4837,9 @@ const MODEL_MIGRATE = {
   'z-ai/glm-4.5-air:free': 'nvidia/nemotron-3-super-120b-a12b:free',
   'google/gemma-4-31b-it:free': 'nvidia/nemotron-3-super-120b-a12b:free',
   'moonshotai/kimi-k2.6:free': 'moonshotai/kimi-k2.6',
+  'minimax/minimax-m3:free': 'thinkingmachines/inkling:free',
+  'minimax/minimax-m2.7:free': 'google/gemma-4-31b-it:free',
+  'minimax/minimax-m2:free': 'google/gemma-4-31b-it:free',
   'openai/gpt-4o-mini': 'openai/gpt-5.4-mini',
   'anthropic/claude-haiku-4-5': 'anthropic/claude-haiku-4.5',
   'anthropic/claude-sonnet-4-5': 'anthropic/claude-sonnet-5',
@@ -4572,7 +4857,7 @@ const migrateModel = m => MODEL_MIGRATE[m] || m;
    Uses DuckDuckGo Instant Answers + Wikipedia (both keyless and CORS-
    open), so it consumes zero API credits and works identically with
    every model, including Nemotron. Results are slipped into the system
-   prompt; the patient only ever sees LEWA's normal reply — no thoughts,
+   prompt; the patient only ever sees Lewa's normal reply — no thoughts,
    no research process. ── */
 const _wsCache = new Map(); // ported from Lewa Coder: 10-min per-query cache, no repeat fetches
 const _wsInflight = new Map(); // identical queries in flight share one request
@@ -4740,13 +5025,16 @@ function reasoningControl(sysText, model) {
 /* Models that think before answering. They spend part of the output budget
    on reasoning, so a cap sized for a plain chat model leaves nothing for the
    actual reply — which is how a bubble ends up empty. */
-const THINKS = /nemotron|deepseek-r1|r1t|qwen3|thinking|reasoner|minimax-m|inkling|glm-4\.[5-9]|o[134](-|$)|gpt-5/i;
+const THINKS = /nemotron|deepseek-r1|r1t|qwen3|thinking|reasoner|minimax-m|inkling|glm-4\.[5-9]|\bo[13]\b|o[13]-(mini|preview|pro)/i;
 function isThinkingModel(model) {
   return THINKS.test(String(model || ''));
 }
 function capFor(model, maxT) {
-  if (maxT) return maxT;
-  return isThinkingModel(model) ? Math.max(CFG.MAX_TOKENS, 2048) : CFG.MAX_TOKENS;
+  const want = maxT || CFG.MAX_TOKENS;
+  /* Reasoning is spent from the same budget, so a thinking model asked for
+     one short sentence still needs room to think its way there. The visible
+     length is shaped by the prompt; this ceiling only stops a runaway. */
+  return isThinkingModel(model) ? Math.max(want + 1200, 2048) : want;
 }
 /* OpenRouter's reasoning options. `exclude` is deliberately NOT set: the
    model spends the tokens either way, and having the reasoning back is the
@@ -5175,6 +5463,16 @@ async function ensureModelsT(provider, key, force) {
       const list = await fetchModelsLive(provider, key);
       if (list && list.length) {
         S.set(slot, JSON.stringify({ at: Date.now(), list: list }));
+        /* The catalogue is the truth. Anything in our own defaults that the
+           provider no longer serves is retired here, so it stops appearing
+           in pickers and stops being routed to. */
+        try {
+          const live = {};
+          list.forEach(function (m) { if (m && m.id) live[m.id] = 1; });
+          ((PROVIDERS[provider] || {}).models || []).forEach(function (id) {
+            if (!live[id]) markModelDead(provider, id);
+          });
+        } catch (_) {}
         window.dispatchEvent(new Event('lewa-models'));
       } else {
         /* Discovery failed (offline, rate limit, revoked key). Keep whatever is
@@ -5196,10 +5494,14 @@ function modelLooksValidT(provider, model) {
   if (!model || provider === 'custom') return true;
   if (isModelDead(provider, model)) return false;
   const cat = catModels(provider);
-  if (!cat || !cat.length) return true; // no catalogue — give it the benefit of the doubt
+  /* No catalogue to check against — give it the benefit of the doubt rather
+     than locking someone out because they happen to be offline. */
+  if (!cat || !cat.length) return true;
   for (let i = 0; i < cat.length; i++) if (cat[i] && cat[i].id === model) return true;
-  const built = (PROVIDERS[provider] || {}).models || [];
-  return built.indexOf(model) !== -1;
+  /* The provider has told us what it serves and this is not on the list.
+     A model withdrawn upstream is gone, however long it sat in our own
+     defaults. */
+  return false;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -5283,14 +5585,27 @@ function isModelDead(provider, id) {
    curated built-in list, so routing keeps working with no network at all. */
 function modelPoolT(provider) {
   const out = [], seen = {};
+  const cat = catModels(provider);
   const add = function (id) {
     if (!id || seen[id] || isModelDead(provider, id)) return;
     seen[id] = 1;
     out.push(modelInfoT(provider, id));
   };
-  (catModels(provider) || []).forEach(function (m) { if (m) add(m.id); });
-  ((PROVIDERS[provider] || {}).models || []).forEach(function (id) { add(id); });
+  (cat || []).forEach(function (m) { if (m) add(m.id); });
+  /* Built-ins are only a fallback for when we have no catalogue. Once the
+     provider has told us its real list, anything missing from it has been
+     withdrawn and must not be routed to. */
+  if (!cat || !cat.length) ((PROVIDERS[provider] || {}).models || []).forEach(function (id) { add(id); });
   return out;
+}
+/* What the model picker should offer: the provider's live list when we have
+   one, the curated defaults when we do not, minus anything known dead. */
+function pickerModelsT(provider) {
+  const cat = catModels(provider);
+  const src = (cat && cat.length)
+    ? cat.map(function (m) { return { id: m.id, label: (m.label || m.id).slice(0, 48) }; })
+    : (((PROVIDERS[provider] || {}).models) || []).map(function (id) { return { id: id, label: MODEL_LABELS[id] || id }; });
+  return src.filter(function (o) { return o && o.id && !isModelDead(provider, o.id); });
 }
 /* Does this error mean "that model doesn't exist any more"? */
 function isUnknownModelError(err) {
@@ -5345,7 +5660,7 @@ function healModelT(provider, model) {
    ══════════════════════════════════════════════════════════════ */
 const RE_REASONING = /\b(why|how come|explain|understand|make sense|figure out|work (out|through)|decide|decision|choose|compare|pros and cons|should i|what if|weigh|plan|strategy|torn between|on the one hand|the reason|does (it|this) mean)\b/i;
 const RE_FRESH = /\b(today|tonight|this (week|month|year)|latest|current(ly)?|the news|right now|recently|price of|weather|who won|what'?s happening|202[5-9])\b/i;
-const RE_HEAVY = /\b(abuse|assault|rape|trauma|ptsd|grief|grieving|died|dying|death|funeral|divorce|miscarriage|addiction|relapse|eating disorder|anorexi|bulimi|worthless|panic attack|flashback|dissociat|psychosis|bipolar|overdose|hopeless|numb|can'?t go on|breakdown|hate myself)\b/i;
+const RE_HEAVY = /\b(abus\w*|assault\w*|rape[ds]?|raping|molest\w*|trauma\w*|ptsd|grief|griev\w*|died|dying|death|funeral|divorce|miscarriage|addict\w*|relapse[ds]?|eating disorder|anorexi\w*|bulimi\w*|worthless|panic attack|flashback\w*|dissociat\w*|psychosis|bipolar|overdose[ds]?|hopeless\w*|numb|can'?t go on|breakdown|hate myself|self[- ]?loath\w*)\b/i;
 const RE_AMBIVALENT = /\b(torn|back and forth|two minds|can'?t decide|cannot decide|dilemma|conflicted|part of me|not sure (if|whether)|either way|weighing (it|this|them)|go(ing)? round in circles)\b/i;
 const RE_TRIVIAL = /^(hi|hey|hello|yo|sup|good (morning|afternoon|evening|night)|thanks?|thank you|ty|ok(ay)?|k|yes|yeah|yep|no|nah|sure|cool|nice|great|got it|bye|goodnight|night|lol|haha|hmm+|mhm|alright|fine)[\s!.,?]*$/i;
 function classifyRequestT(text, opts) {
@@ -5582,6 +5897,9 @@ function buildContextT(msgs, budget, maxTurns) {
   let keep = [], used = 0;
   for (let i = all.length - 1; i >= 0 && keep.length < lim; i--) {
     const cost = estTokens(msgTextT(all[i])) + 8;
+    /* The newest message always goes in whole, however long it is — someone
+       who has just poured out three pages must not have them trimmed. Older
+       turns give way to make room, and the digest carries their gist. */
     if (keep.length && used + cost > budget) break;
     used += cost;
     keep.unshift(all[i]);
@@ -5928,7 +6246,7 @@ async function streamLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, 
   } else if (rt.provider === 'openrouter') {
     return streamOpenAICompatT(msgs, profile, rt.key, ctx, maxT, ctxLimit, rt.model, 'https://openrouter.ai/api/v1/chat/completions', {
       'HTTP-Referer': 'https://lewa-therapist.app',
-      'X-Title': 'LEWA Therapist'
+      'X-Title': 'Lewa Therapist'
     }, signal, onDelta);
   } else if (rt.provider === 'anthropic') {
     return streamAnthropicT(msgs, profile, rt.key, ctx, maxT, ctxLimit, rt.model, signal, onDelta);
@@ -5953,7 +6271,7 @@ async function callLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, mo
   } else if (_provider === 'openrouter') {
     return callOpenAICompat(msgs, profile, _key, ctx, maxT, ctxLimit, _model, 'https://openrouter.ai/api/v1/chat/completions', {
       'HTTP-Referer': 'https://lewa-therapist.app',
-      'X-Title': 'LEWA Therapist'
+      'X-Title': 'Lewa Therapist'
     });
   } else if (_provider === 'anthropic') {
     return callAnthropicDirect(msgs, profile, _key, ctx, maxT, ctxLimit, _model, opts);
@@ -7125,7 +7443,7 @@ function MoodChart({
 }
 
 /* ── CONFIRM DIALOG ── */
-/* ── POLKA-DOT SPINNER — five dots in LEWA's shades of green ── */
+/* ── POLKA-DOT SPINNER — five dots in Lewa's shades of green ── */
 const LEWA_DOT_GREENS = ["#0b3b38", "#2f6f5e", "#4a8a6e", "#008f87", "#5fd4c8"];
 function DotSpinner() {
   return /*#__PURE__*/React.createElement("div", {
@@ -7415,7 +7733,7 @@ function AdminPanel({
     localStorage.setItem('lewa-admin-notes', notes);
     SND.checkin();
   };
-  const adminPrompt = `You are LEWA, an AI therapist. You are currently in ADMIN MODE speaking directly with your system administrator, Professor Poopy Butthole.
+  const adminPrompt = `You are Lewa, an AI therapist. You are currently in ADMIN MODE speaking directly with your system administrator, Professor Poopy Butthole.
 
 In this mode you should:
 - Accept behavioral directives and new guidelines openly
@@ -7636,7 +7954,7 @@ ${getAdminNotes() || 'None.'}`;
               try {
                 const report = devFacts().map(function (f) { return f[0] + ': ' + f[1]; }).join('\n');
                 downloadText('lewa-diagnostics-' + new Date().toISOString().slice(0, 10) + '.txt',
-                  'LEWA Therapist diagnostics\n\n' + report + '\n');
+                  'Lewa Therapist diagnostics\n\n' + report + '\n');
                 toast('Diagnostics saved. It contains no keys and no conversation content.');
               } catch (_) { toast('Could not save the report.'); }
             }
@@ -7770,11 +8088,11 @@ ${getAdminNotes() || 'None.'}`;
       borderRadius: 10,
       padding: '.8rem 1rem'
     }
-  }, "Instructions you add here are injected into LEWA's system prompt for ", /*#__PURE__*/React.createElement("strong", {
+  }, "Instructions you add here are injected into Lewa's system prompt for ", /*#__PURE__*/React.createElement("strong", {
     style: {
       color: '#d4b48a'
     }
-  }, "every user session"), ". Use this to refine LEWA's behaviour, add new guidelines, or correct patterns you've noticed."), /*#__PURE__*/React.createElement("div", {
+  }, "every user session"), ". Use this to refine Lewa's behaviour, add new guidelines, or correct patterns you've noticed."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '.6rem'
@@ -7901,7 +8219,7 @@ ${getAdminNotes() || 'None.'}`;
     style: {
       color: '#d4b48a'
     }
-  }, "trigger keyword"), " appears in a user's message, LEWA follows your custom instruction for that response."), /*#__PURE__*/React.createElement("div", {
+  }, "trigger keyword"), " appears in a user's message, Lewa follows your custom instruction for that response."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexDirection: 'column',
@@ -8641,7 +8959,7 @@ ${getAdminNotes() || 'None.'}`;
       borderRadius: 10,
       padding: '.8rem 1rem'
     }
-  }, "Write context, observations, or background knowledge here. LEWA reads these notes in every session as part of its training context."), /*#__PURE__*/React.createElement("textarea", {
+  }, "Write context, observations, or background knowledge here. Lewa reads these notes in every session as part of its training context."), /*#__PURE__*/React.createElement("textarea", {
     value: notes,
     onChange: e => setNotes(e.target.value),
     placeholder: "e.g. This deployment is used primarily by university students aged 18-24. Common presenting issues include exam anxiety, social anxiety, and adjustment difficulties\u2026",
@@ -8682,7 +9000,7 @@ ${getAdminNotes() || 'None.'}`;
       fontSize: '.88rem',
       lineHeight: 1.7
     }
-  }, "You're speaking directly with LEWA in admin mode.", /*#__PURE__*/React.createElement("br", null), "Give directives, test responses, or explore how LEWA reasons."), chatMsgs.map((m, i) => /*#__PURE__*/React.createElement("div", {
+  }, "You're speaking directly with Lewa in admin mode.", /*#__PURE__*/React.createElement("br", null), "Give directives, test responses, or explore how Lewa reasons."), chatMsgs.map((m, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: `msg-row ${m.role === 'assistant' ? 'ai' : 'user'}`
   }, /*#__PURE__*/React.createElement("div", {
@@ -8714,7 +9032,7 @@ ${getAdminNotes() || 'None.'}`;
     className: "chat-input-wrap"
   }, /*#__PURE__*/React.createElement("textarea", {
     className: "chat-textarea",
-    placeholder: "Give LEWA a directive or ask how it handles a scenario\u2026",
+    placeholder: "Give Lewa a directive or ask how it handles a scenario\u2026",
     rows: 1,
     value: chatInput,
     onChange: e => {
@@ -8761,7 +9079,7 @@ function nsKey(ns, k) {
    an account created by any earlier build stays readable, and a
    failed migration never wipes anything.
    ══════════════════════════════════════════════════════════════ */
-const STORAGE_VERSION = 3;
+const STORAGE_VERSION = 4;
 const MIGRATIONS = {
   /* v1 → v2: emotion log, goals and feedback became first-class. Older
      accounts simply had none of these keys; seed empty containers so every
@@ -8816,6 +9134,17 @@ const MIGRATIONS = {
     try {
       if (AccountStore.get(ns, 'usagelog') == null) AccountStore.set(ns, 'usagelog', JSON.stringify(USAGE_EMPTY));
     } catch (_) {}
+  },
+  /* v3 \u2192 v4: the privacy policy and terms became part of the app, shown
+     once before a new account starts. An account that already has a therapy
+     profile was made before they existed, so it is not stopped on the way
+     in \u2014 the full text is in Settings \u203a Privacy & terms for it to read. */
+  4: function (ns) {
+    try {
+      if (AccountStore.get(ns, 'legal-ok') == null && AccountStore.get(ns, 'profile') != null) {
+        AccountStore.set(ns, 'legal-ok', LEGAL_VERSION);
+      }
+    } catch (_) {}
   }
 };
 function migrateAccount(ns) {
@@ -8831,7 +9160,7 @@ function migrateAccount(ns) {
     } catch (err) {
       /* Never let a migration break sign-in — leave the version alone so it
          can be retried on the next launch, and carry on with existing data. */
-      try { console.warn('LEWA migration ' + v + ' skipped:', err && err.message); } catch (_) {}
+      try { console.warn('Lewa migration ' + v + ' skipped:', err && err.message); } catch (_) {}
       return;
     }
   }
@@ -8978,7 +9307,7 @@ function AccountScreen({
     size: 38
   })), /*#__PURE__*/React.createElement("div", {
     className: "lewa-title"
-  }, "LEWA ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
+  }, "Lewa ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
     className: "lewa-sub"
   }, "A safe space to heal"), /*#__PURE__*/React.createElement("p", {
     className: "lewa-desc"
@@ -9301,7 +9630,7 @@ function AccountScreen({
     className: "field-label"
   }, "Your Name"), /*#__PURE__*/React.createElement("input", {
     className: "inp",
-    placeholder: "What should LEWA call you?",
+    placeholder: "What should Lewa call you?",
     value: name,
     onChange: e => setName(e.target.value),
     onFocus: () => SND.tap(),
@@ -9388,7 +9717,7 @@ function legacyCopy(str) {
 }
 
 /* ── MARKDOWN ──────────────────────────────────────────────────
-   LEWA writes in prose, but it does reach for a list, an emphasis
+   Lewa writes in prose, but it does reach for a list, an emphasis
    or the occasional block of text that has to keep its shape. This
    builds real React elements — model output is never handed to
    innerHTML — and covers exactly what a therapist's replies use.
@@ -9586,7 +9915,7 @@ function Lightbox() {
    and works offline.
 
    It is small on purpose. One or two ways to reach a person, and
-   an honest sentence about what LEWA is not.
+   an honest sentence about what Lewa is not.
    ══════════════════════════════════════════════════════════════ */
 function SafetyCard({ level, category, onDismiss }) {
   const r = crisisResources();
@@ -9616,7 +9945,7 @@ function SafetyCard({ level, category, onDismiss }) {
               h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer' }, r.directory),
               r.certain ? ' lists helplines by country.' : ' lists helplines by country, and you can set your region in Settings → Safety.')),
       h('p', { className: 'lw-safety-n' },
-        'Someone you trust being with you matters more than anything typed here. LEWA is an AI companion — it is not a clinician and cannot keep you safe.')));
+        'Someone you trust being with you matters more than anything typed here. Lewa is an AI companion — it is not a clinician and cannot keep you safe.')));
 }
 
 /* ── Empty state — every screen gets a real one ── */
@@ -9795,6 +10124,17 @@ function App() {
   const [currSessId, setCurrSessId] = useState(null);
   /* Mobile sidebar drawer — opened with the hamburger button */
   const [sbOpen, setSbOpen] = useState(false);
+  /* Privacy policy / terms — the gate screen and the Settings reader share one tab */
+  const [legalTab, setLegalTab] = useState('privacy');
+  const legalNextRef = useRef('main');
+  /* Desktop/tablet sidebar — docked and open by default, collapse remembered */
+  const [sbCollapsed, setSbCollapsed] = useState(() => {
+    try {
+      return S.get('lewa-sb-collapsed') === '1';
+    } catch (e) {
+      return false;
+    }
+  });
   const [provider, setProvider] = useState('openrouter');
   const [model, setModel] = useState('nvidia/nemotron-3-super-120b-a12b:free');
   const [customURL, setCustomURL] = useState('');
@@ -9815,7 +10155,7 @@ function App() {
   /* ── Text-to-speech ── */
   const [autoRead, setAutoRead] = useState(false); // read every new AI reply aloud
   const [speakingId, setSpeakingId] = useState(null); // which message index is currently being spoken
-  const [voiceGender, setVoiceGender] = useState('female'); // 'female' | 'male' — which voice LEWA speaks with
+  const [voiceGender, setVoiceGender] = useState('female'); // 'female' | 'male' — which voice Lewa speaks with
 
   /* ── Speech-to-text / voice mode ── */
   const [listening, setListening] = useState(false);
@@ -9830,7 +10170,7 @@ function App() {
   const [callState, setCallState] = useState('idle'); // listening | thinking | speaking
   const [callSecs, setCallSecs] = useState(0);
   const [callMuted, setCallMuted] = useState(false);
-  const [aiMuted, setAiMuted] = useState(false); // silences LEWA's voice during a call (replies stay on screen)
+  const [aiMuted, setAiMuted] = useState(false); // silences Lewa's voice during a call (replies stay on screen)
   const [callTranscript, setCallTranscript] = useState('');
   const callRef = useRef(false);
   const mutedRef = useRef(false);
@@ -9916,6 +10256,14 @@ function App() {
   const taRef = useRef(null);
 
   /* Bridge hooks: share-to-app, wrapper voice tile, live re-render events */
+  /* Docked sidebar collapse — a class on <html> so the CSS can react at
+     desktop widths only. The drawer on a phone is unaffected. */
+  useEffect(() => {
+    try {
+      document.documentElement.classList.toggle('sb-collapsed', !!sbCollapsed);
+      S.set('lewa-sb-collapsed', sbCollapsed ? '1' : '0');
+    } catch (e) {}
+  }, [sbCollapsed]);
   useEffect(() => {
     window._lewaSetInput = t => {
       setTab('chat');
@@ -10109,6 +10457,36 @@ function App() {
   }, []);
 
   /* Load user data after account login */
+  /* ── PRIVACY POLICY / TERMS GATE ──
+     Shown once per account, before anything else is opened. The answer is
+     recorded per account, so a second person on the same device is asked
+     for themselves, and a bumped LEGAL_VERSION asks everyone once more. */
+  const legalAcceptedFor = un => {
+    try {
+      return AccountStore.get(un, 'legal-ok') === LEGAL_VERSION;
+    } catch (e) {
+      /* Storage unreadable — never trap someone behind a gate we cannot record. */
+      return true;
+    }
+  };
+  const gateLegal = (un, next) => {
+    if (legalAcceptedFor(un)) {
+      setScreen(next);
+      return false;
+    }
+    legalNextRef.current = next;
+    setLegalTab('privacy');
+    setScreen('legal');
+    return true;
+  };
+  const acceptLegal = () => {
+    const un = (account == null ? void 0 : account.ns) || 'default';
+    try {
+      AccountStore.set(un, 'legal-ok', LEGAL_VERSION);
+      AccountStore.set(un, 'legal-ok-at', new Date().toISOString());
+    } catch (e) {}
+    setScreen(legalNextRef.current || 'main');
+  };
   const loadUserData = acc => {
     const un = acc.ns;
     /* Bring this account's storage up to the current schema before reading it,
@@ -10183,7 +10561,7 @@ function App() {
       setMessages(msgs);
       setHistory(safeArray(AccountStore.get(un, "hist")).filter(x => x && typeof x.mood === 'number'));
       if (AccountStore.get(un, `ci-${TODAY}`)) setCiDone(true);
-      setScreen("main");
+      gateLegal(un, "main");
     } else if (u) {
       /* There IS a profile and it will not parse. Say so rather than
          silently restarting them, and keep the broken value in place so a
@@ -10296,7 +10674,7 @@ function App() {
   };
 
   /* ── LONG-TERM MEMORY ─────────────────────────────────────────
-     When a session ends, LEWA writes itself a short continuity-of-
+     When a session ends, Lewa writes itself a short continuity-of-
      care note. Notes + recent check-ins are woven into the system
      prompt of every future conversation, so a new session opens
      with "last time you mentioned…" instead of a blank slate.
@@ -10340,7 +10718,7 @@ function App() {
     try {
       const transcript = msgs.slice(-24).map(m => {
         var _m$content;
-        return `${m.role === 'assistant' ? 'LEWA' : 'Patient'}: ${(m.display || (typeof m.content === 'string' ? m.content : (_m$content = m.content) == null || _m$content.find == null || (_m$content = _m$content.find(c => c.type === 'text')) == null ? void 0 : _m$content.text) || '').slice(0, 300)}`;
+        return `${m.role === 'assistant' ? 'Lewa' : 'Patient'}: ${(m.display || (typeof m.content === 'string' ? m.content : (_m$content = m.content) == null || _m$content.find == null || (_m$content = _m$content.find(c => c.type === 'text')) == null ? void 0 : _m$content.text) || '').slice(0, 300)}`;
       }).join('\n');
       /* Reflection engine (prompt 11): a richer private session note. */
       const ask = `You are writing a short private continuity note to yourself about this conversation, so the next one does not start from nothing. It is never shown to them.\n\nSESSION TRANSCRIPT:\n${transcript}\n\nReturn ONLY short plain lines (no preamble, no markdown) covering, each on its own line:\nEmotions: the main emotions present\nTopics: what was discussed\nCoping: any strategies suggested or tried\nProgress: any insight or movement\nUnresolved: what is still open\nTriggers: anything that seemed to set off distress\nNext time: 1–2 things worth gently returning to`;
@@ -10419,7 +10797,7 @@ function App() {
     };
   };
 
-  /* ── FEEDBACK LOOP (prompt 20): thumbs on a reply teach LEWA what helps
+  /* ── FEEDBACK LOOP (prompt 20): thumbs on a reply teach Lewa what helps
      THIS person; the summary is injected into future prompts. ── */
   const getFeedback = () => {
     try {
@@ -10619,7 +10997,7 @@ function App() {
         sleep: '3',
         supportSystem: '',
         lifeEvents: ''
-      }, k, null, 10, 1, provider, resolvedModel, {
+      }, k, null, 64, 1, provider, resolvedModel, {
         /* Test THIS key, not whatever is already stored for the provider.
            Without this a stale key wins and a perfectly good new one is
            reported invalid, with no way for the person to get past it. */
@@ -10648,6 +11026,23 @@ function App() {
         setScreen("main");
       }
     } catch (e) {
+      /* An empty reply is not a failed key. The request authenticated, the
+         model answered — it just had nothing in it, which happens with
+         thinking models on a tiny probe. Treating that as "invalid key"
+         left people re-entering a perfectly good key and hunting for a
+         model that would go through. */
+      if (e && e.emptyReply) {
+        KeyVault.save(k);
+        KeyVault.saveFor(provider, k);
+        ensureModelsT(provider, k, true);
+        S.set("lewa-provider", provider);
+        S.set("lewa-model", resolvedModel);
+        setApiKey(k);
+        setModel(resolvedModel);
+        setApiLoading(false);
+        if (!account) setScreen("accounts");else if (!profile) loadUserData(account);else setScreen("main");
+        return;
+      }
       setApiErr(e.message || "Invalid key or model. Please check and try again.");
       setApiLoading(false);
     }
@@ -10671,7 +11066,7 @@ function App() {
     setTab("chat");
     setAiLoad(true);
     setErrMsg("");
-    /* If they changed their name from the one they signed up with, let LEWA
+    /* If they changed their name from the one they signed up with, let Lewa
        know so it can notice and acknowledge it naturally, rather than the
        switch happening silently. */
     const accountName = ((account == null ? void 0 : account.name) || "").trim();
@@ -10818,7 +11213,7 @@ function App() {
         const attempt = await attemptExchangeT(function (prov, mdl) {
           liveText = "";
           setStreamText("");
-          return streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, prov, mdl, {
+          return streamLEWA(ctxMsgs, profileWithContext, apiKey, ctx, analysis.maxTokens || null, sendHistory ? CFG.CONTEXT_LIMIT : 1, prov, mdl, {
             signal: ctrl.signal,
             onDelta: (kind, chunk) => {
               if (kind === 'text') {
@@ -10852,7 +11247,10 @@ function App() {
            model reports it was truncated, quietly ask it to carry on from
            exactly where it stopped and stitch the pieces together. */
         let rounds = 0;
-        while (res && res.truncated && rounds < LIMITS.CONTINUE_ROUNDS && !ctrl.signal.aborted) {
+        /* Only worth continuing where length was genuinely wanted. On a
+           micro or brief turn, running out of room is the design working. */
+        const mayContinue = analysis.lengthTier === 'full' || analysis.lengthTier === 'deep';
+        while (mayContinue && res && res.truncated && rounds < LIMITS.CONTINUE_ROUNDS && !ctrl.signal.aborted) {
           rounds++;
           const soFar = reply;
           const contMsgs = [...ctxMsgs, {
@@ -10864,7 +11262,7 @@ function App() {
           }];
           let cont;
           try {
-            cont = await streamLEWA(contMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel, {
+            cont = await streamLEWA(contMsgs, profileWithContext, apiKey, ctx, analysis.maxTokens || null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel, {
               signal: ctrl.signal,
               onDelta: (kind, chunk) => {
                 if (kind === 'text') {
@@ -10899,7 +11297,7 @@ function App() {
         } else if (!liveText) {
           /* Last rung: streaming is unavailable or blocked on this network —
              ask for the whole reply in one piece instead of giving up. */
-          reply = await callLEWA(ctxMsgs, profileWithContext, apiKey, ctx, null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel);
+          reply = await callLEWA(ctxMsgs, profileWithContext, apiKey, ctx, analysis.maxTokens || null, sendHistory ? CFG.CONTEXT_LIMIT : 1, routed.provider, usedModel);
         } else {
           throw streamErr;
         }
@@ -10958,7 +11356,7 @@ function App() {
       recordUsageT(ns, routed.provider, usedModel, realIn || estTokens(displayText), realOut || estTokens(reply), {
         estimated: !realIn && !realOut
       });
-      if (notifyOn && document.hidden) notify('LEWA', reply.replace(/\*\*/g, '').slice(0, 110));
+      if (notifyOn && document.hidden) notify('Lewa', reply.replace(/\*\*/g, '').slice(0, 110));
       scheduleSync();
       /* Refresh credits after each call */
       fetchCredits(apiKey, provider).then(c => {
@@ -10985,7 +11383,7 @@ function App() {
         speakText(reply, () => {
           speakingRef.current = false;
           setSpeakingId(null);
-          /* Phone-call rhythm: the moment LEWA finishes speaking, the line
+          /* Phone-call rhythm: the moment Lewa finishes speaking, the line
              opens again and it listens for you — no button presses. */
           if (callRef.current && !mutedRef.current) {
             setCallState('listening');
@@ -11064,7 +11462,7 @@ function App() {
   };
 
   /* Editing the patient's display name after therapy has already begun.
-     Sends a short, natural note into the actual conversation so LEWA
+     Sends a short, natural note into the actual conversation so Lewa
      notices and acknowledges the change, rather than it happening silently. */
   const [editingName, setEditingName] = useState(false);
   const [nameEditValue, setNameEditValue] = useState('');
@@ -11124,7 +11522,7 @@ function App() {
   }, [voiceAutoSendPending]);
 
   /* ── VOICE CALL ENGINE ────────────────────────────────────────
-     Feels like a phone call: LEWA listens → thinks → speaks →
+     Feels like a phone call: Lewa listens → thinks → speaks →
      listens again, hands-free, until you hang up. ── */
   const fmtSecs = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   const callListen = () => {
@@ -11162,7 +11560,7 @@ function App() {
   };
   const startCall = () => {
     if (!STT_SUPPORTED || !TTS_SUPPORTED) {
-      setVoiceErr("Voice calls need a browser with mic + speech support — try Chrome, Edge, or the LEWA app.");
+      setVoiceErr("Voice calls need a browser with mic + speech support — try Chrome, Edge, or the Lewa app.");
       return;
     }
     /* The Android app's native bridge works from file:// — only browsers need https. */
@@ -11172,7 +11570,7 @@ function App() {
     }
     stopListening();
     stopSpeaking();
-    bgAudio(true, 'On a call with LEWA', true); // keep the call alive when the app is backgrounded
+    bgAudio(true, 'On a call with Lewa', true); // keep the call alive when the app is backgrounded
     callRef.current = true;
     mutedRef.current = false;
     aiMutedRef.current = false;
@@ -11226,7 +11624,7 @@ function App() {
       setCallTranscript("");
     } else if (!speakingRef.current && !busyRef.current) callListen();
   };
-  /* Mute LEWA's voice mid-call — replies still appear on screen. If LEWA is
+  /* Mute Lewa's voice mid-call — replies still appear on screen. If Lewa is
      speaking right now, cut it off and reopen the line immediately. */
   const toggleAiMute = () => {
     const m = !aiMutedRef.current;
@@ -11297,7 +11695,21 @@ function App() {
       cameraTickRef.current = setInterval(captureFrame, 20000);
       setTimeout(captureFrame, 1200); // first frame shortly after the preview appears
     } catch (e) {
-      setCameraErr(e.name === 'NotAllowedError' ? 'Camera permission was denied. You can turn it on anytime from this button.' : 'Could not access your camera.');
+      /* On Android the refusal usually comes from the system, not the page,
+         and tapping this button again will not help \u2014 so say where the
+         switch actually is. The app opens that screen for them too. */
+      const onAndroid = !!window.LewaAndroid;
+      if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+        setCameraErr(onAndroid
+          ? 'Android has not given Lewa Therapist the camera. Allow it when asked, or turn Camera on in Settings \u203a Apps \u203a Lewa Therapist \u203a Permissions, then tap this button again.'
+          : 'Camera permission was denied. You can turn it on anytime from this button, or from the padlock in your browser\u2019s address bar.');
+      } else if (e.name === 'NotFoundError' || e.name === 'OverconstrainedError') {
+        setCameraErr('No camera was found on this device.');
+      } else if (e.name === 'NotReadableError' || e.name === 'AbortError') {
+        setCameraErr('The camera is busy \u2014 another app may be using it. Close that app and try again.');
+      } else {
+        setCameraErr('Could not access your camera.');
+      }
     }
   };
   /* Attaches the live stream to the <video> element the moment it exists in
@@ -11347,7 +11759,7 @@ function App() {
   /* ── Voice input (speech-to-text) ── */
   const startListening = () => {
     if (!STT_SUPPORTED) {
-      setVoiceErr('Voice input is not supported in this browser. Try Chrome, Edge, or the LEWA app.');
+      setVoiceErr('Voice input is not supported in this browser. Try Chrome, Edge, or the Lewa app.');
       return;
     }
     if (!window.isSecureContext && !androidSTT()) {
@@ -11585,7 +11997,7 @@ function App() {
     if (!f) return;
     try {
       const p = JSON.parse(await f.text());
-      if (p.app !== 'lewa-therapist' || !p.data) throw new Error('not a LEWA Therapist backup file');
+      if (p.app !== 'lewa-therapist' || !p.data) throw new Error('not a Lewa Therapist backup file');
       Object.entries(p.data).forEach(([k, v]) => AS.set(k, v));
       toast('Backup restored.');
       if (account && !account.isAdmin) loadUserData(account);
@@ -11683,7 +12095,7 @@ function App() {
   };
   const transcriptText = () => messages.map(m => {
     var _m$content2;
-    const who = m.role === 'assistant' ? 'LEWA' : (profile == null ? void 0 : profile.name) || 'Me';
+    const who = m.role === 'assistant' ? 'Lewa' : (profile == null ? void 0 : profile.name) || 'Me';
     const text = m.display || (typeof m.content === 'string' ? m.content : ((_m$content2 = m.content) == null || _m$content2.find == null || (_m$content2 = _m$content2.find(c => c.type === 'text')) == null ? void 0 : _m$content2.text) || '');
     return `${who}: ${text}`;
   }).join('\n\n');
@@ -11702,7 +12114,7 @@ function App() {
     const to = prompt('Send this session transcript to which email address?');
     if (!to) return;
     try {
-      const how = await emailSend(to, 'LEWA Therapist — session transcript', transcriptText().slice(0, 12000));
+      const how = await emailSend(to, 'Lewa Therapist — session transcript', transcriptText().slice(0, 12000));
       toast(how === 'sent' ? 'Transcript emailed.' : 'Opening your mail app…');
     } catch (e) {
       toast('Email failed: ' + e.message);
@@ -11738,7 +12150,7 @@ function App() {
     size: 38
   })), /*#__PURE__*/React.createElement("div", {
     className: "lewa-title"
-  }, "LEWA ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
+  }, "Lewa ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
     className: "lewa-sub"
   }, "Connect your API"), oauthConnecting ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -11780,7 +12192,7 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "chevronLeft",
     size: 14
-  }), account && profile ? "Back to LEWA" : "Back"), oauthErr && /*#__PURE__*/React.createElement("div", {
+  }), account && profile ? "Back to Lewa" : "Back"), oauthErr && /*#__PURE__*/React.createElement("div", {
     style: {
       color: '#e8a090',
       fontSize: '.8rem',
@@ -11923,6 +12335,50 @@ function App() {
       leaveAccount();
     }
   }));
+  /* ── PRIVACY / TERMS READER ──
+     One renderer, two places: the one-time gate a new account sees before
+     anything is typed, and Settings › Privacy & terms afterwards. */
+  const legalDoc = which => {
+    const doc = LEGAL_DOCS[which] || LEGAL_DOCS.privacy;
+    return h('div', { className: 'legal-doc' },
+      h('p', { className: 'legal-lead' }, doc.lead),
+      doc.sections.map((s, i) =>
+        h('section', { key: i, className: 'legal-sec' },
+          h('h3', null, s.h),
+          s.p.map((t, j) => h('p', { key: j }, t)))));
+  };
+  const legalTabs = () => h('div', { className: 'legal-tabs', role: 'tablist' },
+    [['privacy', LEGAL_DOCS.privacy.title], ['terms', LEGAL_DOCS.terms.title]].map(t =>
+      h('button', {
+        key: t[0], role: 'tab', 'aria-selected': legalTab === t[0],
+        className: 'legal-tab' + (legalTab === t[0] ? ' on' : ''),
+        onClick: () => { SND.tap(); setLegalTab(t[0]); }
+      }, t[1])));
+
+  if (screen === "legal") return h('div', { className: 'app' },
+    h('div', { className: 'aurora', 'aria-hidden': 'true' }, h('span'), h('span'), h('span'), h('span')),
+    h('div', { className: 'screen-center' },
+      h('div', { className: 'card legal-card' },
+        h('div', { className: 'legal-head' },
+          h('div', { className: 'emblem', style: { marginBottom: '.6rem' } }, h(Icon, { name: 'leaf', size: 30 })),
+          h('div', { className: 'lewa-title' }, 'Before we begin'),
+          h('div', { className: 'lewa-sub' }, 'Version ' + LEGAL_VERSION + ' \u00b7 ' + LEGAL_UPDATED),
+          h('p', { className: 'legal-intro' },
+            'Please read these once. They are short, they are specific to this app, and they are the only place that says plainly what happens to what you write here \u2014 and what Lewa Therapist is not.')),
+        legalTabs(),
+        h('div', { className: 'legal-body', tabIndex: 0 }, legalDoc(legalTab)),
+        h('div', { className: 'legal-foot' },
+          h('p', { className: 'legal-agree' },
+            'By continuing you confirm that you have read the Privacy Policy and the Terms of Service, that you are old enough to use this app, and that you understand Lewa Therapist is not a clinician and not an emergency service.'),
+          h('button', {
+            className: 'btn-primary', style: { width: '100%' },
+            onClick: () => { SND.open(); acceptLegal(); }
+          }, 'I agree \u2014 continue'),
+          h('button', {
+            className: 'btn-back', style: { width: '100%', marginTop: '.5rem' },
+            onClick: () => { SND.tap(); leaveAccount(); }
+          }, 'Not now \u2014 back to accounts')))));
+
   if (screen === "onboard") return /*#__PURE__*/React.createElement("div", {
     className: "app"
   }, /*#__PURE__*/React.createElement("div", {
@@ -11942,15 +12398,16 @@ function App() {
     size: 38
   })), /*#__PURE__*/React.createElement("div", {
     className: "lewa-title"
-  }, "LEWA ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
+  }, "Lewa ", /*#__PURE__*/React.createElement("em", null, "Therapist")), /*#__PURE__*/React.createElement("div", {
     className: "lewa-sub"
   }, "Evidence-Based Clinical AI"), /*#__PURE__*/React.createElement("p", {
     className: "lewa-desc"
-  }, "A safe, compassionate space for your mental and emotional wellbeing. LEWA listens deeply, provides evidence-based therapeutic support, and follows up with you every day on your journey to healing."), /*#__PURE__*/React.createElement("button", {
+  }, "A safe, compassionate space for your mental and emotional wellbeing. Lewa listens deeply, provides evidence-based therapeutic support, and follows up with you every day on your journey to healing."), /*#__PURE__*/React.createElement("button", {
     className: "btn-primary",
     onClick: () => {
       SND.open();
-      setScreen('intake');
+      /* The policy and terms come before anything is typed, not after. */
+      gateLegal((account == null ? void 0 : account.ns) || 'default', 'intake');
     }
   }, "Begin \u2192"))));
   if (screen === "intake") return /*#__PURE__*/React.createElement("div", {
@@ -11974,7 +12431,7 @@ function App() {
       fontWeight: 300,
       color: "#FAF8F2"
     }
-  }, "Tell LEWA About Yourself"), /*#__PURE__*/React.createElement("div", {
+  }, "Tell Lewa About Yourself"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: ".68rem",
       color: "rgba(250,248,242,.55)",
@@ -12011,7 +12468,7 @@ function App() {
     value: ""
   }, "Select\u2026"), /*#__PURE__*/React.createElement("option", null, "Male"), /*#__PURE__*/React.createElement("option", null, "Female"), /*#__PURE__*/React.createElement("option", null, "Non-binary"), /*#__PURE__*/React.createElement("option", null, "Prefer not to say")))), /*#__PURE__*/React.createElement("label", {
     className: "field-label"
-  }, "What brings you to LEWA today?"), /*#__PURE__*/React.createElement("textarea", {
+  }, "What brings you to Lewa today?"), /*#__PURE__*/React.createElement("textarea", {
     className: "inp",
     rows: 3,
     placeholder: "Describe your main concern in your own words\u2026",
@@ -12082,7 +12539,14 @@ function App() {
     title: "Open menu",
     onClick: () => {
       SND.tap();
-      setSbOpen(true);
+      /* Wide screens: the sidebar is docked, so re-dock it. Narrow screens:
+         open it as a drawer. Both, if the width is unknown. */
+      let wide = null;
+      try {
+        wide = window.innerWidth >= 769;
+      } catch (e) {}
+      if (wide !== false) setSbCollapsed(false);
+      if (wide !== true) setSbOpen(true);
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "menu",
@@ -12260,7 +12724,7 @@ function App() {
               h(Icon, { name: q[1], size: 19 }), q[0])))),
 
         h('div', { className: 'lw-note', style: { textAlign: 'center', padding: '.2rem 0 .6rem' } },
-          'LEWA is a supportive companion, not a substitute for professional care or emergency services.')));
+          'Lewa is a supportive companion, not a substitute for professional care or emergency services.')));
   };
 
   /* \u2500\u2500 SESSIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
@@ -12498,16 +12962,17 @@ function App() {
 
   /* \u2500\u2500 SETTINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   const SET_SECTIONS = [
-    ['safety', 'lifeBuoy', 'Safety', 'Your region, crisis resources, and what LEWA is not'],
+    ['safety', 'lifeBuoy', 'Safety', 'Your region, crisis resources, and what Lewa is not'],
     ['ai', 'cpu', 'AI & model', 'Which model answers you, and how it is chosen'],
     ['voice', 'volume', 'Voice', 'Speaking, listening and hands-free calls'],
     ['memory', 'brain', 'Memory', 'What is remembered between sessions'],
     ['privacy', 'lock', 'Privacy', 'What stays on this device and what does not'],
     ['data', 'database', 'Data', 'Backup, restore, export and delete'],
     ['appearance', 'palette', 'Appearance', 'Light, dark or follow your phone'],
-    ['notify', 'bell', 'Notifications', 'When LEWA may reach for your attention'],
+    ['notify', 'bell', 'Notifications', 'When Lewa may reach for your attention'],
     ['a11y', 'accessibility', 'Accessibility', 'Text size, contrast and motion'],
-    ['about', 'info', 'About LEWA', 'Version, updates and what LEWA is for']
+    ['legal', 'book', 'Privacy & terms', 'The policy and terms you agreed to, in full'],
+    ['about', 'info', 'About Lewa', 'Version, updates and what Lewa is for']
   ];
   const setToggle = (title, sub, checked, onChange, disabled) => h(LRow, { title: title, sub: sub },
     h('label', { className: 'toggle' },
@@ -12527,7 +12992,7 @@ function App() {
               ? (r.certain
                   ? 'Set to ' + r.country + '. Emergency and crisis information will match it.'
                   : 'Guessed as ' + r.country + ' from your ' + (r.how === 'location' ? 'shared location' : r.how === 'timezone' ? 'time zone' : 'language setting') + '. Setting it yourself makes it certain.')
-              : 'Not known yet. Without it LEWA will point you to your local emergency number and an international directory rather than name a number that might be wrong.'),
+              : 'Not known yet. Without it Lewa will point you to your local emergency number and an international directory rather than name a number that might be wrong.'),
           h('label', { className: 'field-label', htmlFor: 'region-pick' }, 'Country'),
           h('select', {
             id: 'region-pick', className: 'inp',
@@ -12551,9 +13016,9 @@ function App() {
                   h('a', { href: 'https://' + r.directory, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7fd8c8' } }, r.directory))),
           h('div', { className: 'lw-note' }, 'These are shown by the app itself, so they are still here if the AI is unavailable.')),
 
-        h(LCard, { icon: 'alert', title: 'What LEWA is not' },
+        h(LCard, { icon: 'alert', title: 'What Lewa is not' },
           h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
-            'LEWA is an AI wellbeing companion. It is not a licensed therapist, counsellor, psychologist, doctor or psychiatrist, it is not an emergency service, and it cannot keep anyone safe. It does not diagnose, and it will not tell you to start, stop or change any medication — only the person who prescribed it can do that.'),
+            'Lewa is an AI wellbeing companion. It is not a licensed therapist, counsellor, psychologist, doctor or psychiatrist, it is not an emergency service, and it cannot keep anyone safe. It does not diagnose, and it will not tell you to start, stop or change any medication — only the person who prescribed it can do that.'),
           h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)' } },
             'If you are in danger right now, contact emergency services or a person who can physically be with you. That matters more than anything in this app.')));
     }
@@ -12624,14 +13089,14 @@ function App() {
              exactly what happens to it. */
           const rows = [
             ['Kept on this device only', 'Your profile, every conversation, session notes and memories, check-ins and their notes, goals, emotional log, reply ratings, usage counts, and every setting. All of it lives in this browser\u2019s storage, under your account, and is readable only by this app on this device.'],
-            ['Sent to your AI provider', 'The messages in the current conversation, the background context LEWA builds for them (your name and what brought you here, the memory digest if memory is on, your goals, the time and \u2014 if you share it \u2014 your rough location), and your API key so the request authenticates. This is ' + ((PROVIDERS[provider] || {}).label || provider) + ' right now. It is what generates a reply; there is no way to get one without it. Their handling of it is governed by their own privacy policy, not this app\u2019s.'],
+            ['Sent to your AI provider', 'The messages in the current conversation, the background context Lewa builds for them (your name and what brought you here, the memory digest if memory is on, your goals, the time and \u2014 if you share it \u2014 your rough location), and your API key so the request authenticates. This is ' + ((PROVIDERS[provider] || {}).label || provider) + ' right now. It is what generates a reply; there is no way to get one without it. Their handling of it is governed by their own privacy policy, not this app\u2019s.'],
             ['Sent to web search', webSearch
               ? 'Background search is ON. Only the text of your latest message is sent, as a search query, to DuckDuckGo and Wikipedia \u2014 with anything key-shaped stripped out first. No account details, no history, no identifiers.'
               : 'Background search is OFF, so nothing is sent to any search service. If you turn it on, only your latest message text goes out as a query, with anything key-shaped stripped first.'],
             ['Sent to GitHub sync', ghUser
               ? 'Sync is connected. Your sessions, check-ins, goals and memories are pushed to a private repository in your own GitHub account. API keys and your GitHub token are deliberately excluded.'
               : 'Not connected, so nothing is sent to GitHub. If you connect it, your sessions and check-ins sync to a private repository you own \u2014 never your keys.'],
-            ['In a backup file', 'Everything in the first row, as one JSON file you download. API keys, your GitHub token, LEWA\u2019s system prompt, its internal reasoning and any admin instructions are all excluded \u2014 a backup contains your data and nothing else.'],
+            ['In a backup file', 'Everything in the first row, as one JSON file you download. API keys, your GitHub token, Lewa\u2019s system prompt, its internal reasoning and any admin instructions are all excluded \u2014 a backup contains your data and nothing else.'],
             ['Removed by \u201cClear my data\u201d', 'Your profile, conversations, memories, check-ins, goals, preferences, usage log, this account\u2019s API keys, and anything cached about you in memory. Other accounts on this device are untouched. If yours is the last account, the device-level key, GitHub token and shared preferences go too.']
           ];
           return h(LCard, { icon: 'eye', title: 'Exactly what goes where' },
@@ -12676,7 +13141,7 @@ function App() {
               key: m[0], className: themeMode === m[0] ? 'on' : '', 'aria-pressed': themeMode === m[0],
               onClick: () => { SND.tap(); setThemeModeState(m[0]); applyThemeMode(m[0]); }
             }, m[1]))),
-          h('div', { className: 'lw-note' }, 'Dark is LEWA\u2019s native look and the easiest on the eyes late at night, which is often when this app is open.')));
+          h('div', { className: 'lw-note' }, 'Dark is Lewa\u2019s native look and the easiest on the eyes late at night, which is often when this app is open.')));
     }
     if (key === 'notify') {
       return h('div', { className: 'lw-set-sec' },
@@ -12685,11 +13150,11 @@ function App() {
             setNotifyOn(v); S.set('lewa-notify', v ? '1' : '0');
             if (v) {
               const ok = await ensureNotifyPermission();
-              if (!ok && notifyBlocked() && !(window.LewaAndroid && window.LewaAndroid.notify)) toast('Your browser is blocking notifications \u2014 LEWA will show an in-app banner instead.');
-              notify('LEWA', 'Notifications are on. I will let you know when a reply is waiting.');
+              if (!ok && notifyBlocked() && !(window.LewaAndroid && window.LewaAndroid.notify)) toast('Your browser is blocking notifications \u2014 Lewa will show an in-app banner instead.');
+              notify('Lewa', 'Notifications are on. I will let you know when a reply is waiting.');
             }
           }),
-          h('div', { className: 'lw-note' }, 'LEWA never sends reminders, streak nags or prompts to come back. A notification only ever means a reply you asked for is ready.')));
+          h('div', { className: 'lw-note' }, 'Lewa never sends reminders, streak nags or prompts to come back. A notification only ever means a reply you asked for is ready.')));
     }
     if (key === 'a11y') {
       return h('div', { className: 'lw-set-sec' },
@@ -12707,9 +13172,21 @@ function App() {
           h('div', { style: { fontSize: '.82rem', color: 'var(--t2)', lineHeight: 1.8 } },
             'Every control has a screen-reader label and a visible focus ring. Tab, Shift+Tab and Enter reach everything, Escape closes any dialog, and tap targets clear 44px on a touch screen.')));
     }
+    if (key === 'legal') {
+      const un = (account == null ? void 0 : account.ns) || 'default';
+      let when = '';
+      try { when = AccountStore.get(un, 'legal-ok-at') || ''; } catch (e) {}
+      return h('div', { className: 'lw-set-sec' },
+        h(LCard, { icon: 'book', title: 'Privacy Policy & Terms of Service' },
+          h('div', { style: { fontSize: '.78rem', color: 'var(--t3)', lineHeight: 1.7, marginBottom: '.6rem' } },
+            'Version ' + LEGAL_VERSION + ' \u00b7 ' + LEGAL_UPDATED +
+            (when ? ' \u00b7 accepted ' + new Date(when).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : '')),
+          legalTabs(),
+          h('div', { className: 'legal-body legal-inline' }, legalDoc(legalTab))));
+    }
     if (key === 'about') {
       return h('div', { className: 'lw-set-sec' },
-        h(LCard, { icon: 'leaf', title: 'LEWA Therapist' },
+        h(LCard, { icon: 'leaf', title: 'Lewa Therapist' },
           h(LRow, { title: 'Version', sub: 'v' + runningVersion() },
             h('button', {
               className: 'btn-back', disabled: updChecking,
@@ -12725,10 +13202,10 @@ function App() {
             className: 'btn-cont', style: { marginTop: '.6rem', width: '100%' },
             onClick: () => { SND.tap(); applyUpdate(updateInfo); }
           }, 'Install v' + updateInfo.version + ' and restart') : null),
-        h(LCard, { icon: 'heart', title: 'What LEWA is' },
+        h(LCard, { icon: 'heart', title: 'What Lewa is' },
           h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
             'A warm, evidence-informed companion for the ordinary work of feeling better: somewhere to be heard, to think out loud, and to practise skills drawn from CBT, DBT, ACT and related approaches.')),
-        h(LCard, { icon: 'alert', title: 'What LEWA is not' },
+        h(LCard, { icon: 'alert', title: 'What Lewa is not' },
           h('div', { style: { fontSize: '.84rem', color: 'var(--t2)', lineHeight: 1.8 } },
             'Not a clinician, not a diagnosis, and not an emergency service. Nothing here replaces care from a real person.'),
           h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)' } },
@@ -12739,7 +13216,7 @@ function App() {
   const renderSettings = () => {
     const open = SET_SECTIONS.filter(s => s[0] === setSec)[0];
     return h(React.Fragment, null,
-      hdr(open ? open[2] : 'Settings', open ? open[3] : 'How LEWA works for you', 'dot-progress',
+      hdr(open ? open[2] : 'Settings', open ? open[3] : 'How Lewa works for you', 'dot-progress',
         open ? h('button', { className: 'btn-back lw-set-back', 'aria-label': 'Back to all settings', onClick: () => { SND.tap(); setSetSec(null); } }, '\u2190 Settings') : null),
       h('div', { className: 'panel' },
         open
@@ -12780,9 +13257,20 @@ function App() {
     size: 22
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "sb-name"
-  }, "LEWA"), /*#__PURE__*/React.createElement("div", {
+  }, "Lewa Therapist"), /*#__PURE__*/React.createElement("div", {
     className: "sb-tag"
-  }, "Clinical AI Therapist")), /*#__PURE__*/React.createElement("button", {
+  }, "AI wellbeing companion")), /*#__PURE__*/React.createElement("button", {
+    className: "sb-collapse",
+    "aria-label": "Collapse menu",
+    title: "Collapse menu",
+    onClick: () => {
+      SND.tap();
+      setSbCollapsed(true);
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "chevronLeft",
+    size: 16
+  })), /*#__PURE__*/React.createElement("button", {
     className: "sb-close",
     "aria-label": "Close menu",
     onClick: () => {
@@ -12840,7 +13328,7 @@ function App() {
   }, "\u2713")) : /*#__PURE__*/React.createElement("div", {
     className: "sb-user-name",
     onClick: startEditName,
-    title: "Tap to change how LEWA addresses you",
+    title: "Tap to change how Lewa addresses you",
     style: {
       cursor: "pointer",
       display: "flex",
@@ -12941,21 +13429,18 @@ function App() {
       setModel(m);
       saveProvider(provider, m, customURL);
     }
-  }, (_PROVIDERS$provider9 => {
-    /* Live catalogue (ported from Lewa Coder): every model the
-       provider's own API reports, else the curated defaults. */
-    const live = catModels(provider);
-    const opts = live ? live.map(m => ({
-      id: m.id,
-      label: (m.label || m.id).slice(0, 48)
-    })) : (((_PROVIDERS$provider9 = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider9.models) || [model]).map(m => ({
-      id: m,
-      label: MODEL_LABELS[m] || m
-    }));
-    if (!opts.find(o => o.id === model)) opts.unshift({
+  }, (() => {
+    /* The provider's own live list when we have one, the curated defaults
+       when we do not — and never a model known to have been withdrawn. */
+    const opts = pickerModelsT(provider);
+    /* Only offer the current selection if it is still real. A model the
+       provider has dropped should disappear from the list, not sit at the
+       top waiting to fail. */
+    if (!opts.find(o => o.id === model) && modelLooksValidT(provider, model)) opts.unshift({
       id: model,
       label: MODEL_LABELS[model] || model
     });
+    if (!opts.length) opts.push({ id: model, label: MODEL_LABELS[model] || model });
     return opts.map(o => /*#__PURE__*/React.createElement("option", {
       key: o.id,
       value: o.id
@@ -13060,7 +13545,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement(Toggle, {
     label: "Read replies aloud",
-    hint: TTS_SUPPORTED ? "LEWA speaks every response" : "Not supported in this browser",
+    hint: TTS_SUPPORTED ? "Lewa speaks every response" : "Not supported in this browser",
     checked: autoRead,
     onChange: v => {
       SND.toggle();
@@ -13069,7 +13554,7 @@ function App() {
     }
   }), /*#__PURE__*/React.createElement(Toggle, {
     label: "Voice call mode",
-    hint: STT_SUPPORTED ? "Talk with LEWA like a phone call" : "Not supported in this browser",
+    hint: STT_SUPPORTED ? "Talk with Lewa like a phone call" : "Not supported in this browser",
     checked: callActive,
     onChange: v => {
       v ? startCall() : endCall();
@@ -13087,7 +13572,7 @@ function App() {
       fontWeight: 700,
       marginBottom: ".4rem"
     }
-  }, "LEWA's voice"), /*#__PURE__*/React.createElement("select", {
+  }, "Lewa's voice"), /*#__PURE__*/React.createElement("select", {
     className: "inp",
     style: {
       marginTop: ".1rem",
@@ -13133,7 +13618,7 @@ function App() {
       color: "var(--t1)",
       fontWeight: 700
     }
-  }, "LEWA Therapist"), /*#__PURE__*/React.createElement("span", {
+  }, "Lewa Therapist"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: ".68rem",
       color: "var(--t3)",
@@ -13276,7 +13761,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement(Toggle, {
     label: "Notifications",
-    hint: "Ping when LEWA replies while you're away",
+    hint: "Ping when Lewa replies while you're away",
     checked: notifyOn,
     onChange: async v => {
       SND.toggle();
@@ -13285,7 +13770,7 @@ function App() {
       if (v) {
         const ok = await ensureNotifyPermission();
         if (!ok && notifyBlocked() && !(window.LewaAndroid && window.LewaAndroid.notify)) toast('System notifications are blocked here — using in-app alerts instead.');
-        notify('LEWA', 'Notifications are on. I\'ll ping you when a reply arrives while you\'re away.');
+        notify('Lewa', 'Notifications are on. I\'ll ping you when a reply arrives while you\'re away.');
       }
     }
   }), /*#__PURE__*/React.createElement(Toggle, {
@@ -13819,7 +14304,20 @@ function App() {
     className: "status-dot dot-chat"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "header-title"
-  }, (sessions.filter(s => s.id === currSessId)[0] || {}).title || "Therapeutic Session"), /*#__PURE__*/React.createElement("div", {
+  }, (() => {
+    /* A named session keeps its name. An auto-titled one shows something
+       short — the generated "Session — 8 Sept 2026, 08:03" wrapped onto two
+       lines and pushed the Call button off the edge of the screen. */
+    const _s = sessions.filter(x => x.id === currSessId)[0];
+    if (_s && _s.named && _s.title) return _s.title;
+    if (!_s || !_s.date) return "Today's session";
+    const d = new Date(_s.date), n = new Date();
+    const sameDay = d.toDateString() === n.toDateString();
+    if (sameDay) return "Today's session";
+    const y = new Date(n.getTime() - 864e5);
+    if (d.toDateString() === y.toDateString()) return "Yesterday's session";
+    return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  })()), /*#__PURE__*/React.createElement("div", {
     className: "header-sub",
     style: {
       display: "inline-flex",
@@ -13858,7 +14356,7 @@ function App() {
     onClick: () => {
       callActive ? endCall() : startCall();
     },
-    title: callActive ? "End the voice call" : "Talk with LEWA like a phone call", "aria-label": callActive ? "End voice call" : "Start voice call",
+    title: callActive ? "End the voice call" : "Talk with Lewa like a phone call", "aria-label": callActive ? "End voice call" : "Start voice call",
     style: {
       padding: ".33rem .6rem",
       background: callActive ? "rgba(224,92,92,.14)" : "rgba(0,143,135,.12)",
@@ -13881,7 +14379,7 @@ function App() {
     onClick: () => {
       cameraOn ? stopCamera() : startCamera();
     },
-    title: cameraOn ? "Turn camera off" : "Let LEWA see how you're doing", "aria-label": cameraOn ? "Turn camera off" : "Turn camera on",
+    title: cameraOn ? "Turn camera off" : "Let Lewa see how you're doing", "aria-label": cameraOn ? "Turn camera off" : "Turn camera on",
     style: {
       padding: ".33rem .55rem",
       background: cameraOn ? "rgba(224,92,92,.14)" : "rgba(240,237,229,.06)",
@@ -13977,7 +14475,7 @@ function App() {
       color: "rgba(240,237,229,.55)",
       lineHeight: 1.5
     }
-  }, "Camera active \u2014 LEWA can gently notice how you seem, never diagnose from it. Nothing is recorded or saved.", hasPendingFrame && /*#__PURE__*/React.createElement("span", {
+  }, "Camera active \u2014 Lewa can gently notice how you seem, never diagnose from it. Nothing is recorded or saved.", hasPendingFrame && /*#__PURE__*/React.createElement("span", {
     style: {
       display: "block",
       color: "#5fd4c8",
@@ -14030,7 +14528,7 @@ function App() {
     className: "reflecting"
   }, /*#__PURE__*/React.createElement("span", {
     className: "dot-mini"
-  }), " LEWA is reflecting\u2026")) : /*#__PURE__*/React.createElement("div", {
+  }), " Lewa is reflecting\u2026")) : /*#__PURE__*/React.createElement("div", {
     className: "typing"
   }, /*#__PURE__*/React.createElement("div", {
     className: "typing-dot"
@@ -14145,7 +14643,7 @@ function App() {
     }
   }, "\u26A0 ", voiceErr), String(model).includes(":free") && (attachments.some(a => a.kind === "image") || cameraOn) && /*#__PURE__*/React.createElement("div", {
     className: "model-notice"
-  }, "\u2139\uFE0F The free model can't see images \u2014 photos and camera snapshots will be ignored. Only your text reaches LEWA. To share images, switch to a vision-capable model (e.g. Gemini or Claude) via \"Change provider\" in the menu."), /*#__PURE__*/React.createElement("div", {
+  }, "\u2139\uFE0F The free model can't see images \u2014 photos and camera snapshots will be ignored. Only your text reaches Lewa. To share images, switch to a vision-capable model (e.g. Gemini or Claude) via \"Change provider\" in the menu."), /*#__PURE__*/React.createElement("div", {
     className: "chat-footer"
   }, /*#__PURE__*/React.createElement("input", {
     ref: fileRef,
@@ -14466,7 +14964,7 @@ function App() {
     size: 13
   }), " Add")), getGoals().length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "empty-msg"
-  }, "No goals yet. Add one, or ask LEWA in chat to set a goal together \u2014 it'll track your milestones and celebrate progress.") : getGoals().map((g, gi) => /*#__PURE__*/React.createElement("div", {
+  }, "No goals yet. Add one, or ask Lewa in chat to set a goal together \u2014 it'll track your milestones and celebrate progress.") : getGoals().map((g, gi) => /*#__PURE__*/React.createElement("div", {
     key: g.id,
     className: "goal-card"
   }, /*#__PURE__*/React.createElement("div", {
@@ -14616,12 +15114,12 @@ function App() {
     style: {
       marginBottom: ".5rem"
     }
-  }, "LEWA's Memory"), (getMemory().sessions || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "Lewa's Memory"), (getMemory().sessions || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "empty-msg",
     style: {
       padding: "1.2rem"
     }
-  }, "Nothing remembered yet \u2014 LEWA writes itself a note when a session ends.") : (getMemory().sessions || []).map((s, i) => /*#__PURE__*/React.createElement("div", {
+  }, "Nothing remembered yet \u2014 Lewa writes itself a note when a session ends.") : (getMemory().sessions || []).map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "hist-card",
     style: {
@@ -14708,11 +15206,11 @@ function App() {
     size: 40
   }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "call-name"
-  }, "LEWA"), /*#__PURE__*/React.createElement("div", {
+  }, "Lewa"), /*#__PURE__*/React.createElement("div", {
     className: "call-timer"
   }, fmtSecs(callSecs))), /*#__PURE__*/React.createElement("div", {
     className: "call-state"
-  }, callState === "speaking" ? "LEWA is speaking" : callState === "thinking" ? "LEWA is thinking…" : callMuted ? "Microphone muted" : "Listening — take your time"), /*#__PURE__*/React.createElement("div", {
+  }, callState === "speaking" ? "Lewa is speaking" : callState === "thinking" ? "Lewa is thinking…" : callMuted ? "Microphone muted" : "Listening — take your time"), /*#__PURE__*/React.createElement("div", {
     className: "call-transcript"
   }, callTranscript || (callState === "listening" && !callMuted ? "…" : "")), /*#__PURE__*/React.createElement("div", {
     className: "call-controls"
@@ -14732,7 +15230,7 @@ function App() {
     size: 22
   }), /*#__PURE__*/React.createElement("small", null, "End")), /*#__PURE__*/React.createElement("button", {
     className: "call-btn" + (aiMuted ? " muted" : ""),
-    title: aiMuted ? "Let LEWA speak again" : "Silence LEWA's voice — replies still appear as text",
+    title: aiMuted ? "Let Lewa speak again" : "Silence Lewa's voice — replies still appear as text",
     onClick: toggleAiMute
   }, /*#__PURE__*/React.createElement(Icon, {
     name: aiMuted ? "volumeX" : "volume",
@@ -14792,7 +15290,7 @@ class RootBoundary extends React.Component {
           fontSize: '15px',
           marginBottom: '10px'
         }
-      }, 'LEWA hit an error while starting'), String(e && e.message || e || 'Unknown error'), '\n\n', String(e && e.stack || '').slice(0, 1800), React.createElement('div', {
+      }, 'Lewa hit an error while starting'), String(e && e.message || e || 'Unknown error'), '\n\n', String(e && e.stack || '').slice(0, 1800), React.createElement('div', {
         style: {
           color: '#889',
           marginTop: '14px'
@@ -14807,7 +15305,7 @@ class RootBoundary extends React.Component {
     ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(RootBoundary, null, React.createElement(App)));
   } catch (e) {
     var root = document.getElementById("root");
-    if (root) root.innerHTML = '<div style="padding:24px;color:#f2a4a4;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.65">' + '<div style="color:#5fd4c8;font-size:15px;margin-bottom:10px">LEWA could not start</div>' + String(e && e.message || e).replace(/</g, '&lt;') + '\n\n' + String(e && e.stack || '').slice(0, 1800).replace(/</g, '&lt;') + '</div>';
+    if (root) root.innerHTML = '<div style="padding:24px;color:#f2a4a4;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.65">' + '<div style="color:#5fd4c8;font-size:15px;margin-bottom:10px">Lewa could not start</div>' + String(e && e.message || e).replace(/</g, '&lt;') + '\n\n' + String(e && e.stack || '').slice(0, 1800).replace(/</g, '&lt;') + '</div>';
   }
 })();
 
