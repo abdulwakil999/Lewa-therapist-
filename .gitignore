@@ -141,3 +141,12 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ── Lewa API (bundled free-tier) ──
+# The shared OpenRouter key that powers "Lewa API" is injected into the
+# built app at package time and must never be committed. This repository
+# is public.
+lewa-api-key.local
+lewa-api-key.local.*
+*.local.key
+build-secrets/

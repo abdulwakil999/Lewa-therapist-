@@ -944,6 +944,18 @@ html[data-motion="off"] .app{transition:none}
   .chat-header-badges button{padding:.4rem .5rem!important}
 }
 
+/* \u2500\u2500 LEWA API: the free tier offer on the key screen \u2500\u2500 */
+.lewa-free{margin:.2rem 0 1.1rem}
+.lewa-free-note{font-size:.74rem;color:var(--t3);line-height:1.65;margin-top:.5rem;text-align:center}
+.lewa-free-or{display:flex;align-items:center;gap:.6rem;margin:1rem 0 .2rem;font-size:.68rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--t3)}
+.lewa-free-or::before,.lewa-free-or::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.lewa-auto{font-size:.76rem;color:var(--t3);line-height:1.6;padding:.42rem .6rem;border-radius:8px;
+  background:rgba(0,143,135,.08);border:1px solid var(--bdr)}
+.lewa-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.16rem .5rem;border-radius:999px;
+  background:rgba(0,143,135,.18);border:1px solid var(--bact);color:var(--cy-ll);
+  font-size:.66rem;font-weight:700;letter-spacing:.04em}
+
 /* ── PRIVACY POLICY / TERMS ──
    The gate is a full-height card with its own scroll area, so the accept
    button never drifts off the bottom of a small phone. The same document
@@ -1672,7 +1684,7 @@ try {
    start, the next launch discards it and falls back to the build
    shipped inside the APK — so a bad update can never brick the app.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = '1.6';
+var APP_VERSION = '1.7';
 /* Where to look for updates. Point this at wherever you publish new builds
    (e.g. the repo's raw content once pushed). Manifest shape:
    { "version":"1.1", "notes":"…", "js":"<url to app.js>", "css":"<url to app.css>" } */
@@ -4768,6 +4780,77 @@ ${adminPatterns}`;
    ════════════════════════════════════════════════════════ */
 
 /* Provider definitions */
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   LEWA API \u2014 THE BUILT-IN FREE TIER
+   \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+   So that somebody can open this app and be heard without first going
+   and getting an API key, Lewa ships with a shared key of its own. It
+   reaches free models only, it is never shown in the interface, never
+   written to storage, never included in a backup, an export, a
+   transcript or a diagnostics report, and never logged.
+
+   A NOTE TO WHOEVER HAS UNPACKED THIS FILE LOOKING FOR THE KEY:
+   You have found it, and we always knew you would. A key that a phone
+   must send to a server cannot be hidden from the person holding the
+   phone \u2014 the scrambling below raises the effort, it does not make it
+   secret, and we are not pretending otherwise.
+
+   What it is worth taking is small: it reaches free models, nothing
+   billable, and it is rotated when it is abused. What it costs is not
+   small. This key is here so that someone who cannot afford a
+   subscription, at two in the morning, with nobody else to talk to,
+   can still open this app and be answered. Every request you drain out
+   of it is one that person does not get. If you want it for a project,
+   ask \u2014 the app is free and the source is open. Please leave this one
+   where it is.
+   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+
+/* Free models only. The bundled key must never be able to spend money,
+   so this list is the ceiling, not a default. */
+var LEWA_FREE_MODELS = [
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'dots-studio/dots-3-note-preview:free',
+  'thinkingmachines/inkling:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free'
+];
+function isFreeModelId(id) {
+  return /:free$/.test(String(id || ''));
+}
+
+/* The key arrives here in pieces at package time. In the source tree
+   these are empty, so a checkout of this repository carries no key at
+   all \u2014 the build reads it from a file that git never sees. */
+var _LKP = [];
+function _lkPad() {
+  /* Assembled rather than written out, so the pad is not one grep away
+     from the ciphertext sitting next to it. */
+  return ['le', 'wa', '::', 'ther', 'apist', '::', 'free', '-tier'].join('') + String(APP_VERSION || '');
+}
+function lewaApiKey() {
+  try {
+    if (!_LKP.length) return '';
+    var pad = _lkPad();
+    var raw = atob(_LKP.join(''));
+    var out = '';
+    for (var i = 0; i < raw.length; i++) {
+      out += String.fromCharCode(raw.charCodeAt(i) ^ pad.charCodeAt(i % pad.length));
+    }
+    /* Only hand back something that still looks like a key. A corrupted
+       or half-injected blob must fail closed, not send junk upstream. */
+    return /^sk-[A-Za-z0-9\-_]{20,}$/.test(out) ? out : '';
+  } catch (e) {
+    return '';
+  }
+}
+var _lkAvail = null;
+function lewaApiAvailable() {
+  /* Cache the answer, not the key. The render path asks this constantly and
+     there is no reason to reassemble the secret each time. */
+  if (_lkAvail === null) _lkAvail = !!lewaApiKey();
+  return _lkAvail;
+}
+
 const PROVIDERS = {
   gemini: {
     label: 'Google Gemini',
@@ -4793,6 +4876,12 @@ const PROVIDERS = {
     label: 'Custom (OpenAI-compat)',
     models: [],
     needsKey: true
+  },
+  /* The built-in free tier. No key from the person using the app. */
+  lewa: {
+    label: "Use Lewa's key",
+    models: LEWA_FREE_MODELS,
+    needsKey: false
   }
 };
 
@@ -5358,6 +5447,16 @@ function orEquivalentT(provider, model) {
    person pasting a fresh key would keep re-verifying the old broken one
    and be told, over and over, that their good key is invalid. */
 function resolveRouteT(provider, model, passedKey, strict) {
+  /* The built-in free tier. Resolved before anything else so no stored
+     key, and no key passed in, can ever be substituted for it — and so
+     the bundled key can never be pointed at a billable model. */
+  if (provider === 'lewa') {
+    const lk = lewaApiKey();
+    if (!lk) throw new Error('The free Lewa API is not available in this build. Open Settings → API and add your own key — OpenRouter has free models too.');
+    let m = model;
+    if (!isFreeModelId(m)) m = LEWA_FREE_MODELS[0];
+    return { provider: 'lewa', model: m, key: lk };
+  }
   if (strict && passedKey) return { provider: provider, model: model, key: passedKey };
   if (provider === 'custom') {
     const ck = passedKey || KeyVault.loadFor('custom');
@@ -5447,6 +5546,26 @@ async function fetchModelsLive(provider, key) {
 }
 function catModels(provider) {
   try {
+    /* The free tier rides on OpenRouter, so it reads that catalogue — but
+       only the free half of it. Anything billable is not offered, because
+       the bundled key must never be able to spend money. */
+    if (provider === 'lewa') {
+      const or = catModels('openrouter');
+      if (!or) return null;
+      const free = or.filter(function (m) { return m && isFreeModelId(m.id); });
+      if (!free.length) return null;
+      /* The curated few come first, so whatever is selected by default is
+         one we have actually tried. The rest of OpenRouter's free shelf
+         follows for anyone who wants to explore it. */
+      const rank = function (id) {
+        const i = LEWA_FREE_MODELS.indexOf(id);
+        return i === -1 ? LEWA_FREE_MODELS.length : i;
+      };
+      return free.slice().sort(function (a, b) {
+        const d = rank(a.id) - rank(b.id);
+        return d !== 0 ? d : String(a.label || a.id).localeCompare(String(b.label || b.id));
+      });
+    }
     const c = JSON.parse(S.get('lewa-cat-' + provider) || 'null');
     /* A stale catalogue is still far better than none — it is only ever used
        to describe models, never as proof that one still exists. */
@@ -5459,6 +5578,9 @@ function catModels(provider) {
    send is in flight fired the same catalogue request three or four times. */
 const _catInflight = {};
 async function ensureModelsT(provider, key, force) {
+  /* The free tier has no catalogue of its own: it reads OpenRouter's, which
+     needs no key to list. Refreshing 'lewa' refreshes that instead. */
+  if (provider === 'lewa') return ensureModelsT('openrouter', key || 'public', force);
   if (!key || provider === 'custom') return;
   const slot = 'lewa-cat-' + provider;
   try {
@@ -5586,7 +5708,10 @@ function markModelDead(provider, id) {
   } catch (_) {}
 }
 function isModelDead(provider, id) {
-  const at = deadModels()[provider + '|' + id];
+  /* The free tier is OpenRouter underneath, and retirements are recorded
+     under that name — so a model withdrawn there is withdrawn here too. */
+  const p = provider === 'lewa' ? 'openrouter' : provider;
+  const at = deadModels()[p + '|' + id];
   return !!at && Date.now() - at < DEAD_TTL;
 }
 /* Everything we could route to right now: the live catalogue first, then the
@@ -5604,6 +5729,10 @@ function modelPoolT(provider) {
      provider has told us its real list, anything missing from it has been
      withdrawn and must not be routed to. */
   if (!cat || !cat.length) ((PROVIDERS[provider] || {}).models || []).forEach(function (id) { add(id); });
+  /* Lewa's key is the exception. Someone using it has no other way through,
+     so the curated models stay in the pool even when the catalogue is thin
+     or a listing failed — they are the fallbacks that have to be there. */
+  if (provider === 'lewa') LEWA_FREE_MODELS.forEach(function (id) { add(id); });
   return out;
 }
 /* What the model picker should offer: the provider's live list when we have
@@ -5763,6 +5892,15 @@ function pickModelT(provider, current, need) {
 function routeModelT(text, provider, model, opts) {
   let need;
   try { need = classifyRequestT(text, opts || {}); } catch (_) { need = { cls: 'normal', crisis: 0, needsVision: false, needsDocs: false, needsFresh: false, reasons: [] }; }
+  /* On Lewa's key nobody picks a model, so the choice is always made here:
+     the right one for this turn, from the free shelf. */
+  if (provider === 'lewa') {
+    try {
+      const pick = pickModelT('lewa', model, need);
+      if (pick) return { provider: 'lewa', model: pick, need: need, switched: pick !== model };
+    } catch (_) {}
+    return { provider: 'lewa', model: model || LEWA_FREE_MODELS[0], need: need, switched: false };
+  }
   if (S.get('lewa-strategy') !== 'auto') {
     /* A manual choice is respected — with two safety overrides: an image is
        never sent to a model that cannot see, and a turn with a real safety
@@ -6242,16 +6380,28 @@ async function streamAnthropicT(msgs, profile, key, ctx, maxT, ctxLimit, model, 
     truncated: stop === 'max_tokens'
   };
 }
+/* Last gate before the request leaves. resolveRouteT already pins the free
+   tier to free models; this repeats the check against the key that is
+   actually about to be sent, so no future call path can put the bundled
+   key on a billable model by accident. */
+function enforceFreeTier(rt) {
+  if (!rt) return rt;
+  const lk = lewaApiKey();
+  if (lk && rt.key === lk && !isFreeModelId(rt.model)) {
+    rt = { provider: rt.provider, model: LEWA_FREE_MODELS[0], key: rt.key, viaOpenRouter: rt.viaOpenRouter };
+  }
+  return rt;
+}
 /* Streaming router — same shape as callLEWA plus {signal, onDelta}. */
 async function streamLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, model, opts = {}) {
-  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey);
+  const rt = enforceFreeTier(resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey));
   const {
     signal,
     onDelta
   } = opts;
   if (rt.provider === 'gemini') {
     return streamGeminiT(msgs, profile, rt.key, ctx, maxT, rt.model, signal, onDelta);
-  } else if (rt.provider === 'openrouter') {
+  } else if (rt.provider === 'openrouter' || rt.provider === 'lewa') {
     return streamOpenAICompatT(msgs, profile, rt.key, ctx, maxT, ctxLimit, rt.model, 'https://openrouter.ai/api/v1/chat/completions', {
       'HTTP-Referer': 'https://lewa-therapist.app',
       'X-Title': 'Lewa Therapist'
@@ -6270,13 +6420,13 @@ async function streamLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, 
 async function callLEWA(msgs, profile, apiKey, ctx, maxT, ctxLimit, provider, model, opts = {}) {
   /* Key routing: transparently re-route through OpenRouter when the
      model's native key is missing (ported from Lewa Coder). */
-  const rt = resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey);
+  const rt = enforceFreeTier(resolveRouteT(provider || 'gemini', model || CFG.MODEL, apiKey, opts.strictKey));
   const _provider = rt.provider;
   const _model = rt.model;
   const _key = rt.key;
   if (_provider === 'gemini') {
     return callGemini(msgs, profile, _key, ctx, maxT, _model, opts);
-  } else if (_provider === 'openrouter') {
+  } else if (_provider === 'openrouter' || _provider === 'lewa') {
     return callOpenAICompat(msgs, profile, _key, ctx, maxT, ctxLimit, _model, 'https://openrouter.ai/api/v1/chat/completions', {
       'HTTP-Referer': 'https://lewa-therapist.app',
       'X-Title': 'Lewa Therapist'
@@ -6324,7 +6474,19 @@ function fallbackModelT(provider, model, tried, need) {
   const cur = modelTier(model);
   const min = need && (need.cls === 'crisis' || need.cls === 'sensitive') ? Math.max(0, cur - 1) : 0;
   const ok = pool.filter(function (m) { return m.tier >= min; });
-  const near = (ok.length ? ok : pool).slice().sort(function (a, b) {
+  const src = ok.length ? ok : pool;
+  if (provider === 'lewa') {
+    /* Every free model costs nothing, so proximity and price say nothing.
+       Fall down the curated order instead: the next one tried is the next
+       one we have actually used. */
+    const rank = function (id) {
+      const i = LEWA_FREE_MODELS.indexOf(id);
+      return i === -1 ? LEWA_FREE_MODELS.length : i;
+    };
+    const byRank = src.slice().sort(function (a, b) { return rank(a.id) - rank(b.id); });
+    return byRank[0] ? byRank[0].id : null;
+  }
+  const near = src.slice().sort(function (a, b) {
     return Math.abs(a.tier - cur) - Math.abs(b.tier - cur) || a.pout - b.pout;
   });
   return near[0] ? near[0].id : null;
@@ -6337,7 +6499,11 @@ async function attemptExchangeT(run, opts) {
   let model = opts.model;
   const tried = {}, notes = [];
   let lastErr = null;
-  for (let step = 0; step < 4; step++) {
+  /* Free models rate-limit and go briefly missing far more often than paid
+     ones, and the person on Lewa's key has no other way through — so work
+     further down the chain before giving up on them. */
+  const steps = provider === 'lewa' ? 8 : 4;
+  for (let step = 0; step < steps; step++) {
     if (signal && signal.aborted) throw lastErr || new Error('stopped');
     tried[model] = 1;
     try {
@@ -8422,19 +8588,27 @@ ${getAdminNotes() || 'None.'}`;
     value: k
   }, v.label)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "field-label"
-  }, "Model"), ((_PROVIDERS$provider2 = PROVIDERS[provider]) == null || (_PROVIDERS$provider2 = _PROVIDERS$provider2.models) == null ? void 0 : _PROVIDERS$provider2.length) > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
+  }, "Model"), provider === 'lewa' ? h('div', { className: 'lewa-auto' }, 'Chosen automatically') : ((_PROVIDERS$provider2 = PROVIDERS[provider]) == null || (_PROVIDERS$provider2 = _PROVIDERS$provider2.models) == null ? void 0 : _PROVIDERS$provider2.length) > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
     className: "inp",
     value: model,
     onChange: e => {
       SND.tap();
       setModelState(e.target.value);
     }
-  }, PROVIDERS[provider].models.map(m => /*#__PURE__*/React.createElement("option", {
-    key: m,
-    value: m
-  }, MODEL_LABELS[m] || m)), /*#__PURE__*/React.createElement("option", {
+  }, (provider === 'lewa'
+        /* Live free list once the catalogue has loaded, the built-in free
+           list until then. Either way every entry is a free model. */
+        ? pickerModelsT('lewa').filter(o => isFreeModelId(o.id))
+        : (PROVIDERS[provider].models || []).map(m => ({ id: m, label: MODEL_LABELS[m] || m }))
+      ).map(o => /*#__PURE__*/React.createElement("option", {
+    key: o.id,
+    value: o.id
+  }, o.label)),
+  /* No hand-typed model on the free tier — that is the one remaining way a
+     billable model could be aimed at the bundled key. */
+  provider !== 'lewa' ? /*#__PURE__*/React.createElement("option", {
     value: "__custom"
-  }, "Custom model name\u2026")), model === '__custom' && /*#__PURE__*/React.createElement("input", {
+  }, "Custom model name\u2026") : null), model === '__custom' && /*#__PURE__*/React.createElement("input", {
     className: "inp",
     style: {
       marginTop: '-.45rem'
@@ -10440,7 +10614,10 @@ function App() {
       return () => clearInterval(tick);
     }
     const key = KeyVault.load();
-    if (!key && !KeyVault.anyExists()) {
+    /* Someone on the built-in free tier has no key of their own and never
+       will. Sending them through setup on every launch would be a bug. */
+    const onFreeTier = S.get("lewa-provider") === 'lewa' && lewaApiAvailable();
+    if (!key && !KeyVault.anyExists() && !onFreeTier) {
       /* Genuinely nothing anywhere — first launch. */
       setTimeout(() => setScreen("apikey"), 500);
       return () => clearInterval(tick);
@@ -10509,6 +10686,24 @@ function App() {
       AccountStore.set(un, 'legal-ok-at', new Date().toISOString());
     } catch (e) {}
     setScreen(legalNextRef.current || 'main');
+  };
+  /* Turning on the built-in free tier. There is no key to verify and
+     nothing to save: the key lives in the build, not in storage, so all
+     that is recorded is the choice of provider. */
+  const useLewaFreeTier = () => {
+    setApiErr('');
+    const m = LEWA_FREE_MODELS[0];
+    S.set('lewa-provider', 'lewa');
+    S.set('lewa-model', m);
+    setProvider('lewa');
+    setModel(m);
+    setApiKey('');
+    setApiLoading(false);
+    /* Warm the catalogue so the picker fills in — it needs no key. */
+    try { ensureModelsT('lewa', 'public', false); } catch (e) {}
+    if (!account) setScreen('accounts');
+    else if (!profile) loadUserData(account);
+    else setScreen('main');
   };
   const loadUserData = acc => {
     const un = acc.ns;
@@ -10627,7 +10822,10 @@ function App() {
       setSyncOn(S.get('lewa-ghsync') === '1');
       setRegionState(resolveRegion());
       setCredits(null);
-      if (!k) {
+      /* An account on the built-in free tier has no key of its own and is
+         not supposed to have one. Only ask when there is genuinely no way
+         to send a message. */
+      if (!k && !(pv === 'lewa' && lewaApiAvailable())) {
         /* This account has no key of its own and there is no setup key to
            fall back on. Ask now, when we know whose key it will be. */
         setTimeout(() => setScreen('apikey'), 0);
@@ -12197,7 +12395,18 @@ function App() {
     }
   }), /*#__PURE__*/React.createElement("style", null, `@keyframes lewa-spin { to { transform: rotate(360deg); } }`)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "lewa-desc"
-  }, "Choose your AI provider and model, then enter your API key. Your key stays on this device only."), (account || KeyVault.anyExists()) && /*#__PURE__*/React.createElement("button", {
+  }, "Choose your AI provider and model, then enter your API key. Your key stays on this device only."), lewaApiAvailable() && h('div', { className: 'lewa-free' },
+    h('button', {
+      className: 'btn-primary', style: { width: '100%' },
+      onClick: () => {
+        SND.open();
+        useLewaFreeTier();
+      }
+    }, "Use Lewa's key instead"),
+    h('div', { className: 'lewa-free-note' },
+      'Nothing to sign up for and nothing to pay. Lewa looks after the connection and the model, so you can just start talking.'),
+    h('div', { className: 'lewa-free-or' }, 'or use your own key')),
+  (account || KeyVault.anyExists()) && /*#__PURE__*/React.createElement("button", {
     className: "btn-back",
     style: {
       marginBottom: "1rem",
@@ -12229,27 +12438,44 @@ function App() {
     onChange: e => {
       var _PROVIDERS$e$target$v2;
       SND.tap();
-      setProvider(e.target.value);
-      setModel(((_PROVIDERS$e$target$v2 = PROVIDERS[e.target.value]) == null || (_PROVIDERS$e$target$v2 = _PROVIDERS$e$target$v2.models) == null ? void 0 : _PROVIDERS$e$target$v2[0]) || '');
+      const pv = e.target.value;
+      setProvider(pv);
+      setApiErr('');
+      setModel(((_PROVIDERS$e$target$v2 = PROVIDERS[pv]) == null || (_PROVIDERS$e$target$v2 = _PROVIDERS$e$target$v2.models) == null ? void 0 : _PROVIDERS$e$target$v2[0]) || '');
+      /* Pull the free list in straight away so the model picker is never
+         empty when someone lands on the free tier. */
+      if (pv === 'lewa') { try { ensureModelsT('lewa', 'public', false); } catch (_e) {} }
     }
-  }, Object.entries(PROVIDERS).map(([k, v]) => /*#__PURE__*/React.createElement("option", {
+  }, Object.entries(PROVIDERS)
+      .filter(([k]) => k !== 'lewa' || lewaApiAvailable())
+      /* The free tier leads: it is the one option that needs nothing. */
+      .sort(([a], [b]) => (a === 'lewa' ? -1 : b === 'lewa' ? 1 : 0))
+      .map(([k, v]) => /*#__PURE__*/React.createElement("option", {
     key: k,
     value: k
   }, v.label))), /*#__PURE__*/React.createElement("label", {
     className: "field-label"
-  }, "Model"), ((_PROVIDERS$provider6 = PROVIDERS[provider]) == null || (_PROVIDERS$provider6 = _PROVIDERS$provider6.models) == null ? void 0 : _PROVIDERS$provider6.length) > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
+  }, "Model"), provider === 'lewa' ? h('div', { className: 'lewa-auto' }, 'Chosen for you, message by message') : ((_PROVIDERS$provider6 = PROVIDERS[provider]) == null || (_PROVIDERS$provider6 = _PROVIDERS$provider6.models) == null ? void 0 : _PROVIDERS$provider6.length) > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
     className: "inp",
     value: model,
     onChange: e => {
       SND.tap();
       setModel(e.target.value);
     }
-  }, PROVIDERS[provider].models.map(m => /*#__PURE__*/React.createElement("option", {
-    key: m,
-    value: m
-  }, MODEL_LABELS[m] || m)), /*#__PURE__*/React.createElement("option", {
+  }, (provider === 'lewa'
+        /* Live free list once the catalogue has loaded, the built-in free
+           list until then. Either way every entry is a free model. */
+        ? pickerModelsT('lewa').filter(o => isFreeModelId(o.id))
+        : (PROVIDERS[provider].models || []).map(m => ({ id: m, label: MODEL_LABELS[m] || m }))
+      ).map(o => /*#__PURE__*/React.createElement("option", {
+    key: o.id,
+    value: o.id
+  }, o.label)),
+  /* No hand-typed model on the free tier — that is the one remaining way a
+     billable model could be aimed at the bundled key. */
+  provider !== 'lewa' ? /*#__PURE__*/React.createElement("option", {
     value: "__custom"
-  }, "Custom model name\u2026")), model === '__custom' && /*#__PURE__*/React.createElement("input", {
+  }, "Custom model name\u2026") : null), model === '__custom' && /*#__PURE__*/React.createElement("input", {
     className: "inp",
     style: {
       marginTop: '-.45rem'
@@ -12306,30 +12532,44 @@ function App() {
       cursor: 'pointer',
       transition: 'all .18s'
     }
-  }, "Don't have a key? Create one on ", (_PROVIDERS$provider7 = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider7.label, " \u2197") : null, /*#__PURE__*/React.createElement("label", {
-    className: "field-label"
-  }, "API Key"), /*#__PURE__*/React.createElement("input", {
-    className: "inp",
-    type: "password",
-    placeholder: "Paste your key here\u2026",
-    value: apiInput,
-    onChange: e => setApiInput(e.target.value),
-    onFocus: () => SND.tap(),
-    onKeyDown: e => e.key === 'Enter' && verifyKey()
-  }), apiErr && /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: '#e8a090',
-      fontSize: '.8rem',
-      marginBottom: '.6rem'
-    }
-  }, apiErr), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary",
-    onClick: () => {
-      SND.tap();
-      verifyKey();
-    },
-    disabled: !apiInput.trim() || apiLoading
-  }, apiLoading ? 'Verifying…' : 'Verify & Continue →'), /*#__PURE__*/React.createElement("div", {
+  }, "Don't have a key? Create one on ", (_PROVIDERS$provider7 = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider7.label, " \u2197") : null,
+  /* The free tier has no key to type. Asking for one, or showing an empty
+     key box that cannot be filled in, would only confuse. */
+  provider === 'lewa'
+    ? h(React.Fragment, null,
+        h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)', marginBottom: '.8rem' } },
+          'No key to enter and nothing to pay. Lewa chooses the model for each message and moves to another if one is busy, so there is nothing here for you to set.'),
+        apiErr && h('div', { style: { color: '#e8a090', fontSize: '.8rem', marginBottom: '.6rem' } }, apiErr),
+        h('button', {
+          className: 'btn-primary',
+          onClick: () => { SND.tap(); useLewaFreeTier(); }
+        }, 'Continue \u2192'))
+    : h(React.Fragment, null,
+        /*#__PURE__*/React.createElement("label", {
+          className: "field-label"
+        }, "API Key"), /*#__PURE__*/React.createElement("input", {
+          className: "inp",
+          type: "password",
+          placeholder: "Paste your key here\u2026",
+          value: apiInput,
+          onChange: e => setApiInput(e.target.value),
+          onFocus: () => SND.tap(),
+          onKeyDown: e => e.key === 'Enter' && verifyKey()
+        }), apiErr && /*#__PURE__*/React.createElement("div", {
+          style: {
+            color: '#e8a090',
+            fontSize: '.8rem',
+            marginBottom: '.6rem'
+          }
+        }, apiErr), /*#__PURE__*/React.createElement("button", {
+          className: "btn-primary",
+          onClick: () => {
+            SND.tap();
+            verifyKey();
+          },
+          disabled: !apiInput.trim() || apiLoading
+        }, apiLoading ? 'Verifying…' : 'Verify & Continue →')),
+  /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '.72rem',
       color: 'rgba(240,237,229,.32)',
@@ -12337,7 +12577,9 @@ function App() {
       lineHeight: 1.65,
       textAlign: 'center'
     }
-  }, "Your key is stored only on this device and sent only to your chosen provider.")))));
+  }, provider === 'lewa'
+      ? "No key of yours is involved, and nothing about this is stored on your device."
+      : "Your key is stored only on this device and sent only to your chosen provider.")))));
   if (screen === "accounts") return /*#__PURE__*/React.createElement("div", {
     className: "app"
   }, /*#__PURE__*/React.createElement("div", {
@@ -13052,6 +13294,13 @@ function App() {
         h(LCard, { icon: 'cpu', title: 'Provider & model' },
           h(LRow, { title: (PROVIDERS[provider] || {}).label || provider, sub: MODEL_LABELS[model] || model },
             h('button', { className: 'btn-back', onClick: () => { SND.tap(); setScreen('apikey'); } }, 'Change')),
+          provider === 'lewa'
+            ? h('div', { className: 'lw-note', style: { fontStyle: 'normal', color: 'var(--t2)' } },
+                'You are on Lewa\u2019s key, so there is no key of yours on this device and nothing to pay. The model is chosen for each message, and another takes over if one is unavailable. Add your own key any time for the larger ones.')
+            : null,
+          /* On Lewa's key the routing is not optional — there is no model
+             choice to override — so the switch is not offered. */
+          provider === 'lewa' ? null :
           setToggle('Automatic model routing', 'Simple turns use a cheap model; difficult or safety-critical ones step up. Never chosen by message length.', autoRoute, v => {
             setAutoRoute(v); S.set('lewa-strategy', v ? 'auto' : 'fixed');
             if (v && !catModels(provider)) ensureModelsT(provider, apiKey, true);
@@ -13433,7 +13682,10 @@ function App() {
       letterSpacing: ".1em",
       textTransform: "uppercase"
     }
-  }, ((_PROVIDERS$provider8 = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider8.label) || provider), /*#__PURE__*/React.createElement("select", {
+  }, ((_PROVIDERS$provider8 = PROVIDERS[provider]) == null ? void 0 : _PROVIDERS$provider8.label) || provider),
+  /* On Lewa's key there is nothing to pick: the model is decided per
+     message and moves on by itself when one is unavailable. */
+  provider === 'lewa' ? h('div', { className: 'lewa-auto' }, 'Model chosen automatically') : /*#__PURE__*/React.createElement("select", {
     style: {
       background: "rgba(240,237,229,.05)",
       border: "1px solid var(--bdr)",
@@ -13455,15 +13707,22 @@ function App() {
   }, (() => {
     /* The provider's own live list when we have one, the curated defaults
        when we do not — and never a model known to have been withdrawn. */
-    const opts = pickerModelsT(provider);
+    let opts = pickerModelsT(provider);
+    /* On the free tier the choice is real but bounded: every free model the
+       catalogue knows about, and nothing that could be billed. */
+    const freeOnly = provider === 'lewa';
+    if (freeOnly) opts = opts.filter(o => isFreeModelId(o.id));
     /* Only offer the current selection if it is still real. A model the
        provider has dropped should disappear from the list, not sit at the
        top waiting to fail. */
-    if (!opts.find(o => o.id === model) && modelLooksValidT(provider, model)) opts.unshift({
+    if (!opts.find(o => o.id === model) && modelLooksValidT(provider, model)
+        && (!freeOnly || isFreeModelId(model))) opts.unshift({
       id: model,
       label: MODEL_LABELS[model] || model
     });
-    if (!opts.length) opts.push({ id: model, label: MODEL_LABELS[model] || model });
+    if (!opts.length) opts.push(freeOnly
+      ? { id: LEWA_FREE_MODELS[0], label: MODEL_LABELS[LEWA_FREE_MODELS[0]] || LEWA_FREE_MODELS[0] }
+      : { id: model, label: MODEL_LABELS[model] || model });
     return opts.map(o => /*#__PURE__*/React.createElement("option", {
       key: o.id,
       value: o.id
